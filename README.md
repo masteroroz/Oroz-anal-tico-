@@ -1,2 +1,2 @@
-# Oroz-anal-tico-
+# Oroz-analitico-
 simulador de eventos deportivos 
