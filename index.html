@@ -974,4 +974,58 @@ function clearAll(){
 
 showSport();
 showBacktest();
-</script></body></html>
+</script><script>
+// Tu ID de Google Sheets — YA CONFIGURADO
+const ID_HOJA = "1DMQa_V79Eo1IE2HXmf0N2Ymgccfi2ueg";
+
+// Almacén global de datos
+const BD = {
+  futbol: [],
+  mlb: [],
+  nfl: [],
+  tenis_varonil: [],
+  tenis_femenil: []
+};
+
+// Función para cargar cada pestaña
+async function cargarPestana(nombre, clave) {
+  const url = `https://docs.google.com/spreadsheets/d/${ID_HOJA}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
+  try {
+    const res = await fetch(url);
+    const texto = await res.text();
+    BD[clave] = csvAArray(texto);
+    console.log(`✅ ${nombre}: ${BD[clave].length} filas cargadas`);
+  } catch (error) {
+    console.error(`❌ Error en ${nombre}:`, error);
+  }
+}
+
+// Convertir texto CSV a tabla usable
+function csvAArray(texto) {
+  const lineas = texto.trim().split("\n");
+  const encabezados = lineas[0].split(",").map(e => e.replace(/"/g, "").trim());
+  const filas = lineas.slice(1).map(linea => {
+    const valores = linea.split(",").map(v => v.replace(/"/g, "").trim());
+    return Object.fromEntries(encabezados.map((h, i) => [h, valores[i] || ""]));
+  });
+  return filas;
+}
+
+// Cargar TODO al abrir la página
+async function iniciarBaseDatos() {
+  await Promise.all([
+    cargarPestana("0futbol", "futbol"),
+    cargarPestana("0MLB", "mlb"),
+    cargarPestana("0NFL", "nfl"),
+    cargarPestana("0Tenis varonil", "tenis_varonil"),
+    cargarPestana("0Tenis femenil", "tenis_femenil")
+  ]);
+  console.log("✅ BASE DE DATOS CONECTADA COMPLETAMENTE");
+  // Aquí ya puedes llamar a tu función de simulación
+  // iniciarSimulacion();
+}
+
+// Ejecutar todo
+iniciarBaseDatos();
+</script>
+</body></html>
