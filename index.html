@@ -15,18 +15,18 @@ header,.panel,.results{background:var(--card);border:1px solid var(--line);borde
 <body><div class="wrap">
 <header>
 <h1>Master Oros v4.5 — Simulador + Value Betting</h1>
-<div class="note">Monte Carlo con Dixon-Coles (pesos), innings+bullpen (MLB), normal+pace (NFL), punto-a-punto con saque (tenis). ρ y pesos Elo/Poisson/Forma aprendidos por backtesting. Value betting con EV y Kelly fraccional.</div>
+<div class="note">Monte Carlo con Dixon-Coles (pesos), innings+bullpen (MLB), normal+pace (NFL), punto-a-punto con saque (tenis). ρ y pesos Elo/Poisson/Forma aprendidos por backtesting. Value betting con EV y Kelly fraccional.[span_2](start_span)[span_2](end_span)</div>
 
 <!-- PANEL DEL BOT DE AUTOCOMPLETADO WEB -->
 <div class="bot-panel" style="margin-top:14px">
-  <h3 style="color:#38bdf8; margin-bottom:8px; font-size:15px">🤖 Bot de Autocompletado Web</h3>
+  <h3 style="color:#38bdf8; margin-bottom:8px; font-size:15px">🤖 Bot de Autocompletado Web (Google Sheets)</h3>
   <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end">
     <div style="flex:2; min-width:200px">
-      <label>Equipo Local / Jugador A (Web Search)</label>
+      <label>Equipo Local / Jugador A (Sheets)</label>
       <input id="bot_queryA" type="text" placeholder="Ej. Real Madrid, Yankees..." style="background:#1e293b; color:#fff; border-color:#475569">
     </div>
     <div style="flex:2; min-width:200px">
-      <label>Equipo Visitante / Jugador B (Web Search)</label>
+      <label>Equipo Visitante / Jugador B (Sheets)</label>
       <input id="bot_queryB" type="text" placeholder="Ej. Barcelona, Red Sox..." style="background:#1e293b; color:#fff; border-color:#475569">
     </div>
     <div style="flex:1; min-width:140px">
@@ -175,29 +175,58 @@ header,.panel,.results{background:var(--card);border:1px solid var(--line);borde
 </div>
 <script>
 'use strict';
+
 /* ============================================================
-   BOT DE AUTOCOMPLETADO WEB (BASE DE CONOCIMIENTO DINÁMICA)
+   CONEXIÓN CON GOOGLE SHEETS (BASE DE DATOS DINÁMICA)
    ============================================================ */
-const webDatabase = {
-  "real madrid": { elo: 1980, gf: 2.35, ga: 0.85, xg: 2.10, xga: 0.90, sot: 6.2, cor: 5.8, fou: 10.5, car: 2.1, form: 8, av: 95 },
-  "barcelona": { elo: 1960, gf: 2.45, ga: 0.90, xg: 2.20, xga: 0.95, sot: 6.5, cor: 6.1, fou: 11.0, car: 2.2, form: 8, av: 94 },
-  "manchester city": { elo: 2010, gf: 2.50, ga: 0.75, xg: 2.35, xga: 0.70, sot: 6.8, cor: 6.5, fou: 9.5, car: 1.5, form: 9, av: 96 },
-  "liverpool": { elo: 1940, gf: 2.20, ga: 0.95, xg: 2.05, xga: 1.00, sot: 6.0, cor: 6.0, fou: 12.0, car: 1.8, form: 7, av: 92 },
-  "arsenal": { elo: 1930, gf: 2.10, ga: 0.80, xg: 1.95, xga: 0.80, sot: 5.7, cor: 5.9, fou: 11.2, car: 2.0, form: 8, av: 93 },
-  "bayern munich": { elo: 1970, gf: 2.70, ga: 1.00, xg: 2.50, xga: 1.05, sot: 7.1, cor: 6.2, fou: 10.0, car: 1.6, form: 8, av: 95 },
-  "psg": { elo: 1910, gf: 2.40, ga: 0.90, xg: 2.25, xga: 0.95, sot: 6.3, cor: 5.5, fou: 11.5, car: 2.3, form: 7, av: 91 },
-  // MLB
-  "yankees": { r: 5.1, ra: 3.9, ops: 0.785, hr: 1.45, k: 22.0, bb: 9.2, era: 3.55, bull: 3.85, def: 0.50 },
-  "dodgers": { r: 5.3, ra: 3.7, ops: 0.800, hr: 1.55, k: 21.5, bb: 9.5, era: 3.40, bull: 3.70, def: 0.55 },
-  // NFL
-  "chiefs": { elo: 1780, pf: 27.5, pa: 18.2, yd: 385.0, dyd: 310.0, td: 3.2, to: 0.6, third: 45.2, av: 96 },
-  "49ers": { elo: 1750, pf: 26.8, pa: 17.5, yd: 390.0, dyd: 295.0, td: 3.0, to: 0.4, third: 44.0, av: 94 },
-  // Tenis M
-  "djokovic": { elo: 2350, selo: 2380, form: 88, hold: 89.5, break: 28.0, fs: 74.0, ss: 58.0, ret: 41.0, tb: 68.0, fat: 20, av: 95 },
-  "alcaraz": { elo: 2320, selo: 2340, form: 90, hold: 87.0, break: 31.0, fs: 71.0, ss: 55.0, ret: 44.0, tb: 65.0, fat: 15, av: 98 },
-  "sinner": { elo: 2360, selo: 2390, form: 93, hold: 90.0, break: 29.5, fs: 75.0, ss: 59.0, ret: 42.0, tb: 70.0, fat: 18, av: 97 }
+const ID_HOJA = "1DMQa_V79Eo1IE2HXmf0N2Ymgccfi2ueg";[span_3](start_span)[span_3](end_span)
+
+const BD = {
+  futbol: [],
+  mlb: [],
+  nfl: [],
+  tenis_varonil: [],
+  tenis_femenil: []
 };
 
+async function cargarPestana(nombre, clave) {
+  const url = `https://docs.google.com/spreadsheets/d/${ID_HOJA}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;[span_4](start_span)[span_4](end_span)
+  try {
+    const res = await fetch(url);
+    const texto = await res.text();
+    BD[clave] = csvAArray(texto);
+    console.log(`✅ ${nombre}: ${BD[clave].length} filas cargadas`);
+  } catch (error) {
+    console.error(`❌ Error en ${nombre}:`, error);
+  }
+}
+
+function csvAArray(texto) {
+  const lineas = texto.trim().split("\n");
+  if(!lineas.length) return [];
+  const encabezados = lineas[0].split(",").map(e => e.replace(/"/g, "").trim());
+  return lineas.slice(1).map(linea => {
+    const valores = linea.split(",").map(v => v.replace(/"/g, "").trim());
+    return Object.fromEntries(encabezados.map((h, i) => [h, valores[i] || ""]));
+  });
+}
+
+async function iniciarBaseDatos() {
+  await Promise.all([
+    cargarPestana("0futbol", "futbol"),[span_5](start_span)[span_5](end_span)
+    cargarPestana("0MLB", "mlb"),[span_6](start_span)[span_6](end_span)
+    cargarPestana("0NFL", "nfl"),[span_7](start_span)[span_7](end_span)
+    cargarPestana("0Tenis varonil", "tenis_varonil"),[span_8](start_span)[span_8](end_span)
+    cargarPestana("0Tenis femenil", "tenis_femenil")[span_9](start_span)[span_9](end_span)
+  ]);
+  console.log("✅ BASE DE DATOS CONECTADA COMPLETAMENTE");
+}
+
+iniciarBaseDatos();
+
+/* ============================================================
+   BOT DE AUTOCOMPLETADO WEB (VINCULADO A GOOGLE SHEETS)
+   ============================================================ */
 function runAutoBot() {
   const qA = document.getElementById('bot_queryA').value.trim().toLowerCase();
   const qB = document.getElementById('bot_queryB').value.trim().toLowerCase();
@@ -209,83 +238,115 @@ function runAutoBot() {
   }
 
   let filledCount = 0;
-  if(qA) filledCount += fillTeamData(qA, 'A', sport);
-  if(qB) filledCount += fillTeamData(qB, 'B', sport);
+  if(qA) filledCount += fillTeamDataFromSheet(qA, 'A', sport);
+  if(qB) filledCount += fillTeamDataFromSheet(qB, 'B', sport);
 
   if(filledCount > 0) {
     highlightInputs();
-    alert("🤖 ¡Bot de autocompletado web ejecutado con éxito! Se rellenaron los campos correspondientes.");
+    alert("🤖 ¡Datos jalados de Google Sheets con éxito! Se rellenaron los campos correspondientes.");
   } else {
-    alert("No se encontraron registros exactos en la base web para los nombres ingresados. Se aplicaron valores por defecto.");
+    alert("No se encontró el registro exacto en la hoja para los nombres ingresados. Se aplicaron valores por defecto.");
     applyDefaults(sport);
   }
 }
 
-function fillTeamData(query, side, sport) {
-  let matchedKey = null;
-  for(const key in webDatabase) {
-    if(query.includes(key) || key.includes(query)) {
-      matchedKey = key;
+function fillTeamDataFromSheet(query, side, sport) {
+  const sportKeyMap = {
+    'futbol': 'futbol',
+    'mlb': 'mlb',
+    'nfl': 'nfl',
+    'tenisM': 'tenis_varonil',
+    'tenisF': 'tenis_femenil'
+  };
+
+  const key = sportKeyMap[sport];
+  const rows = BD[key] || [];
+
+  let matchedRow = null;
+  for(const row of rows) {
+    const rowString = Object.values(row).join(' ').toLowerCase();
+    if(rowString.includes(query)) {
+      matchedRow = row;
       break;
     }
   }
 
-  const data = matchedKey ? webDatabase[matchedKey] : getEstimatedData(sport);
+  if(!matchedRow) return 0;
+
+  const getSheetNum = (fields, defVal) => {
+    for(const f of fields) {
+      if(matchedRow[f] !== undefined && matchedRow[f] !== '') {
+        const num = parseFloat(matchedRow[f]);
+        if(Number.isFinite(num)) return num;
+      }
+    }
+    return defVal;
+  };
+
+  const getSheetStr = (fields, defVal) => {
+    for(const f of fields) {
+      if(matchedRow[f] !== undefined && matchedRow[f] !== '') {
+        return matchedRow[f];
+      }
+    }
+    return defVal;
+  };
+
   let count = 0;
 
   if(sport === 'futbol') {
     const p = side === 'A' ? 'f_nombreA' : 'f_nombreB';
-    setVal(p, capitalize(query));
-    setVal(side === 'A' ? 'f_eloA' : 'f_eloB', data.elo || 1600);
-    setVal(side === 'A' ? 'f_gfA' : 'f_gfB', data.gf || 1.50);
-    setVal(side === 'A' ? 'f_gaA' : 'f_gaB', data.ga || 1.10);
-    setVal(side === 'A' ? 'f_xgA' : 'f_xgB', data.xg || 1.45);
-    setVal(side === 'A' ? 'f_xgaA' : 'f_xgaB', data.xga || 1.15);
-    setVal(side === 'A' ? 'f_sotA' : 'f_sotB', data.sot || 5.0);
-    setVal(side === 'A' ? 'f_corA' : 'f_corB', data.cor || 5.2);
-    setVal(side === 'A' ? 'f_fouA' : 'f_fouB', data.fou || 11.0);
-    setVal(side === 'A' ? 'f_carA' : 'f_carB', data.car || 2.0);
-    setVal(side === 'A' ? 'f_formA' : 'f_formB', data.form || 6);
-    setVal(side === 'A' ? 'f_avA' : 'f_avB', data.av || 90);
+    setVal(p, getSheetStr(['Equipo', 'Team', 'Nombre', 'Local', 'Visitante'], capitalize(query)));
+    setVal(side === 'A' ? 'f_eloA' : 'f_eloB', getSheetNum(['Elo', 'ELO', 'elo'], 1600));
+    setVal(side === 'A' ? 'f_gfA' : 'f_gfB', getSheetNum(['GF', 'gf', 'GF/partido', 'GolesFavor'], 1.50));
+    setVal(side === 'A' ? 'f_gaA' : 'f_gaB', getSheetNum(['GC', 'GA', 'ga', 'GolesContra'], 1.10));
+    setVal(side === 'A' ? 'f_xgA' : 'f_xgB', getSheetNum(['xG', 'xg'], 1.45));
+    setVal(side === 'A' ? 'f_xgaA' : 'f_xgaB', getSheetNum(['xGA', 'xga'], 1.15));
+    setVal(side === 'A' ? 'f_sotA' : 'f_sotB', getSheetNum(['SOT', 'Tiros', 'sot'], 5.0));
+    setVal(side === 'A' ? 'f_corA' : 'f_corB', getSheetNum(['Corners', 'cor'], 5.2));
+    setVal(side === 'A' ? 'f_fouA' : 'f_fouB', getSheetNum(['Faltas', 'fou'], 11.0));
+    setVal(side === 'A' ? 'f_carA' : 'f_carB', getSheetNum(['Tarjetas', 'car'], 2.0));
+    setVal(side === 'A' ? 'f_formA' : 'f_formB', getSheetNum(['Forma', 'Victorias', 'form'], 6));
+    setVal(side === 'A' ? 'f_avA' : 'f_avB', getSheetNum(['Disponibilidad', 'Av', 'av'], 90));
     count += 10;
   } else if(sport === 'mlb') {
-    setVal(side === 'A' ? 'm_nombreA' : 'm_nombreB', capitalize(query));
-    setVal(side === 'A' ? 'm_rA' : 'm_rB', data.r || 4.5);
-    setVal(side === 'A' ? 'm_raA' : 'm_raB', data.ra || 4.2);
-    setVal(side === 'A' ? 'm_opsA' : 'm_opsB', data.ops || 0.730);
-    setVal(side === 'A' ? 'm_hrA' : 'm_hrB', data.hr || 1.2);
-    setVal(side === 'A' ? 'm_kA' : 'm_kB', data.k || 22.0);
-    setVal(side === 'A' ? 'm_bbA' : 'm_bbB', data.bb || 8.5);
-    setVal(side === 'A' ? 'm_eraA' : 'm_eraB', data.era || 4.00);
-    setVal(side === 'A' ? 'm_bullA' : 'm_bullB', data.bull || 4.10);
-    setVal(side === 'A' ? 'm_defA' : 'm_defB', data.def || 0.45);
+    setVal(side === 'A' ? 'm_nombreA' : 'm_nombreB', getSheetStr(['Equipo', 'Team', 'Nombre'], capitalize(query)));
+    setVal(side === 'A' ? 'm_rA' : 'm_rB', getSheetNum(['Carreras', 'R', 'r', 'Runs'], 4.5));
+    setVal(side === 'A' ? 'm_raA' : 'm_raB', getSheetNum(['RA', 'CarrerasPermitidas', 'ra'], 4.2));
+    setVal(side === 'A' ? 'm_opsA' : 'm_opsB', getSheetNum(['OPS', 'ops'], 0.730));
+    setVal(side === 'A' ? 'm_hrA' : 'm_hrB', getSheetNum(['HR', 'hr'], 1.2));
+    setVal(side === 'A' ? 'm_kA' : 'm_kB', getSheetNum(['K%', 'k'], 22.0));
+    setVal(side === 'A' ? 'm_bbA' : 'm_bbB', getSheetNum(['BB%', 'bb'], 8.5));
+    setVal(side === 'A' ? 'm_eraA' : 'm_eraB', getSheetNum(['ERA', 'era'], 4.00));
+    setVal(side === 'A' ? 'm_bullA' : 'm_bullB', getSheetNum(['Bullpen', 'Bull', 'bull'], 4.10));
+    setVal(side === 'A' ? 'm_defA' : 'm_defB', getSheetNum(['Defensa', 'def'], 0.45));
     count += 9;
   } else if(sport === 'nfl') {
-    setVal(side === 'A' ? 'n_nombreA' : 'n_nombreB', capitalize(query));
-    setVal(side === 'A' ? 'n_eloA' : 'n_eloB', data.elo || 1550);
-    setVal(side === 'A' ? 'n_pfA' : 'n_pfB', data.pf || 22.5);
-    setVal(side === 'A' ? 'n_paA' : 'n_paB', data.pa || 21.0);
-    setVal(side === 'A' ? 'n_ydA' : 'n_ydB', data.yd || 340.0);
-    setVal(side === 'A' ? 'n_dydA' : 'n_dydB', data.dyd || 340.0);
-    setVal(side === 'A' ? 'n_tdA' : 'n_tdB', data.td || 2.4);
-    setVal(side === 'A' ? 'n_toA' : 'n_toB', data.to || 0.1);
-    setVal(side === 'A' ? 'n_3rdA' : 'n_3rdB', data.third || 38.0);
-    setVal(side === 'A' ? 'n_avA' : 'n_avB', data.av || 92);
+    setVal(side === 'A' ? 'n_nombreA' : 'n_nombreB', getSheetStr(['Equipo', 'Team', 'Nombre'], capitalize(query)));
+    setVal(side === 'A' ? 'n_eloA' : 'n_eloB', getSheetNum(['Elo', 'elo'], 1550));
+    setVal(side === 'A' ? 'n_pfA' : 'n_pfB', getSheetNum(['PF', 'PuntosAnotados', 'pf'], 22.5));
+    setVal(side === 'A' ? 'n_paA' : 'n_paB', getSheetNum(['PA', 'PuntosPermitidos', 'pa'], 21.0));
+    setVal(side === 'A' ? 'n_ydA' : 'n_ydB', getSheetNum(['Yardas', 'Yd', 'yd'], 340.0));
+    setVal(side === 'A' ? 'n_dydA' : 'n_dydB', getSheetNum(['YardasDef', 'Dyd', 'dyd'], 340.0));
+    setVal(side === 'A' ? 'n_tdA' : 'n_tdB', getSheetNum(['TD', 'td'], 2.4));
+    setVal(side === 'A' ? 'n_toA' : 'n_toB', getSheetNum(['TO', 'to'], 0.1));
+    setVal(side === 'A' ? 'n_3rdA' : 'n_3rdB', getSheetNum(['3rd', 'TerceraOportunidad'], 38.0));
+    setVal(side === 'A' ? 'n_avA' : 'n_avB', getSheetNum(['Disponibilidad', 'Av'], 92));
     count += 9;
   } else if(sport === 'tenisM' || sport === 'tenisF') {
     const p = sport === 'tenisM' ? 'tm' : 'tf';
-    setVal(p + '_' + (side === 'A' ? 'nombreA' : 'nombreB'), capitalize(query));
-    setVal(p + '_' + (side === 'A' ? 'eloA' : 'eloB'), data.elo || 1800);
-    setVal(p + '_' + (side === 'A' ? 'seloA' : 'seloB'), data.selo || 1820);
-    setVal(p + '_' + (side === 'A' ? 'formA' : 'formB'), data.form || 75);
-    setVal(p + '_' + (side === 'A' ? 'holdA' : 'holdB'), data.hold || 82.0);
-    setVal(p + '_' + (side === 'A' ? 'breakA' : 'breakB'), data.break || 22.0);
-    setVal(p + '_' + (side === 'A' ? 'fsA' : 'fsB'), data.fs || 68.0);
-    setVal(p + '_' + (side === 'A' ? 'ssA' : 'ssB'), data.ss || 52.0);
-    setVal(p + '_' + (side === 'A' ? 'retA' : 'retB'), data.ret || 36.0);
-    setVal(p + '_' + (side === 'A' ? 'tbA' : 'tbB'), data.tb || 55.0);
-    setVal(p + '_' + (side === 'A' ? 'fatA' : 'fatB'), data.fat || 25);
-    setVal(p + '_' + (side === 'A' ? 'avA' : 'avB'), data.av || 95);
+    setVal(p + '_' + (side === 'A' ? 'nombreA' : 'nombreB'), getSheetStr(['Jugador', 'Jugadora', 'Player', 'Nombre'], capitalize(query)));
+    setVal(p + '_' + (side === 'A' ? 'eloA' : 'eloB'), getSheetNum(['Elo', 'EloGeneral', 'elo'], 1800));
+    setVal(p + '_' + (side === 'A' ? 'seloA' : 'seloB'), getSheetNum(['EloSuperficie', 'Selo', 'selo'], 1820));
+    setVal(p + '_' + (side === 'A' ? 'formA' : 'formB'), getSheetNum(['Forma', 'form'], 75));
+    setVal(p + '_' + (side === 'A' ? 'holdA' : 'holdB'), getSheetNum(['Hold', 'hold'], 82.0));
+    setVal(p + '_' + (side === 'A' ? 'breakA' : 'breakB'), getSheetNum(['Break', 'break'], 22.0));
+    setVal(p + '_' + (side === 'A' ? 'fsA' : 'fsB'), getSheetNum(['1erSaque', 'FS', 'fs'], 68.0));
+    setVal(p + '_' + (side === 'A' ? 'ssA' : 'ssB'), getSheetNum(['2doSaque', 'SS', 'ss'], 52.0));
+    setVal(p + '_' + (side === 'A' ? 'retA' : 'retB'), getSheetNum(['Resto', 'Ret', 'ret'], 36.0));
+    setVal(p + '_' + (side === 'A' ? 'tbA' : 'tbB'), getSheetNum(['TieBreak', 'TB', 'tb'], 55.0));
+    setVal(p + '_' + (side === 'A' ? 'fatA' : 'fatB'), getSheetNum(['Fatiga', 'Fat', 'fat'], 25));
+    setVal(p + '_' + (side === 'A' ? 'avA' : 'avB'), getSheetNum(['Disponibilidad', 'Av', 'av'], 95));
     count += 11;
   }
   return count;
@@ -298,10 +359,6 @@ function setVal(id, val) {
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function getEstimatedData(sport) {
-  return { elo: 1600, gf: 1.40, ga: 1.20, r: 4.5, ra: 4.5, pf: 21.0, pa: 21.0, form: 5 };
 }
 
 function applyDefaults(sport) {
@@ -317,14 +374,14 @@ function highlightInputs() {
   inputs.forEach(input => {
     if(input.value && input.id !== 'seed' && input.id !== 'bankroll') {
       const orig = input.style.background;
-      input.style.background = "#d1fae5"; // Verde claro temporal
+      input.style.background = "#d1fae5";
       setTimeout(() => { input.style.background = orig; }, 1000);
     }
   });
 }
 
 /* ============================================================
-   NÚCLEO
+   NÚCLEO Y LÓGICA DE SIMULACIÓN
    ============================================================ */
 let rngState=null,currentN=25000,lastPrediction=null;
 const BT_KEY='master_oros_bt_v45';
@@ -352,7 +409,6 @@ function rhoSave(r){
 
 function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
 function bin(p){return Math.min(9,Math.floor(clamp(p,0,0.999999)*10))}
-function logloss(p,y){p=clamp(p,1e-6,1-1e-6);return -(y*Math.log(p)+(1-y)*Math.log(1-p))}
 function pct(x){return (100*x).toFixed(1)+'%'}
 function avg(a,b){return(a+b)/2}
 function fact(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
@@ -371,11 +427,7 @@ function poisson(lambda){
 
 function val(id){const e=document.getElementById(id);if(!e)return null;const x=parseFloat(e.value);return Number.isFinite(x)?x:null}
 function nm(id){return document.getElementById(id)?.value?.trim()||''}
-function validate(id,min,max,name,issues){const v=val(id);if(v!==null&&(v<min||v>max))issues.push(name+'='+v+' fuera de ['+min+','+max+']')}
 
-/* ============================================================
-   LOCALÍA como redistribución
-   ============================================================ */
 function applyHome(la,lb){
   const h=val('homeAdv');
   if(h===null||h<-50||h>50)return[la,lb];
@@ -386,9 +438,6 @@ function applyHome(la,lb){
   return[cappedA,tot-cappedA];
 }
 
-/* ============================================================
-   PARES PAREADOS
-   ============================================================ */
 function applyPairs(pairs,pA,pB,used,missing,detail){
   for(const [idA,idB,label,scale,higherBetter] of pairs){
     const a=val(idA),b=val(idB);
@@ -405,9 +454,6 @@ function applyPairs(pairs,pA,pB,used,missing,detail){
   return[pA,pB];
 }
 
-/* ============================================================
-   PESOS ADAPTATIVOS
-   ============================================================ */
 function getWeights(sport){
   const w=weightsLoad();
   if(w[sport])return w[sport];
@@ -416,15 +462,7 @@ function getWeights(sport){
   if(sport==='NFL')return{elo:0.30,poisson:0.50,form:0.20};
   return{elo:0.55,poisson:0.15,form:0.30};
 }
-function updateWeights(sport,accElo,accPois,accForm){
-  const total=accElo+accPois+accForm||1;
-  const w={elo:accElo/total,poisson:accPois/total,form:accForm/total};
-  const all=weightsLoad();all[sport]=w;weightsSave(all);
-}
 
-/* ============================================================
-   CALIBRACIÓN
-   ============================================================ */
 function learnedCal(p,sport,market){
   if(p==null||!Number.isFinite(p))return{p,used:false,n:0};
   const h=btLoad().filter(r=>r.completed&&r.sport===sport&&r.market===market);
@@ -458,9 +496,6 @@ function learnedCal(p,sport,market){
   return{p:clamp(0.7*p+0.3*emp,0.01,0.99),used:true,n:tot,method:'bin',emp};
 }
 
-/* ============================================================
-   WILSON CI
-   ============================================================ */
 function wilsonCI(hits,n,z=1.645){
   if(n===0)return[0,1];
   const p=hits/n;
@@ -470,9 +505,6 @@ function wilsonCI(hits,n,z=1.645){
   return[clamp(center-margin,0,1),clamp(center+margin,0,1)];
 }
 
-/* ============================================================
-   DIXON-COLES por PESOS
-   ============================================================ */
 function poissonOnlyPMF(la,lb,Nmax){
   const pmf=[];let sum=0;
   for(let x=0;x<=Nmax;x++){
@@ -486,6 +518,7 @@ function poissonOnlyPMF(la,lb,Nmax){
   }
   return pmf.map(o=>({x:o.x,y:o.y,p:o.p/sum}));
 }
+
 function dixonColesPMF(la,lb,rho,Nmax=GRID_MAX){
   const pmf=[];let sum=0;
   for(let x=0;x<=Nmax;x++){
@@ -506,6 +539,7 @@ function dixonColesPMF(la,lb,rho,Nmax=GRID_MAX){
   if(!Number.isFinite(sum)||sum<=0)return poissonOnlyPMF(la,lb,Nmax);
   return pmf.map(o=>({x:o.x,y:o.y,p:o.p/sum}));
 }
+
 function sampleFromPMF(pmf){
   const r=rnd();let acc=0;
   for(const o of pmf){acc+=o.p;if(r<=acc)return o}
@@ -513,7 +547,7 @@ function sampleFromPMF(pmf){
 }
 
 /* ============================================================
-   FÚTBOL
+   SIMULADOR DE FÚTBOL
    ============================================================ */
 function simFutbol(N){
   currentN=N;
@@ -610,13 +644,14 @@ function poissonImplicitProb(la,lb){
   const s=pA+pD+pB||1;
   return pA/s;
 }
+
 function formImplicitProb(fa,fb){
   if(fa===null||fb===null)return null;
   return clamp((fa+1)/(fa+fb+2),0.05,0.95);
 }
 
 /* ============================================================
-   MLB
+   SIMULADOR DE MLB
    ============================================================ */
 function simMLB(N){
   currentN=N;
@@ -683,7 +718,7 @@ function simMLB(N){
 }
 
 /* ============================================================
-   NFL
+   SIMULADOR DE NFL
    ============================================================ */
 function simNFL(N){
   currentN=N;
@@ -742,7 +777,7 @@ function simNFL(N){
 }
 
 /* ============================================================
-   TENIS v4.5
+   SIMULADOR DE TENIS v4.5
    ============================================================ */
 function holdToPoint(hold){return clamp(0.5+(hold-0.5)*0.55,0.40,0.78)}
 function simTenis(N,prefix,label){
@@ -796,6 +831,7 @@ function simTenis(N,prefix,label){
       if(r>=4&&r-s>=2)return false;
     }
   }
+
   function simTieBreak(pA_serves, pB_serves){
     let a=0,b=0,safety=0,serverIsA=true,pointsServed=0;
     while(true){
@@ -855,7 +891,7 @@ function simTenis(N,prefix,label){
 }
 
 /* ============================================================
-   VALUE BETTING & UI HELPERS
+   VALUE BETTING & INTERFAZ
    ============================================================ */
 function kellyFraction(p,odd){const b=odd-1;if(b<=0)return 0;const q=1-p;return clamp((p*b-q)/b,0,1)}
 function valueRow(label,p,odd,bankroll){
@@ -974,58 +1010,5 @@ function clearAll(){
 
 showSport();
 showBacktest();
-</script><script>
-// Tu ID de Google Sheets — YA CONFIGURADO
-const ID_HOJA = "1DMQa_V79Eo1IE2HXmf0N2Ymgccfi2ueg";
-
-// Almacén global de datos
-const BD = {
-  futbol: [],
-  mlb: [],
-  nfl: [],
-  tenis_varonil: [],
-  tenis_femenil: []
-};
-
-// Función para cargar cada pestaña
-async function cargarPestana(nombre, clave) {
-  const url = `https://docs.google.com/spreadsheets/d/${ID_HOJA}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombre)}`;
-  try {
-    const res = await fetch(url);
-    const texto = await res.text();
-    BD[clave] = csvAArray(texto);
-    console.log(`✅ ${nombre}: ${BD[clave].length} filas cargadas`);
-  } catch (error) {
-    console.error(`❌ Error en ${nombre}:`, error);
-  }
-}
-
-// Convertir texto CSV a tabla usable
-function csvAArray(texto) {
-  const lineas = texto.trim().split("\n");
-  const encabezados = lineas[0].split(",").map(e => e.replace(/"/g, "").trim());
-  const filas = lineas.slice(1).map(linea => {
-    const valores = linea.split(",").map(v => v.replace(/"/g, "").trim());
-    return Object.fromEntries(encabezados.map((h, i) => [h, valores[i] || ""]));
-  });
-  return filas;
-}
-
-// Cargar TODO al abrir la página
-async function iniciarBaseDatos() {
-  await Promise.all([
-    cargarPestana("0futbol", "futbol"),
-    cargarPestana("0MLB", "mlb"),
-    cargarPestana("0NFL", "nfl"),
-    cargarPestana("0Tenis varonil", "tenis_varonil"),
-    cargarPestana("0Tenis femenil", "tenis_femenil")
-  ]);
-  console.log("✅ BASE DE DATOS CONECTADA COMPLETAMENTE");
-  // Aquí ya puedes llamar a tu función de simulación
-  // iniciarSimulacion();
-}
-
-// Ejecutar todo
-iniciarBaseDatos();
 </script>
 </body></html>
