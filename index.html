@@ -1,416 +1,153 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Deportivo - Monte Carlo</title>
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-color: #f8fafc;
-      --accent-color: #38bdf8;
-      --border-color: #334155;
-      --success-color: #22c55e;
-      --danger-color: #ef4444;
-    }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 15px;
-    }
-    .container {
-      max-width: 950px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-color);
-    }
-    h1 {
-      text-align: center;
-      color: var(--accent-color);
-      font-size: 1.4rem;
-      margin-bottom: 20px;
-    }
-    .control-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
-      color: #94a3b8;
-    }
-    select, input, button {
-      width: 100%;
-      padding: 9px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background: #0f172a;
-      color: #f8fafc;
-      font-size: 0.95rem;
-      box-sizing: border-box;
-      margin-bottom: 8px;
-    }
-    button {
-      background: var(--accent-color);
-      color: #0f172a;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background: #0ea5e9;
-    }
-    .btn-simular {
-      background: var(--success-color);
-      color: #fff;
-      font-size: 1.1rem;
-      padding: 12px;
-      margin-top: 15px;
-    }
-    .btn-simular:hover {
-      background: #16a34a;
-    }
-    .bot-section {
-      background: #111827;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      margin-bottom: 20px;
-    }
-    .highlight {
-      border-color: var(--success-color) !important;
-      background-color: rgba(34, 197, 94, 0.1) !important;
-      transition: all 0.3s ease;
-    }
-    .grid-teams {
-      display: flex;
-      gap: 15px;
-    }
-    .team-box {
-      flex: 1;
-      background: #111827;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-    .team-box h3 {
-      text-align: center;
-      margin-top: 0;
-      font-size: 1rem;
-      color: var(--accent-color);
-    }
-    .results-box {
-      margin-top: 20px;
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      text-align: center;
-    }
-    .results-box h3 {
-      color: var(--success-color);
-      margin-top: 0;
-    }
-    .sport-section {
-      display: none;
-    }
-    .sport-section.active {
-      display: block;
-    }
-    @media (max-width: 600px) {
-      .grid-teams {
-        flex-direction: column;
-      }
-    }
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Master Oros v4.5 — Simulador Predictivo + Value Betting</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee5;--accent:#1f6feb;--local:#176b4d;--visitor:#8a3b12;--warn:#b45309;--red:#b91c1c;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{max-width:1320px;margin:auto;padding:18px}
+header,.panel,.results{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:16px}h1{margin:0 0 7px;font-size:26px}h2{margin:0 0 14px;font-size:19px}h3{margin:0}.note,.small{color:var(--muted);line-height:1.45;font-size:13px}.toolbar,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.control{min-width:170px;flex:1}label{display:block;font-weight:700;font-size:12px;margin:0 0 5px}input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font-size:14px;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.secondary{background:#fff}.sport{display:none}.teams{display:grid;grid-template-columns:1fr 1fr;gap:16px}.team-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.local{border-top:5px solid var(--local)}.visitor{border-top:5px solid var(--visitor)}.team-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:13px}.badge{font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#eef1f4}.local .badge{color:var(--local)}.visitor .badge{color:var(--visitor)}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.result{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}.result b{display:block;margin-bottom:5px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.result .v{font-size:20px;font-weight:800}.result .ci{font-size:11px;color:var(--muted);margin-top:3px}.audit{margin-top:12px;padding:12px;border-radius:10px;background:#f7f8fa;border:1px solid var(--line);font-size:13px;line-height:1.5}.ok{font-weight:700;color:var(--local)}.warn{font-weight:700;color:var(--warn)}.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}.table th,.table td{border-bottom:1px solid var(--line);padding:7px;text-align:left}.table th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}.error{padding:12px;border:1px solid #e0b4b4;background:#fff7f7;border-radius:10px;color:#991b1b}.bt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.bt-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.bt-actions button{flex:1;min-width:150px}.learn{border-left:4px solid var(--accent)}.explain{background:#f0f7ff;border-left:4px solid var(--accent);padding:10px 12px;border-radius:8px;margin-top:10px;font-size:13px;line-height:1.5}.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0;background:#eee}.bar span{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700}.value-good{background:#ecfdf5;border:1px solid #15803d;padding:10px;border-radius:8px;margin-top:6px}.value-bad{background:#fef2f2;border:1px solid #b91c1c;padding:10px;border-radius:8px;margin-top:6px}.value-mid{background:#fffbeb;border:1px solid #b45309;padding:10px;border-radius:8px;margin-top:6px}.odds-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.hl{background:#fef9c3;padding:2px 6px;border-radius:4px;font-weight:700}
+.bot-panel{background:#0f172a;color:#fff;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #334155}
+.bot-panel label{color:#94a3b8}
+@media(max-width:760px){.teams{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.wrap{padding:10px}h1{font-size:21px}}
+</style>
 </head>
-<body>
+<body><div class="wrap">
+<header>
+<h1>Master Oros v4.5 — Simulador + Value Betting</h1>
+<div class="note">Monte Carlo con Dixon-Coles (pesos), innings+bullpen (MLB), normal+pace (NFL), punto-a-punto con saque (tenis). ρ y pesos Elo/Poisson/Forma aprendidos por backtesting. Value betting con EV y Kelly fraccional.</div>
 
-  <div class="container">
-    <h1>Simulador Deportivo - Monte Carlo</h1>
-
-    <!-- Selector de Deporte -->
-    <div class="control-group">
-      <label for="sport">Seleccionar Deporte:</label>
-      <select id="sport" onchange="cambiarDeporte()">
-        <option value="futbol">Fútbol</option>
-        <option value="mlb">Béisbol (MLB)</option>
-        <option value="nfl">Fútbol Americano (NFL)</option>
-        <option value="tenisM">Tenis Masculino (ATP)</option>
-        <option value="tenisF">Tenis Femenino (WTA)</option>
-      </select>
+<!-- PANEL DEL BOT DE AUTOCOMPLETADO WEB -->
+<div class="bot-panel" style="margin-top:14px">
+  <h3 style="color:#38bdf8; margin-bottom:8px; font-size:15px">🤖 Bot de Autocompletado Web</h3>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end">
+    <div style="flex:2; min-width:200px">
+      <label>Equipo Local / Jugador A (Web Search)</label>
+      <input id="bot_queryA" type="text" placeholder="Ej. Real Madrid, Yankees..." style="background:#1e293b; color:#fff; border-color:#475569">
     </div>
-
-    <!-- Sección del Bot Autocompletado -->
-    <div class="bot-section">
-      <label><strong>🤖 Autocompletar con Bot (Base Interna):</strong></label>
-      <div class="grid-teams">
-        <input type="text" id="bot_queryA" placeholder="Ej. Real Madrid / Yankees / Djokovic / Swiatek">
-        <input type="text" id="bot_queryB" placeholder="Ej. Barcelona / Dodgers / Alcaraz / Sabalenka">
-      </div>
-      <button type="button" onclick="runAutoBot()">Rellenar Datos Automáticamente</button>
+    <div style="flex:2; min-width:200px">
+      <label>Equipo Visitante / Jugador B (Web Search)</label>
+      <input id="bot_queryB" type="text" placeholder="Ej. Barcelona, Red Sox..." style="background:#1e293b; color:#fff; border-color:#475569">
     </div>
-
-    <!-- ================= SECCIÓN FÚTBOL ================= -->
-    <div id="section_futbol" class="sport-section active">
-      <div class="grid-teams">
-        <div class="team-box">
-          <h3>Fútbol - Local (A)</h3>
-          <input type="text" id="f_nombreA" placeholder="Nombre Equipo A">
-          <label>Elo</label><input type="number" id="f_eloA" value="1700">
-          <label>Goles Favor (GF)</label><input type="number" step="0.01" id="f_gfA" value="1.85">
-          <label>Goles Contra (GA)</label><input type="number" step="0.01" id="f_gaA" value="1.05">
-          <label>xG</label><input type="number" step="0.01" id="f_xgA" value="1.70">
-          <label>xGA</label><input type="number" step="0.01" id="f_xgaA" value="1.10">
-          <label>Tiros a Puerta (SoT)</label><input type="number" step="0.1" id="f_sotA" value="5.5">
-          <label>Córners</label><input type="number" step="0.1" id="f_corA" value="5.2">
-          <label>Faltas</label><input type="number" step="0.1" id="f_fouA" value="11.0">
-          <label>Tarjetas</label><input type="number" step="0.1" id="f_carA" value="2.0">
-          <label>Forma (1-10)</label><input type="number" id="f_formA" value="7">
-          <label>AV</label><input type="number" id="f_avA" value="90">
-        </div>
-        <div class="team-box">
-          <h3>Fútbol - Visitante (B)</h3>
-          <input type="text" id="f_nombreB" placeholder="Nombre Equipo B">
-          <label>Elo</label><input type="number" id="f_eloB" value="1680">
-          <label>Goles Favor (GF)</label><input type="number" step="0.01" id="f_gfB" value="1.60">
-          <label>Goles Contra (GA)</label><input type="number" step="0.01" id="f_gaB" value="1.20">
-          <label>xG</label><input type="number" step="0.01" id="f_xgB" value="1.50">
-          <label>xGA</label><input type="number" step="0.01" id="f_xgaB" value="1.25">
-          <label>Tiros a Puerta (SoT)</label><input type="number" step="0.1" id="f_sotB" value="4.8">
-          <label>Córners</label><input type="number" step="0.1" id="f_corB" value="4.6">
-          <label>Faltas</label><input type="number" step="0.1" id="f_fouB" value="12.0">
-          <label>Tarjetas</label><input type="number" step="0.1" id="f_carB" value="2.3">
-          <label>Forma (1-10)</label><input type="number" id="f_formB" value="6">
-          <label>AV</label><input type="number" id="f_avB" value="88">
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= SECCIÓN MLB ================= -->
-    <div id="section_mlb" class="sport-section">
-      <div class="grid-teams">
-        <div class="team-box">
-          <h3>MLB - Local (A)</h3>
-          <input type="text" id="m_nombreA" placeholder="Equipo A">
-          <label>Carreras Anotadas (R)</label><input type="number" step="0.1" id="m_rA" value="4.8">
-          <label>Carreras Permitidas (RA)</label><input type="number" step="0.1" id="m_raA" value="4.1">
-          <label>OPS</label><input type="number" step="0.001" id="m_opsA" value="0.750">
-          <label>HR</label><input type="number" step="0.1" id="m_hrA" value="1.2">
-          <label>K</label><input type="number" step="0.1" id="m_kA" value="21.0">
-          <label>BB</label><input type="number" step="0.1" id="m_bbA" value="8.5">
-          <label>ERA</label><input type="number" step="0.01" id="m_eraA" value="3.90">
-          <label>Bullpen ERA</label><input type="number" step="0.01" id="m_bullA" value="3.95">
-          <label>Defensa</label><input type="number" step="0.01" id="m_defA" value="0.50">
-        </div>
-        <div class="team-box">
-          <h3>MLB - Visitante (B)</h3>
-          <input type="text" id="m_nombreB" placeholder="Equipo B">
-          <label>Carreras Anotadas (R)</label><input type="number" step="0.1" id="m_rB" value="4.5">
-          <label>Carreras Permitidas (RA)</label><input type="number" step="0.1" id="m_raB" value="4.3">
-          <label>OPS</label><input type="number" step="0.001" id="m_opsB" value="0.720">
-          <label>HR</label><input type="number" step="0.1" id="m_hrB" value="1.1">
-          <label>K</label><input type="number" step="0.1" id="m_kB" value="20.0">
-          <label>BB</label><input type="number" step="0.1" id="m_bbB" value="8.0">
-          <label>ERA</label><input type="number" step="0.01" id="m_eraB" value="4.10">
-          <label>Bullpen ERA</label><input type="number" step="0.01" id="m_bullB" value="4.20">
-          <label>Defensa</label><input type="number" step="0.01" id="m_defB" value="0.48">
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= SECCIÓN NFL ================= -->
-    <div id="section_nfl" class="sport-section">
-      <div class="grid-teams">
-        <div class="team-box">
-          <h3>NFL - Local (A)</h3>
-          <input type="text" id="n_nombreA" placeholder="Equipo A">
-          <label>Elo</label><input type="number" id="n_eloA" value="1600">
-          <label>Puntos a Favor (PF)</label><input type="number" step="0.1" id="n_pfA" value="23.5">
-          <label>Puntos en Contra (PA)</label><input type="number" step="0.1" id="n_paA" value="20.0">
-          <label>Yardas Totales</label><input type="number" step="0.1" id="n_ydA" value="350.0">
-          <label>Yardas Permitidas</label><input type="number" step="0.1" id="n_dydA" value="330.0">
-          <label>TD</label><input type="number" step="0.1" id="n_tdA" value="2.5">
-          <label>Turnovers</label><input type="number" step="0.1" id="n_toA" value="1.0">
-          <label>3er Oportunidad %</label><input type="number" step="0.1" id="n_3rdA" value="40.0">
-          <label>AV</label><input type="number" id="n_avA" value="90">
-        </div>
-        <div class="team-box">
-          <h3>NFL - Visitante (B)</h3>
-          <input type="text" id="n_nombreB" placeholder="Equipo B">
-          <label>Elo</label><input type="number" id="n_eloB" value="1580">
-          <label>Puntos a Favor (PF)</label><input type="number" step="0.1" id="n_pfB" value="21.0">
-          <label>Puntos en Contra (PA)</label><input type="number" step="0.1" id="n_paB" value="22.0">
-          <label>Yardas Totales</label><input type="number" step="0.1" id="n_ydB" value="340.0">
-          <label>Yardas Permitidas</label><input type="number" step="0.1" id="n_dydB" value="345.0">
-          <label>TD</label><input type="number" step="0.1" id="n_tdB" value="2.2">
-          <label>Turnovers</label><input type="number" step="0.1" id="n_toB" value="1.2">
-          <label>3er Oportunidad %</label><input type="number" step="0.1" id="n_3rdB" value="37.0">
-          <label>AV</label><input type="number" id="n_avB" value="88">
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= SECCIÓN TENIS M (ATP) ================= -->
-    <div id="section_tenisM" class="sport-section">
-      <div class="grid-teams">
-        <div class="team-box">
-          <h3>Tenis ATP - Jugador A</h3>
-          <input type="text" id="tm_nombreA" placeholder="Jugador A">
-          <label>Elo</label><input type="number" id="tm_eloA" value="2000">
-          <label>Surface Elo</label><input type="number" id="tm_seloA" value="2020">
-          <label>Forma</label><input type="number" id="tm_formA" value="80">
-          <label>Hold %</label><input type="number" step="0.1" id="tm_holdA" value="85.0">
-          <label>Break %</label><input type="number" step="0.1" id="tm_breakA" value="25.0">
-          <label>1st Serve %</label><input type="number" step="0.1" id="tm_fsA" value="65.0">
-          <label>2nd Serve Win %</label><input type="number" step="0.1" id="tm_ssA" value="52.0">
-          <label>Ret Win %</label><input type="number" step="0.1" id="tm_retA" value="38.0">
-          <label>Tiebreak %</label><input type="number" step="0.1" id="tm_tbA" value="55.0">
-          <label>Fatiga</label><input type="number" id="tm_fatA" value="20">
-          <label>AV</label><input type="number" id="tm_avA" value="92">
-        </div>
-        <div class="team-box">
-          <h3>Tenis ATP - Jugador B</h3>
-          <input type="text" id="tm_nombreB" placeholder="Jugador B">
-          <label>Elo</label><input type="number" id="tm_eloB" value="1980">
-          <label>Surface Elo</label><input type="number" id="tm_seloB" value="1970">
-          <label>Forma</label><input type="number" id="tm_formB" value="78">
-          <label>Hold %</label><input type="number" step="0.1" id="tm_holdB" value="83.0">
-          <label>Break %</label><input type="number" step="0.1" id="tm_breakB" value="23.0">
-          <label>1st Serve %</label><input type="number" step="0.1" id="tm_fsB" value="63.0">
-          <label>2nd Serve Win %</label><input type="number" step="0.1" id="tm_ssB" value="50.0">
-          <label>Ret Win %</label><input type="number" step="0.1" id="tm_retB" value="36.0">
-          <label>Tiebreak %</label><input type="number" step="0.1" id="tm_tbB" value="52.0">
-          <label>Fatiga</label><input type="number" id="tm_fatB" value="25">
-          <label>AV</label><input type="number" id="tm_avB" value="90">
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= SECCIÓN TENIS F (WTA) ================= -->
-    <div id="section_tenisF" class="sport-section">
-      <div class="grid-teams">
-        <div class="team-box">
-          <h3>Tenis WTA - Jugadora A</h3>
-          <input type="text" id="tf_nombreA" placeholder="Jugadora A">
-          <label>Elo</label><input type="number" id="tf_eloA" value="1950">
-          <label>Surface Elo</label><input type="number" id="tf_seloA" value="1970">
-          <label>Forma</label><input type="number" id="tf_formA" value="82">
-          <label>Hold %</label><input type="number" step="0.1" id="tf_holdA" value="75.0">
-          <label>Break %</label><input type="number" step="0.1" id="tf_breakA" value="42.0">
-          <label>1st Serve %</label><input type="number" step="0.1" id="tf_fsA" value="62.0">
-          <label>2nd Serve Win %</label><input type="number" step="0.1" id="tf_ssA" value="48.0">
-          <label>Ret Win %</label><input type="number" step="0.1" id="tf_retA" value="45.0">
-          <label>Tiebreak %</label><input type="number" step="0.1" id="tf_tbA" value="50.0">
-          <label>Fatiga</label><input type="number" id="tf_fatA" value="18">
-          <label>AV</label><input type="number" id="tf_avA" value="91">
-        </div>
-        <div class="team-box">
-          <h3>Tenis WTA - Jugadora B</h3>
-          <input type="text" id="tf_nombreB" placeholder="Jugadora B">
-          <label>Elo</label><input type="number" id="tf_eloB" value="1920">
-          <label>Surface Elo</label><input type="number" id="tf_seloB" value="1910">
-          <label>Forma</label><input type="number" id="tf_formB" value="76">
-          <label>Hold %</label><input type="number" step="0.1" id="tf_holdB" value="72.0">
-          <label>Break %</label><input type="number" step="0.1" id="tf_breakB" value="40.0">
-          <label>1st Serve %</label><input type="number" step="0.1" id="tf_fsB" value="60.0">
-          <label>2nd Serve Win %</label><input type="number" step="0.1" id="tf_ssB" value="46.0">
-          <label>Ret Win %</label><input type="number" step="0.1" id="tf_retB" value="43.0">
-          <label>Tiebreak %</label><input type="number" step="0.1" id="tf_tbB" value="48.0">
-          <label>Fatiga</label><input type="number" id="tf_fatB" value="22">
-          <label>AV</label><input type="number" id="tf_avB" value="89">
-        </div>
-      </div>
-    </div>
-
-    <button type="button" class="btn-simular" onclick="ejecutarSimulacion()">Ejecutar Simulación Monte Carlo 🎲</button>
-
-    <!-- Resultados -->
-    <div class="results-box" id="resultadoPanel" style="display:none;">
-      <h3>Resultados de la Simulación</h3>
-      <p id="textoResultados">Calculando probabilidades...</p>
+    <div style="flex:1; min-width:140px">
+      <button class="primary" onclick="runAutoBot()" style="background:#0284c7; border-color:#0284c7">Rellenar Datos</button>
     </div>
   </div>
+</div>
 
-  <script>
-    /* ============================================================
-       BASE DE DATOS INTERNA DEL BOT (MULTIDEPORTE INCLUYENDO WTA)
-       ============================================================ */
-    const webDatabase = {
-      // Fútbol
-      "real madrid": { sport: "futbol", elo: 1980, gf: 2.35, ga: 0.85, xg: 2.10, xga: 0.90, sot: 6.2, cor: 5.8, fou: 10.5, car: 2.1, form: 8, av: 95 },
-      "barcelona": { sport: "futbol", elo: 1960, gf: 2.45, ga: 0.90, xg: 2.20, xga: 0.95, sot: 6.5, cor: 6.1, fou: 11.0, car: 2.2, form: 8, av: 94 },
-      "manchester city": { sport: "futbol", elo: 2010, gf: 2.50, ga: 0.75, xg: 2.35, xga: 0.70, sot: 6.8, cor: 6.5, fou: 9.5, car: 1.5, form: 9, av: 96 },
-      "liverpool": { sport: "futbol", elo: 1940, gf: 2.20, ga: 0.95, xg: 2.05, xga: 1.00, sot: 6.0, cor: 6.0, fou: 12.0, car: 1.8, form: 7, av: 92 },
-      "arsenal": { sport: "futbol", elo: 1930, gf: 2.10, ga: 0.80, xg: 1.95, xga: 0.80, sot: 5.7, cor: 5.9, fou: 11.2, car: 2.0, form: 8, av: 93 },
-      "bayern munich": { sport: "futbol", elo: 1970, gf: 2.70, ga: 1.00, xg: 2.50, xga: 1.05, sot: 7.1, cor: 6.2, fou: 10.0, car: 1.6, form: 8, av: 95 },
-      "psg": { sport: "futbol", elo: 1910, gf: 2.40, ga: 0.90, xg: 2.25, xga: 0.95, sot: 6.3, cor: 5.5, fou: 11.5, car: 2.3, form: 7, av: 91 },
-      
-      // MLB
-      "yankees": { sport: "mlb", r: 5.1, ra: 3.9, ops: 0.785, hr: 1.45, k: 22.0, bb: 9.2, era: 3.55, bull: 3.85, def: 0.50 },
-      "dodgers": { sport: "mlb", r: 5.3, ra: 3.7, ops: 0.800, hr: 1.55, k: 21.5, bb: 9.5, era: 3.40, bull: 3.70, def: 0.55 },
+<div class="toolbar" style="margin-top:14px">
+<div class="control"><label>Deporte</label><select id="sport" onchange="showSport()"><option value="futbol">⚽ Fútbol</option><option value="mlb">⚾ MLB</option><option value="nfl">🏈 NFL</option><option value="tenisM">🎾 Tenis varonil</option><option value="tenisF">🎾 Tenis femenil</option></select></div>
+<div class="control"><label>Simulaciones</label><select id="sims"><option>5000</option><option>10000</option><option selected>25000</option><option>50000</option><option>100000</option></select></div>
+<div class="control"><label>Semilla</label><input id="seed" type="number" value="20260923"></div>
+<div class="control"><label>Localía (%) solo si verificada</label><input id="homeAdv" type="number" step="0.1" placeholder="N/D"></div>
+<div class="control"><label>Bankroll (unidades)</label><input id="bankroll" type="number" value="100" min="1"></div>
+</div></header>
 
-      // NFL
-      "chiefs": { sport: "nfl", elo: 1780, pf: 27.5, pa: 18.2, yd: 385.0, dyd: 310.0, td: 3.2, to: 0.6, third: 45.2, av: 96 },
-      "49ers": { sport: "nfl", elo: 1750, pf: 26.8, pa: 17.5, yd: 390.0, dyd: 295.0, td: 3.0, to: 0.4, third: 44.0, av: 94 },
+<section id="futbol" class="sport">
+<h2>⚽ Fútbol</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="f_nombreA"></div><div><label>Elo *</label><input id="f_eloA" type="number"></div>
+<div><label>GF/partido *</label><input id="f_gfA" type="number" step="0.01"></div><div><label>GC/partido *</label><input id="f_gaA" type="number" step="0.01"></div>
+<div><label>xG/partido</label><input id="f_xgA" type="number" step="0.01"></div><div><label>xGA/partido</label><input id="f_xgaA" type="number" step="0.01"></div>
+<div><label>Tiros a portería/p</label><input id="f_sotA" type="number" step="0.01"></div><div><label>Córners/p</label><input id="f_corA" type="number" step="0.01"></div>
+<div><label>Faltas/p</label><input id="f_fouA" type="number" step="0.01"></div><div><label>Tarjetas/p</label><input id="f_carA" type="number" step="0.01"></div>
+<div><label>Victorias últimos 10</label><input id="f_formA" type="number" min="0" max="10"></div><div><label>Disponibilidad (%)</label><input id="f_avA" type="number" min="0" max="100"></div>
+</div></div><div class="team-panel visitor"><div class="team-head"><h3>Equipo visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="f_nombreB"></div><div><label>Elo *</label><input id="f_eloB" type="number"></div>
+<div><label>GF/partido *</label><input id="f_gfB" type="number" step="0.01"></div><div><label>GC/partido *</label><input id="f_gaB" type="number" step="0.01"></div>
+<div><label>xG/partido</label><input id="f_xgB" type="number" step="0.01"></div><div><label>xGA/partido</label><input id="f_xgaB" type="number" step="0.01"></div>
+<div><label>Tiros a portería/p</label><input id="f_sotB" type="number" step="0.01"></div><div><label>Córners/p</label><input id="f_corB" type="number" step="0.01"></div>
+<div><label>Faltas/p</label><input id="f_fouB" type="number" step="0.01"></div><div><label>Tarjetas/p</label><input id="f_carB" type="number" step="0.01"></div>
+<div><label>Victorias últimos 10</label><input id="f_formB" type="number" min="0" max="10"></div><div><label>Disponibilidad (%)</label><input id="f_avB" type="number" min="0" max="100"></div>
+</div></div></div>
+<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional, para value betting)</h3><div class="odds-grid">
+<div><label>Local</label><input id="f_oddA" type="number" step="0.01" placeholder="ej. 2.10"></div>
+<div><label>Empate</label><input id="f_oddD" type="number" step="0.01" placeholder="ej. 3.40"></div>
+<div><label>Visitante</label><input id="f_oddB" type="number" step="0.01" placeholder="ej. 3.60"></div>
+<div><label>Over 2.5</label><input id="f_oddO" type="number" step="0.01"></div>
+<div><label>Under 2.5</label><input id="f_oddU" type="number" step="0.01"></div>
+<div><label>BTTS Sí</label><input id="f_oddBS" type="number" step="0.01"></div>
+<div><label>BTTS No</label><input id="f_oddBN" type="number" step="0.01"></div>
+</div></div></section>
 
-      // Tenis M (ATP)
-      "djokovic": { sport: "tenisM", elo: 2350, selo: 2380, form: 88, hold: 89.5, break: 28.0, fs: 74.0, ss: 58.0, ret: 41.0, tb: 68.0, fat: 20, av: 95 },
-      "alcaraz": { sport: "tenisM", elo: 2320, selo: 2340, form: 90, hold: 87.0, break: 31.0, fs: 71.0, ss: 55.0, ret: 44.0, tb: 65.0, fat: 15, av: 98 },
+<section id="mlb" class="sport"><h2>⚾ MLB</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="m_nombreA"></div><div><label>Carreras/juego *</label><input id="m_rA" type="number" step="0.01"></div>
+<div><label>Carreras permitidas/j *</label><input id="m_raA" type="number" step="0.01"></div><div><label>OPS</label><input id="m_opsA" type="number" step="0.001"></div>
+<div><label>HR/juego</label><input id="m_hrA" type="number" step="0.01"></div><div><label>K% bateo</label><input id="m_kA" type="number" step="0.1"></div>
+<div><label>BB%</label><input id="m_bbA" type="number" step="0.1"></div><div><label>ERA abridor</label><input id="m_eraA" type="number" step="0.01"></div>
+<div><label>ERA bullpen</label><input id="m_bullA" type="number" step="0.01"></div><div><label>Defensa</label><input id="m_defA" type="number" step="0.01"></div>
+</div></div><div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="m_nombreB"></div><div><label>Carreras/juego *</label><input id="m_rB" type="number" step="0.01"></div>
+<div><label>Carreras permitidas/j *</label><input id="m_raB" type="number" step="0.01"></div><div><label>OPS</label><input id="m_opsB" type="number" step="0.001"></div>
+<div><label>HR/juego</label><input id="m_hrB" type="number" step="0.01"></div><div><label>K% bateo</label><input id="m_kB" type="number" step="0.1"></div>
+<div><label>BB%</label><input id="m_bbB" type="number" step="0.1"></div><div><label>ERA abridor</label><input id="m_eraB" type="number" step="0.01"></div>
+<div><label>ERA bullpen</label><input id="m_bullB" type="number" step="0.01"></div><div><label>Defensa</label><input id="m_defB" type="number" step="0.01"></div>
+</div></div></div>
+<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional) — <span style="color:#b45309">la línea de Over/Under asumida es 8.5 carreras</span></h3><div class="odds-grid">
+<div><label>Local</label><input id="m_oddA" type="number" step="0.01"></div>
+<div><label>Visitante</label><input id="m_oddB" type="number" step="0.01"></div>
+<div><label>Over 8.5</label><input id="m_oddO" type="number" step="0.01"></div>
+<div><label>Under 8.5</label><input id="m_oddU" type="number" step="0.01"></div>
+</div></div></section>
 
-      // Tenis F (WTA)
-      "swiatek": { sport: "tenisF", elo: 2200, selo: 2250, form: 92, hold: 80.5, break: 48.0, fs: 66.0, ss: 52.0, ret: 51.0, tb: 62.0, fat: 14, av: 97 },
-      "sabalenka": { sport: "tenisF", elo: 2160, selo: 2180, form: 87, hold: 79.0, break: 44.0, fs: 64.0, ss: 50.0, ret: 48.0, tb: 58.0, fat: 18, av: 95 }
-    };
+<section id="nfl" class="sport"><h2>🏈 NFL</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="n_nombreA"></div><div><label>Elo *</label><input id="n_eloA" type="number"></div>
+<div><label>Puntos anotados/j *</label><input id="n_pfA" type="number" step="0.01"></div><div><label>Puntos permitidos/j *</label><input id="n_paA" type="number" step="0.01"></div>
+<div><label>Yardas ofensivas/j</label><input id="n_ydA" type="number" step="0.1"></div><div><label>Yardas defensivas/j</label><input id="n_dydA" type="number" step="0.1"></div>
+<div><label>TD/juego</label><input id="n_tdA" type="number" step="0.01"></div><div><label>TO diferencial/j</label><input id="n_toA" type="number" step="0.01"></div>
+<div><label>3ª oportunidad %</label><input id="n_3rdA" type="number" step="0.1"></div><div><label>Disponibilidad (%)</label><input id="n_avA" type="number" min="0" max="100"></div>
+</div></div><div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="n_nombreB"></div><div><label>Elo *</label><input id="n_eloB" type="number"></div>
+<div><label>Puntos anotados/j *</label><input id="n_pfB" type="number" step="0.01"></div><div><label>Puntos permitidos/j *</label><input id="n_paB" type="number" step="0.01"></div>
+<div><label>Yardas ofensivas/j</label><input id="n_ydB" type="number" step="0.1"></div><div><label>Yardas defensivas/j</label><input id="n_dydB" type="number" step="0.1"></div>
+<div><label>TD/juego</label><input id="n_tdB" type="number" step="0.01"></div><div><label>TO diferencial/j</label><input id="n_toB" type="number" step="0.01"></div>
+<div><label>3ª oportunidad %</label><input id="n_3rdB" type="number" step="0.1"></div><div><label>Disponibilidad (%)</label><input id="n_avB" type="number" min="0" max="100"></div>
+</div></div></div>
+<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional) — <span style="color:#b45309">la línea de Over/Under asumida es 44.5 puntos</span></h3><div class="odds-grid">
+<div><label>Local</label><input id="n_oddA" type="number" step="0.01"></div>
+<div><label>Visitante</label><input id="n_oddB" type="number" step="0.01"></div>
+<div><label>Over 44.5</label><input id="n_oddO" type="number" step="0.01"></div>
+<div><label>Under 44.5</label><input id="n_oddU" type="number" step="0.01"></div>
+</div></div></section>
 
-    function cambiarDeporte() {
-      const sport = document.getElementById('sport').value;
-      const sections = document.querySelectorAll('.sport-section');
-      sections.forEach(sec => sec.classList.remove('active'));
-      document.getElementById('section_' + sport).classList.add('active');
-    }
+<section id="tenisM" class="sport"><h2>🎾 Tenis varonil</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Jugador A</h3><span class="badge">A</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tm_nombreA"></div><div><label>Elo general *</label><input id="tm_eloA" type="number"></div>
+<div><label>Elo superficie</label><input id="tm_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tm_formA" type="number" min="0" max="100"></div>
+<div><label>Hold %</label><input id="tm_holdA" type="number" step="0.1"></div><div><label>Break %</label><input id="tm_breakA" type="number" step="0.1"></div>
+<div><label>1er saque ganado %</label><input id="tm_fsA" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tm_ssA" type="number" step="0.1"></div>
+<div><label>Resto ganado %</label><input id="tm_retA" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tm_tbA" type="number" step="0.1"></div>
+<div><label>Fatiga 0-100</label><input id="tm_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avA" type="number" min="0" max="100"></div>
+</div></div><div class="team-panel visitor"><div class="team-head"><h3>Jugador B</h3><span class="badge">B</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tm_nombreB"></div><div><label>Elo general *</label><input id="tm_eloB" type="number"></div>
+<div><label>Elo superficie</label><input id="tm_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tm_formB" type="number" min="0" max="100"></div>
+<div><label>Hold %</label><input id="tm_holdB" type="number" step="0.1"></div><div><label>Break %</label><input id="tm_breakB" type="number" step="0.1"></div>
+<div><label>1er saque ganado %</label><input id="tm_fsB" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tm_ssB" type="number" step="0.1"></div>
+<div><label>Resto ganado %</label><input id="tm_retB" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tm_tbB" type="number" step="0.1"></div>
+<div><label>Fatiga 0-100</label><input id="tm_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avB" type="number" min="0" max="100"></div>
+</div></div></div>
+<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional)</h3><div class="odds-grid">
+<div><label>Victoria A</label><input id="tm_oddA" type="number" step="0.01"></div>
+<div><label>Victoria B</label><input id="tm_oddB" type="number" step="0.01"></div>
+</div></div></section>
 
-    function runAutoBot() {
-      const qA = document.getElementById('bot_queryA').value.trim().toLowerCase();
-      const qB = document.getElementById('bot_queryB').value.trim().toLowerCase();
-      const sport = document.getElementById('sport').value;
+<section id="tenisF" class="sport"><h2>🎾 Tenis femenil</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Jugadora A</h3><span class="badge">A</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tf_nombreA"></div><div><label>Elo general *</label><input id="tf_eloA" type="number"></div>
+<div><label>Elo superficie</label><input id="tf_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tf_formA" type="number" min="0" max="100"></div>
+<div><label>Hold %</label><input id="tf_holdA" type="number" step="0.1"></div><div><label>Break %</label><input id="tf_breakA" type="number" step="0.1"></div>
+<div><label>1er saque ganado %</label><input id="tf_fsA" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tf_ssA" type="number" step="0.1"></div>
+<div><label>Resto ganado %</label><input id="tf_retA" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tf_tbA" type="number" step="0.1"></div>
+<div><label>Fatiga 0-100</label><input id="tf_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avA" type="number" min="0" max="100"></div>
+</div></div><div class="team-panel visitor"><div class="team-head"><h3>Jugadora B</h3><span class="badge">B</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tf_nombreB"></div><div><label>Elo general *</label><input id="tf_eloB" type="number"></div>
+<div><label>Elo superficie</label><input id="tf_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tf_formB" type="number" min="0" max="100"></div>
+<div><label>Hold %</label><input id="tf_holdB" type="number" step="0.1"></div><div><label>Break %</label><input id="tf_breakB" type="number" step="0.1"></div>
+<div><label>1er saque ganado %</label><input id="tf_fsB" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tf_ssB" type="number" step="0.1"></div>
+<div><label>Resto ganado %</label><input id="tf_retB" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tf_tbB" type="number" step="0.1"></div>
+<div><label>Fatiga 0-100</label><input id="tf_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avB" type="number" min="0" max="100"></div>
+</div></div></div>
+<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional)</h3><div class="odds-grid">
+<div><label>Victoria A</label><input id="tf_oddA" type="number" step="0.01"></div>
+<div><label>Victoria B</label><input id="tf_oddB" type="number" step="0.01"></div>
+</div></div></section>
 
-      if (!qA && !qB) {
-        alert("Introduce al menos el nombre de un equipo o jugador en el bot.");
-        return;
-      }
-
-      let filledCount = 0;
-      if (qA) filledCount += fillTeamData(qA, 'A', sport);
-      if (qB) filledCount += fillTeamData(qB, 'B', sport);
-
-      if (filledCount > 0) {
-        highlightInputs(sport);
-        alert("🤖 ¡Bot ejecutado con éxito! Se rellenaron los campos correspondientes.");
-      } else {
-        alert("No se encontró coincidencia en la base de datos interna para este deporte.");
-      }
-    }
-
-    function fillTeamData(query, side, sport) {
-      let matchedKey = null;
-      for (const key in webDatabase) {
-        if (query.includes(key) || key.includes(query)) {
-          if (webDatabase[key].sport === sport) {
-            matchedKey = key;
-            break;
-          }
-        }
-      }
-
-      const data = matchedKey ? webDatabase[matchedKey] : null;
-      if (!data) return 0;
-
-      if (sport ===
+<div class="actions"><div class="control"><button class="primary" onclick="run()">🎯 Predecir partido</button></div><div class="control"><button class="secondary" onclick="clearAll()">Limpiar todo</button></div></div>
+<div id="results" class="results"><h2>Resultado
