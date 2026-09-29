@@ -1,1034 +1,330 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Master Oros v4.5 — Simulador Predictivo + Value Betting</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Master Oros v4.7 — Simulador Multideporte + Google Sheets + Backtesting</title>
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee5;--accent:#1f6feb;--local:#176b4d;--visitor:#8a3b12;--warn:#b45309;--red:#b91c1c;--green:#15803d}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{max-width:1320px;margin:auto;padding:18px}
-header,.panel,.results{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:16px}h1{margin:0 0 7px;font-size:26px}h2{margin:0 0 14px;font-size:19px}h3{margin:0}.note,.small{color:var(--muted);line-height:1.45;font-size:13px}.toolbar,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.control{min-width:170px;flex:1}label{display:block;font-weight:700;font-size:12px;margin:0 0 5px}input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font-size:14px;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.secondary{background:#fff}.sport{display:none}.teams{display:grid;grid-template-columns:1fr 1fr;gap:16px}.team-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.local{border-top:5px solid var(--local)}.visitor{border-top:5px solid var(--visitor)}.team-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:13px}.badge{font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#eef1f4}.local .badge{color:var(--local)}.visitor .badge{color:var(--visitor)}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.result{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}.result b{display:block;margin-bottom:5px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.result .v{font-size:20px;font-weight:800}.result .ci{font-size:11px;color:var(--muted);margin-top:3px}.audit{margin-top:12px;padding:12px;border-radius:10px;background:#f7f8fa;border:1px solid var(--line);font-size:13px;line-height:1.5}.ok{font-weight:700;color:var(--local)}.warn{font-weight:700;color:var(--warn)}.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}.table th,.table td{border-bottom:1px solid var(--line);padding:7px;text-align:left}.table th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}.error{padding:12px;border:1px solid #e0b4b4;background:#fff7f7;border-radius:10px;color:#991b1b}.bt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.bt-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.bt-actions button{flex:1;min-width:150px}.learn{border-left:4px solid var(--accent)}.explain{background:#f0f7ff;border-left:4px solid var(--accent);padding:10px 12px;border-radius:8px;margin-top:10px;font-size:13px;line-height:1.5}.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0;background:#eee}.bar span{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700}.value-good{background:#ecfdf5;border:1px solid #15803d;padding:10px;border-radius:8px;margin-top:6px}.value-bad{background:#fef2f2;border:1px solid #b91c1c;padding:10px;border-radius:8px;margin-top:6px}.value-mid{background:#fffbeb;border:1px solid #b45309;padding:10px;border-radius:8px;margin-top:6px}.odds-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.hl{background:#fef9c3;padding:2px 6px;border-radius:4px;font-weight:700}
-.bot-panel{background:#0f172a;color:#fff;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #334155}
-.bot-panel label{color:#94a3b8}
-@media(max-width:760px){.teams{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.wrap{padding:10px}h1{font-size:21px}}
+:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee5;--accent:#1769aa;--ok:#16803c;--warn:#b26a00;--bad:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1280px;margin:auto;padding:14px}header,.panel,.results,.team-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px}
+h1{margin:0 0 6px;font-size:25px}h2{margin:0 0 12px;font-size:19px}.small,.note{color:var(--muted);line-height:1.45}
+.toolbar,.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:end}.control{min-width:165px;flex:1}label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
+input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font:inherit;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.warn{background:var(--warn);color:#fff;border-color:var(--warn)}.secondary{background:#fff}
+.status{padding:10px;border-radius:9px;background:#eef2f7;margin-top:10px}.status.ok{background:#eaf7ee;color:var(--ok)}.status.warn{background:#fff6e8;color:var(--warn)}.status.bad{background:#fff0f0;color:var(--bad)}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team-panel.local{border-top:5px solid #176b4d}.team-panel.visitor{border-top:5px solid #8a3b12}.team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.badge{font-size:11px;font-weight:800;padding:4px 7px;border-radius:99px;background:#eef1f4}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:800;margin-top:4px}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}.result{border:1px solid var(--line);border-radius:9px;padding:10px}.result b{display:block;margin-bottom:4px}
+.audit{margin-top:10px;padding:10px;border-radius:9px;background:#f7f8fa;border:1px solid var(--line);font-size:12px;line-height:1.5}
+.table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}.table th,.table td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}.error{padding:10px;border:1px solid #e0b4b4;background:#fff7f7;border-radius:9px}
+.sport{display:none}.hidden{display:none}.danger{color:var(--bad)}.good{color:var(--ok)}.mono{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+@media(max-width:760px){.teams{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.wrap{padding:9px}h1{font-size:21px}}
 </style>
 </head>
-<body><div class="wrap">
+<body>
+<div class="wrap">
 <header>
-<h1>Master Oros v4.5 — Simulador + Value Betting</h1>
-<div class="note">Monte Carlo con Dixon-Coles (pesos), innings+bullpen (MLB), normal+pace (NFL), punto-a-punto con saque (tenis). ρ y pesos Elo/Poisson/Forma aprendidos por backtesting. Value betting con EV y Kelly fraccional.</div>
-
-<!-- PANEL DEL BOT DE AUTOCOMPLETADO WEB -->
-<div class="bot-panel" style="margin-top:14px">
-  <h3 style="color:#38bdf8; margin-bottom:8px; font-size:15px">🤖 Bot de Autocompletado Web</h3>
-  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end">
-    <div style="flex:2; min-width:200px">
-      <label>Equipo Local / Jugador A (Web Search)</label>
-      <input id="bot_queryA" type="text" placeholder="Ej. Real Madrid, Yankees..." style="background:#1e293b; color:#fff; border-color:#475569">
-    </div>
-    <div style="flex:2; min-width:200px">
-      <label>Equipo Visitante / Jugador B (Web Search)</label>
-      <input id="bot_queryB" type="text" placeholder="Ej. Barcelona, Red Sox..." style="background:#1e293b; color:#fff; border-color:#475569">
-    </div>
-    <div style="flex:1; min-width:140px">
-      <button class="primary" onclick="runAutoBot()" style="background:#0284c7; border-color:#0284c7">Rellenar Datos</button>
-    </div>
-  </div>
-</div>
-
-<div class="toolbar" style="margin-top:14px">
-<div class="control"><label>Deporte</label><select id="sport" onchange="showSport()"><option value="futbol">⚽ Fútbol</option><option value="mlb">⚾ MLB</option><option value="nfl">🏈 NFL</option><option value="tenisM">🎾 Tenis varonil</option><option value="tenisF">🎾 Tenis femenil</option></select></div>
-<div class="control"><label>Simulaciones</label><select id="sims"><option>5000</option><option>10000</option><option selected>25000</option><option>50000</option><option>100000</option></select></div>
+<h1>Master Oros v4.7</h1>
+<div class="note">Simulador multideporte con Monte Carlo reproducible, base Google Sheets, control de procedencia, value betting y backtesting. <b>Cero datos inventados:</b> un campo sin dato verificable permanece N/D.</div>
+<div class="toolbar" style="margin-top:12px">
+<div class="control"><label>Deporte</label><select id="sport" onchange="showSport()">
+<option value="futbol">⚽ Fútbol</option><option value="mlb">⚾ MLB</option><option value="nfl">🏈 NFL</option><option value="tenisM">🎾 Tenis varonil</option><option value="tenisF">🎾 Tenis femenil</option></select></div>
+<div class="control"><label>Simulaciones</label><select id="sims"><option>1000</option><option>5000</option><option selected>25000</option><option>50000</option><option>100000</option></select></div>
 <div class="control"><label>Semilla</label><input id="seed" type="number" value="20260923"></div>
-<div class="control"><label>Localía (%) solo si verificada</label><input id="homeAdv" type="number" step="0.1" placeholder="N/D"></div>
-<div class="control"><label>Bankroll (unidades)</label><input id="bankroll" type="number" value="100" min="1"></div>
-</div></header>
+<div class="control"><label>Localía % (solo si está verificada)</label><input id="homeAdv" type="number" step="0.1" placeholder="N/D"></div>
+</div>
+<div class="actions" style="margin-top:10px">
+<div class="control"><button class="secondary" id="loadDb">Conectar / actualizar Google Sheets</button></div>
+<div class="control"><button class="ok" id="bot">Buscar y rellenar desde la base</button></div>
+<div class="control"><button class="primary" id="run">Ejecutar simulador</button></div>
+<div class="control"><button class="secondary" id="clear">Limpiar entradas</button></div>
+</div>
+<div id="status" class="status">Base: no cargada.</div>
+</header>
 
+<section class="panel">
+<h2>Base de datos y auditoría de fuente</h2>
+<div id="dbSummary" class="note">Google Sheets: pendiente de conexión.</div>
+<div id="dataView" class="audit">No se ha realizado búsqueda.</div>
+</section>
+
+<!-- FÚTBOL -->
 <section id="futbol" class="sport">
-<h2>⚽ Fútbol</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="f_nombreA"></div><div><label>Elo *</label><input id="f_eloA" type="number"></div>
-<div><label>GF/partido *</label><input id="f_gfA" type="number" step="0.01"></div><div><label>GC/partido *</label><input id="f_gaA" type="number" step="0.01"></div>
-<div><label>xG/partido</label><input id="f_xgA" type="number" step="0.01"></div><div><label>xGA/partido</label><input id="f_xgaA" type="number" step="0.01"></div>
-<div><label>Tiros a portería/p</label><input id="f_sotA" type="number" step="0.01"></div><div><label>Córners/p</label><input id="f_corA" type="number" step="0.01"></div>
-<div><label>Faltas/p</label><input id="f_fouA" type="number" step="0.01"></div><div><label>Tarjetas/p</label><input id="f_carA" type="number" step="0.01"></div>
-<div><label>Victorias últimos 10</label><input id="f_formA" type="number" min="0" max="10"></div><div><label>Disponibilidad (%)</label><input id="f_avA" type="number" min="0" max="100"></div>
-</div></div><div class="team-panel visitor"><div class="team-head"><h3>Equipo visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="f_nombreB"></div><div><label>Elo *</label><input id="f_eloB" type="number"></div>
-<div><label>GF/partido *</label><input id="f_gfB" type="number" step="0.01"></div><div><label>GC/partido *</label><input id="f_gaB" type="number" step="0.01"></div>
-<div><label>xG/partido</label><input id="f_xgB" type="number" step="0.01"></div><div><label>xGA/partido</label><input id="f_xgaB" type="number" step="0.01"></div>
-<div><label>Tiros a portería/p</label><input id="f_sotB" type="number" step="0.01"></div><div><label>Córners/p</label><input id="f_corB" type="number" step="0.01"></div>
-<div><label>Faltas/p</label><input id="f_fouB" type="number" step="0.01"></div><div><label>Tarjetas/p</label><input id="f_carB" type="number" step="0.01"></div>
-<div><label>Victorias últimos 10</label><input id="f_formB" type="number" min="0" max="10"></div><div><label>Disponibilidad (%)</label><input id="f_avB" type="number" min="0" max="100"></div>
+<h2>⚽ Fútbol</h2>
+<div class="teams">
+<div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="f_nombreA"></div><div><label>Elo</label><input id="f_eloA" type="number"></div>
+<div><label>GF / partido *</label><input id="f_gfA" type="number" step=".01"></div><div><label>GA / partido</label><input id="f_gaA" type="number" step=".01"></div>
+<div><label>xG / partido</label><input id="f_xgA" type="number" step=".01"></div><div><label>xGA / partido</label><input id="f_xgaA" type="number" step=".01"></div>
+<div><label>Tiros a portería</label><input id="f_sotA" type="number" step=".01"></div><div><label>Córners</label><input id="f_corA" type="number" step=".01"></div>
+<div><label>Faltas</label><input id="f_fouA" type="number" step=".01"></div><div><label>Tarjetas amarillas</label><input id="f_carA" type="number" step=".01"></div>
+<div><label>Victorias últimos 10</label><input id="f_formA" type="number" min="0" max="10"></div><div><label>Disponibilidad %</label><input id="f_avA" type="number" min="0" max="100"></div>
+</div></div>
+<div class="team-panel visitor"><div class="team-head"><h3>Equipo visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="f_nombreB"></div><div><label>Elo</label><input id="f_eloB" type="number"></div>
+<div><label>GF / partido *</label><input id="f_gfB" type="number" step=".01"></div><div><label>GA / partido</label><input id="f_gaB" type="number" step=".01"></div>
+<div><label>xG / partido</label><input id="f_xgB" type="number" step=".01"></div><div><label>xGA / partido</label><input id="f_xgaB" type="number" step=".01"></div>
+<div><label>Tiros a portería</label><input id="f_sotB" type="number" step=".01"></div><div><label>Córners</label><input id="f_corB" type="number" step=".01"></div>
+<div><label>Faltas</label><input id="f_fouB" type="number" step=".01"></div><div><label>Tarjetas amarillas</label><input id="f_carB" type="number" step=".01"></div>
+<div><label>Victorias últimos 10</label><input id="f_formB" type="number" min="0" max="10"></div><div><label>Disponibilidad %</label><input id="f_avB" type="number" min="0" max="100"></div>
 </div></div></div>
-<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional, para value betting)</h3><div class="odds-grid">
-<div><label>Local</label><input id="f_oddA" type="number" step="0.01" placeholder="ej. 2.10"></div>
-<div><label>Empate</label><input id="f_oddD" type="number" step="0.01" placeholder="ej. 3.40"></div>
-<div><label>Visitante</label><input id="f_oddB" type="number" step="0.01" placeholder="ej. 3.60"></div>
-<div><label>Over 2.5</label><input id="f_oddO" type="number" step="0.01"></div>
-<div><label>Under 2.5</label><input id="f_oddU" type="number" step="0.01"></div>
-<div><label>BTTS Sí</label><input id="f_oddBS" type="number" step="0.01"></div>
-<div><label>BTTS No</label><input id="f_oddBN" type="number" step="0.01"></div>
-</div></div></section>
+</section>
 
-<section id="mlb" class="sport"><h2>⚾ MLB</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="m_nombreA"></div><div><label>Carreras/juego *</label><input id="m_rA" type="number" step="0.01"></div>
-<div><label>Carreras permitidas/j *</label><input id="m_raA" type="number" step="0.01"></div><div><label>OPS</label><input id="m_opsA" type="number" step="0.001"></div>
-<div><label>HR/juego</label><input id="m_hrA" type="number" step="0.01"></div><div><label>K% bateo</label><input id="m_kA" type="number" step="0.1"></div>
-<div><label>BB%</label><input id="m_bbA" type="number" step="0.1"></div><div><label>ERA abridor</label><input id="m_eraA" type="number" step="0.01"></div>
-<div><label>ERA bullpen</label><input id="m_bullA" type="number" step="0.01"></div><div><label>Defensa</label><input id="m_defA" type="number" step="0.01"></div>
-</div></div><div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="m_nombreB"></div><div><label>Carreras/juego *</label><input id="m_rB" type="number" step="0.01"></div>
-<div><label>Carreras permitidas/j *</label><input id="m_raB" type="number" step="0.01"></div><div><label>OPS</label><input id="m_opsB" type="number" step="0.001"></div>
-<div><label>HR/juego</label><input id="m_hrB" type="number" step="0.01"></div><div><label>K% bateo</label><input id="m_kB" type="number" step="0.1"></div>
-<div><label>BB%</label><input id="m_bbB" type="number" step="0.1"></div><div><label>ERA abridor</label><input id="m_eraB" type="number" step="0.01"></div>
-<div><label>ERA bullpen</label><input id="m_bullB" type="number" step="0.01"></div><div><label>Defensa</label><input id="m_defB" type="number" step="0.01"></div>
-</div></div></div>
-<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional) — <span style="color:#b45309">la línea de Over/Under asumida es 8.5 carreras</span></h3><div class="odds-grid">
-<div><label>Local</label><input id="m_oddA" type="number" step="0.01"></div>
-<div><label>Visitante</label><input id="m_oddB" type="number" step="0.01"></div>
-<div><label>Over 8.5</label><input id="m_oddO" type="number" step="0.01"></div>
-<div><label>Under 8.5</label><input id="m_oddU" type="number" step="0.01"></div>
-</div></div></section>
+<!-- MLB -->
+<section id="mlb" class="sport"><h2>⚾ MLB</h2><div class="teams">
+<div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="m_nombreA"></div><div><label>Carreras / juego *</label><input id="m_rA" type="number" step=".01"></div><div><label>Carreras permitidas / juego</label><input id="m_raA" type="number" step=".01"></div>
+<div><label>OPS</label><input id="m_opsA" type="number" step=".001"></div><div><label>HR / juego</label><input id="m_hrA" type="number" step=".01"></div><div><label>K%</label><input id="m_kA" type="number" step=".1"></div><div><label>BB%</label><input id="m_bbA" type="number" step=".1"></div>
+<div><label>ERA abridor</label><input id="m_eraA" type="number" step=".01"></div><div><label>ERA bullpen</label><input id="m_bullA" type="number" step=".01"></div><div><label>Defensa</label><input id="m_defA" type="number" step=".01"></div>
+</div></div>
+<div class="team-panel visitor"><div class="team-head"><h3>Equipo visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="m_nombreB"></div><div><label>Carreras / juego *</label><input id="m_rB" type="number" step=".01"></div><div><label>Carreras permitidas / juego</label><input id="m_raB" type="number" step=".01"></div>
+<div><label>OPS</label><input id="m_opsB" type="number" step=".001"></div><div><label>HR / juego</label><input id="m_hrB" type="number" step=".01"></div><div><label>K%</label><input id="m_kB" type="number" step=".1"></div><div><label>BB%</label><input id="m_bbB" type="number" step=".1"></div>
+<div><label>ERA abridor</label><input id="m_eraB" type="number" step=".01"></div><div><label>ERA bullpen</label><input id="m_bullB" type="number" step=".01"></div><div><label>Defensa</label><input id="m_defB" type="number" step=".01"></div>
+</div></div></div></section>
 
-<section id="nfl" class="sport"><h2>🏈 NFL</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="n_nombreA"></div><div><label>Elo *</label><input id="n_eloA" type="number"></div>
-<div><label>Puntos anotados/j *</label><input id="n_pfA" type="number" step="0.01"></div><div><label>Puntos permitidos/j *</label><input id="n_paA" type="number" step="0.01"></div>
-<div><label>Yardas ofensivas/j</label><input id="n_ydA" type="number" step="0.1"></div><div><label>Yardas defensivas/j</label><input id="n_dydA" type="number" step="0.1"></div>
-<div><label>TD/juego</label><input id="n_tdA" type="number" step="0.01"></div><div><label>TO diferencial/j</label><input id="n_toA" type="number" step="0.01"></div>
-<div><label>3ª oportunidad %</label><input id="n_3rdA" type="number" step="0.1"></div><div><label>Disponibilidad (%)</label><input id="n_avA" type="number" min="0" max="100"></div>
-</div></div><div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="n_nombreB"></div><div><label>Elo *</label><input id="n_eloB" type="number"></div>
-<div><label>Puntos anotados/j *</label><input id="n_pfB" type="number" step="0.01"></div><div><label>Puntos permitidos/j *</label><input id="n_paB" type="number" step="0.01"></div>
-<div><label>Yardas ofensivas/j</label><input id="n_ydB" type="number" step="0.1"></div><div><label>Yardas defensivas/j</label><input id="n_dydB" type="number" step="0.1"></div>
-<div><label>TD/juego</label><input id="n_tdB" type="number" step="0.01"></div><div><label>TO diferencial/j</label><input id="n_toB" type="number" step="0.01"></div>
-<div><label>3ª oportunidad %</label><input id="n_3rdB" type="number" step="0.1"></div><div><label>Disponibilidad (%)</label><input id="n_avB" type="number" min="0" max="100"></div>
-</div></div></div>
-<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional) — <span style="color:#b45309">la línea de Over/Under asumida es 44.5 puntos</span></h3><div class="odds-grid">
-<div><label>Local</label><input id="n_oddA" type="number" step="0.01"></div>
-<div><label>Visitante</label><input id="n_oddB" type="number" step="0.01"></div>
-<div><label>Over 44.5</label><input id="n_oddO" type="number" step="0.01"></div>
-<div><label>Under 44.5</label><input id="n_oddU" type="number" step="0.01"></div>
-</div></div></section>
+<!-- NFL -->
+<section id="nfl" class="sport"><h2>🏈 NFL</h2><div class="teams">
+<div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
+<div><label>Nombre</label><input id="n_nombreA"></div><div><label>Elo</label><input id="n_eloA" type="number"></div><div><label>PF / juego *</label><input id="n_pfA" type="number" step=".01"></div><div><label>PA / juego</label><input id="n_paA" type="number" step=".01"></div>
+<div><label>Yardas ofensivas</label><input id="n_ydA" type="number" step=".1"></div><div><label>Yardas defensivas permitidas</label><input id="n_dydA" type="number" step=".1"></div><div><label>TD / juego</label><input id="n_tdA" type="number" step=".01"></div><div><label>Diferencial pérdidas</label><input id="n_toA" type="number" step=".01"></div><div><label>3ª oportunidad %</label><input id="n_3rdA" type="number" step=".1"></div><div><label>Disponibilidad %</label><input id="n_avA" type="number" min="0" max="100"></div>
+</div></div>
+<div class="team-panel visitor"><div class="team-head"><h3>Equipo visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
+<div><label>Nombre</label><input id="n_nombreB"></div><div><label>Elo</label><input id="n_eloB" type="number"></div><div><label>PF / juego *</label><input id="n_pfB" type="number" step=".01"></div><div><label>PA / juego</label><input id="n_paB" type="number" step=".01"></div>
+<div><label>Yardas ofensivas</label><input id="n_ydB" type="number" step=".1"></div><div><label>Yardas defensivas permitidas</label><input id="n_dydB" type="number" step=".1"></div><div><label>TD / juego</label><input id="n_tdB" type="number" step=".01"></div><div><label>Diferencial pérdidas</label><input id="n_toB" type="number" step=".01"></div><div><label>3ª oportunidad %</label><input id="n_3rdB" type="number" step=".1"></div><div><label>Disponibilidad %</label><input id="n_avB" type="number" min="0" max="100"></div>
+</div></div></div></section>
 
-<section id="tenisM" class="sport"><h2>🎾 Tenis varonil</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Jugador A</h3><span class="badge">A</span></div><div class="metrics">
-<div><label>Nombre</label><input id="tm_nombreA"></div><div><label>Elo general *</label><input id="tm_eloA" type="number"></div>
-<div><label>Elo superficie</label><input id="tm_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tm_formA" type="number" min="0" max="100"></div>
-<div><label>Hold %</label><input id="tm_holdA" type="number" step="0.1"></div><div><label>Break %</label><input id="tm_breakA" type="number" step="0.1"></div>
-<div><label>1er saque ganado %</label><input id="tm_fsA" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tm_ssA" type="number" step="0.1"></div>
-<div><label>Resto ganado %</label><input id="tm_retA" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tm_tbA" type="number" step="0.1"></div>
-<div><label>Fatiga 0-100</label><input id="tm_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avA" type="number" min="0" max="100"></div>
-</div></div><div class="team-panel visitor"><div class="team-head"><h3>Jugador B</h3><span class="badge">B</span></div><div class="metrics">
-<div><label>Nombre</label><input id="tm_nombreB"></div><div><label>Elo general *</label><input id="tm_eloB" type="number"></div>
-<div><label>Elo superficie</label><input id="tm_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tm_formB" type="number" min="0" max="100"></div>
-<div><label>Hold %</label><input id="tm_holdB" type="number" step="0.1"></div><div><label>Break %</label><input id="tm_breakB" type="number" step="0.1"></div>
-<div><label>1er saque ganado %</label><input id="tm_fsB" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tm_ssB" type="number" step="0.1"></div>
-<div><label>Resto ganado %</label><input id="tm_retB" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tm_tbB" type="number" step="0.1"></div>
-<div><label>Fatiga 0-100</label><input id="tm_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avB" type="number" min="0" max="100"></div>
-</div></div></div>
-<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional)</h3><div class="odds-grid">
-<div><label>Victoria A</label><input id="tm_oddA" type="number" step="0.01"></div>
-<div><label>Victoria B</label><input id="tm_oddB" type="number" step="0.01"></div>
-</div></div></section>
+<!-- TENIS -->
+<section id="tenisM" class="sport"><h2>🎾 Tenis varonil</h2><div class="teams">
+<div class="team-panel local"><div class="team-head"><h3>Jugador A</h3><span class="badge">A</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tm_nombreA"></div><div><label>Elo general *</label><input id="tm_eloA" type="number"></div><div><label>Elo superficie</label><input id="tm_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tm_formA" type="number"></div><div><label>Hold %</label><input id="tm_holdA" type="number"></div><div><label>Break %</label><input id="tm_breakA" type="number"></div><div><label>1er servicio ganado %</label><input id="tm_fsA" type="number"></div><div><label>Restos ganados %</label><input id="tm_retA" type="number"></div><div><label>Tie-break %</label><input id="tm_tbA" type="number"></div><div><label>Fatiga 0-100</label><input id="tm_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avA" type="number"></div>
+</div></div>
+<div class="team-panel visitor"><div class="team-head"><h3>Jugador B</h3><span class="badge">B</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tm_nombreB"></div><div><label>Elo general *</label><input id="tm_eloB" type="number"></div><div><label>Elo superficie</label><input id="tm_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tm_formB" type="number"></div><div><label>Hold %</label><input id="tm_holdB" type="number"></div><div><label>Break %</label><input id="tm_breakB" type="number"></div><div><label>1er servicio ganado %</label><input id="tm_fsB" type="number"></div><div><label>Restos ganados %</label><input id="tm_retB" type="number"></div><div><label>Tie-break %</label><input id="tm_tbB" type="number"></div><div><label>Fatiga 0-100</label><input id="tm_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tm_avB" type="number"></div>
+</div></div></div></section>
+<section id="tenisF" class="sport"><h2>🎾 Tenis femenil</h2><div class="teams">
+<div class="team-panel local"><div class="team-head"><h3>Jugadora A</h3><span class="badge">A</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tf_nombreA"></div><div><label>Elo general *</label><input id="tf_eloA" type="number"></div><div><label>Elo superficie</label><input id="tf_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tf_formA" type="number"></div><div><label>Hold %</label><input id="tf_holdA" type="number"></div><div><label>Break %</label><input id="tf_breakA" type="number"></div><div><label>1er servicio ganado %</label><input id="tf_fsA" type="number"></div><div><label>Restos ganados %</label><input id="tf_retA" type="number"></div><div><label>Tie-break %</label><input id="tf_tbA" type="number"></div><div><label>Fatiga 0-100</label><input id="tf_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avA" type="number"></div>
+</div></div>
+<div class="team-panel visitor"><div class="team-head"><h3>Jugadora B</h3><span class="badge">B</span></div><div class="metrics">
+<div><label>Nombre</label><input id="tf_nombreB"></div><div><label>Elo general *</label><input id="tf_eloB" type="number"></div><div><label>Elo superficie</label><input id="tf_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tf_formB" type="number"></div><div><label>Hold %</label><input id="tf_holdB" type="number"></div><div><label>Break %</label><input id="tf_breakB" type="number"></div><div><label>1er servicio ganado %</label><input id="tf_fsB" type="number"></div><div><label>Restos ganados %</label><input id="tf_retB" type="number"></div><div><label>Tie-break %</label><input id="tf_tbB" type="number"></div><div><label>Fatiga 0-100</label><input id="tf_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avB" type="number"></div>
+</div></div></div></section>
 
-<section id="tenisF" class="sport"><h2>🎾 Tenis femenil</h2><div class="teams"><div class="team-panel local"><div class="team-head"><h3>Jugadora A</h3><span class="badge">A</span></div><div class="metrics">
-<div><label>Nombre</label><input id="tf_nombreA"></div><div><label>Elo general *</label><input id="tf_eloA" type="number"></div>
-<div><label>Elo superficie</label><input id="tf_seloA" type="number"></div><div><label>Forma 0-100</label><input id="tf_formA" type="number" min="0" max="100"></div>
-<div><label>Hold %</label><input id="tf_holdA" type="number" step="0.1"></div><div><label>Break %</label><input id="tf_breakA" type="number" step="0.1"></div>
-<div><label>1er saque ganado %</label><input id="tf_fsA" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tf_ssA" type="number" step="0.1"></div>
-<div><label>Resto ganado %</label><input id="tf_retA" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tf_tbA" type="number" step="0.1"></div>
-<div><label>Fatiga 0-100</label><input id="tf_fatA" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avA" type="number" min="0" max="100"></div>
-</div></div><div class="team-panel visitor"><div class="team-head"><h3>Jugadora B</h3><span class="badge">B</span></div><div class="metrics">
-<div><label>Nombre</label><input id="tf_nombreB"></div><div><label>Elo general *</label><input id="tf_eloB" type="number"></div>
-<div><label>Elo superficie</label><input id="tf_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tf_formB" type="number" min="0" max="100"></div>
-<div><label>Hold %</label><input id="tf_holdB" type="number" step="0.1"></div><div><label>Break %</label><input id="tf_breakB" type="number" step="0.1"></div>
-<div><label>1er saque ganado %</label><input id="tf_fsB" type="number" step="0.1"></div><div><label>2do saque ganado %</label><input id="tf_ssB" type="number" step="0.1"></div>
-<div><label>Resto ganado %</label><input id="tf_retB" type="number" step="0.1"></div><div><label>Tie-break %</label><input id="tf_tbB" type="number" step="0.1"></div>
-<div><label>Fatiga 0-100</label><input id="tf_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avB" type="number" min="0" max="100"></div>
-</div></div></div>
-<div class="panel" style="margin-top:12px"><h3 style="font-size:14px">Cuotas decimales (opcional)</h3><div class="odds-grid">
-<div><label>Victoria A</label><input id="tf_oddA" type="number" step="0.01"></div>
-<div><label>Victoria B</label><input id="tf_oddB" type="number" step="0.01"></div>
-</div></div></section>
-
-<div class="actions"><div class="control"><button class="primary" onclick="run()">🎯 Predecir partido</button></div><div class="control"><button class="secondary" onclick="clearAll()">Limpiar todo</button></div></div>
-<div id="results" class="results"><h2>Resultado</h2><div class="note">Introduce los datos. Los campos con * son obligatorios. El resto son opcionales.</div></div>
-
-<section class="panel learn" id="backtesting">
-<h2>🧠 Backtesting y aprendizaje</h2>
-<div class="note">Cada pronóstico guarda entradas, semilla y probabilidades. Al registrar el resultado real se calculan Brier, Log Loss y RPS (ordinal A&gt;D&gt;B). Además se actualizan pesos Elo/Poisson/Forma por deporte y ρ de Dixon-Coles en fútbol.</div>
-<div class="bt-grid" style="margin-top:12px">
-<div><label>Resultado real A/local</label><input id="bt_scoreA" type="number" min="0" step="1" placeholder="N/D"></div>
-<div><label>Resultado real B/visitante</label><input id="bt_scoreB" type="number" min="0" step="1" placeholder="N/D"></div>
-<div><label>Fecha</label><input id="bt_date" type="date"></div>
+<section class="panel">
+<h2>🎯 Value Betting</h2>
+<div class="note">Introduce cuotas decimales reales. El valor esperado se calcula solo con la probabilidad del modelo y la cuota introducida; si no hay cuota, queda N/D.</div>
+<div class="toolbar" style="margin-top:8px">
+<div class="control"><label>Cuota Local / A</label><input id="oddA" type="number" step=".01" min="1"></div>
+<div class="control"><label>Cuota Empate</label><input id="oddD" type="number" step=".01" min="1"></div>
+<div class="control"><label>Cuota Visitante / B</label><input id="oddB" type="number" step=".01" min="1"></div>
+<div class="control"><label>Cuota Over 2.5</label><input id="oddO25" type="number" step=".01" min="1"></div>
+<div class="control"><label>Cuota BTTS</label><input id="oddBTTS" type="number" step=".01" min="1"></div>
 </div>
-<div class="bt-actions">
-<button class="primary" onclick="registerActual()">Registrar resultado real</button>
-<button class="secondary" onclick="showBacktest()">Actualizar análisis</button>
-<button class="secondary" onclick="relearnRho()">Recalcular ρ (fútbol)</button>
-<button class="secondary" onclick="exportBacktest()">Exportar</button>
-<button class="secondary" onclick="importBacktest()">Importar</button>
-<button class="secondary" onclick="clearBacktest()">Borrar historial</button>
+<div id="valueView" class="audit">Ejecuta una simulación para calcular valor.</div>
+</section>
+
+<section id="results" class="results"><h2>Resultado</h2><div class="note">Aún no se ha ejecutado una simulación.</div></section>
+
+<section class="panel">
+<h2>🧠 Backtesting, calibración y aprendizaje</h2>
+<div class="note">Se guardan las probabilidades originales y las calibradas. Brier y Log Loss se calculan con probabilidades 1X2 coherentes. El aprendizaje solo se aplica con historial suficiente; no modifica registros pasados.</div>
+<div class="toolbar" style="margin-top:9px">
+<div class="control"><label>Resultado real A / local</label><input id="bt_scoreA" type="number" min="0"></div>
+<div class="control"><label>Resultado real B / visitante</label><input id="bt_scoreB" type="number" min="0"></div>
+<div class="control"><label>Fecha real</label><input id="bt_date" type="date"></div>
 </div>
-<input id="bt_file" type="file" accept="application/json" style="display:none" onchange="loadBacktestFile(event)">
-<div id="bt_status" class="audit">Aún no hay un pronóstico pendiente de registrar.</div>
-<div id="bt_analysis" class="audit"><b>Análisis de backtesting</b><br>Sin historial registrado.</div>
+<div class="actions" style="margin-top:9px">
+<div class="control"><button class="primary" id="register">Registrar resultado real</button></div>
+<div class="control"><button class="secondary" id="refreshBT">Actualizar análisis</button></div>
+<div class="control"><button class="secondary" id="exportBT">Exportar historial</button></div>
+<div class="control"><button class="secondary" id="importBT">Importar historial</button></div>
+<div class="control"><button class="warn" id="clearBT">Borrar historial</button></div>
+</div>
+<input id="bt_file" type="file" accept="application/json" style="display:none">
+<div id="bt_status" class="audit">Sin pronóstico pendiente.</div>
+<div id="bt_analysis" class="audit">Sin historial.</div>
+</section>
+<section class="panel">
+<h2>📋 Parámetros y auditoría de la última simulación</h2>
+<div id="params" class="audit">N/D</div><div id="audit" class="audit">N/D</div>
 </section>
 </div>
+
 <script>
-'use strict';
-/* ============================================================
-   BOT DE AUTOCOMPLETADO WEB (BASE DE CONOCIMIENTO DINÁMICA)
-   ============================================================ */
-const webDatabase = {
-  "real madrid": { elo: 1980, gf: 2.35, ga: 0.85, xg: 2.10, xga: 0.90, sot: 6.2, cor: 5.8, fou: 10.5, car: 2.1, form: 8, av: 95 },
-  "barcelona": { elo: 1960, gf: 2.45, ga: 0.90, xg: 2.20, xga: 0.95, sot: 6.5, cor: 6.1, fou: 11.0, car: 2.2, form: 8, av: 94 },
-  "manchester city": { elo: 2010, gf: 2.50, ga: 0.75, xg: 2.35, xga: 0.70, sot: 6.8, cor: 6.5, fou: 9.5, car: 1.5, form: 9, av: 96 },
-  "liverpool": { elo: 1940, gf: 2.20, ga: 0.95, xg: 2.05, xga: 1.00, sot: 6.0, cor: 6.0, fou: 12.0, car: 1.8, form: 7, av: 92 },
-  "arsenal": { elo: 1930, gf: 2.10, ga: 0.80, xg: 1.95, xga: 0.80, sot: 5.7, cor: 5.9, fou: 11.2, car: 2.0, form: 8, av: 93 },
-  "bayern munich": { elo: 1970, gf: 2.70, ga: 1.00, xg: 2.50, xga: 1.05, sot: 7.1, cor: 6.2, fou: 10.0, car: 1.6, form: 8, av: 95 },
-  "psg": { elo: 1910, gf: 2.40, ga: 0.90, xg: 2.25, xga: 0.95, sot: 6.3, cor: 5.5, fou: 11.5, car: 2.3, form: 7, av: 91 },
-  // MLB
-  "yankees": { r: 5.1, ra: 3.9, ops: 0.785, hr: 1.45, k: 22.0, bb: 9.2, era: 3.55, bull: 3.85, def: 0.50 },
-  "dodgers": { r: 5.3, ra: 3.7, ops: 0.800, hr: 1.55, k: 21.5, bb: 9.5, era: 3.40, bull: 3.70, def: 0.55 },
-  // NFL
-  "chiefs": { elo: 1780, pf: 27.5, pa: 18.2, yd: 385.0, dyd: 310.0, td: 3.2, to: 0.6, third: 45.2, av: 96 },
-  "49ers": { elo: 1750, pf: 26.8, pa: 17.5, yd: 390.0, dyd: 295.0, td: 3.0, to: 0.4, third: 44.0, av: 94 },
-  // Tenis M
-  "djokovic": { elo: 2350, selo: 2380, form: 88, hold: 89.5, break: 28.0, fs: 74.0, ss: 58.0, ret: 41.0, tb: 68.0, fat: 20, av: 95 },
-  "alcaraz": { elo: 2320, selo: 2340, form: 90, hold: 87.0, break: 31.0, fs: 71.0, ss: 55.0, ret: 44.0, tb: 65.0, fat: 15, av: 98 },
-  "sinner": { elo: 2360, selo: 2390, form: 93, hold: 90.0, break: 29.5, fs: 75.0, ss: 59.0, ret: 42.0, tb: 70.0, fat: 18, av: 97 }
+"use strict";
+/* =========================
+   CONFIGURACIÓN / DATOS
+   ========================= */
+const SHEET_ID="1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
+const SHEETS={futbol:"00futbol",mlb:"00MLB",nfl:"00NFL",tenisM:"00Tenis varonil",tenisF:"0Tenis femenil"};
+const BD={futbol:[],mlb:[],nfl:[],tenisM:[],tenisF:[]};
+const DB_META={loaded:false,loadedAt:null,errors:[],rows:{}};
+const BT_KEY="master_oros_backtesting_v4_7";
+let rngState=20260923,lastPrediction=null,currentData={A:null,B:null},currentN=25000;
+
+const ALIASES={
+ nombre:["equipo","team","nombre","jugador","player","club","seleccion","selección","name"],
+ elo:["elo","elo general","rating elo"],eloSuperficie:["elo superficie","surface elo","elo pista"],
+ gf:["gf","gf/game","goles por partido","goles a favor partido"],ga:["ga","ga/game","goles recibidos partido","goles en contra partido"],
+ xg:["xg","xg por partido","expected goals"],xga:["xga","xga por partido","expected goals against"],
+ sot:["shots on target","tiros a puerta","tiros a porteria","tiros a portería","sot"],corners:["corners","tiros de esquina","saques de esquina"],
+ fouls:["fouls","faltas","faltas cometidas"],cards:["cards","tarjetas","amarillas","yellow cards"],
+ form10:["wins last 10","victorias ultimos 10","victorias últimos 10","forma 10","last 10"],
+ availability:["availability","disponibilidad","bajas","lesiones","disponibilidad %"],
+ runs:["runs/game","carreras por partido","runs"],runsAllowed:["runs allowed/game","carreras permitidas","runs allowed"],
+ ops:["ops"],hr:["hr/game","jonrones por partido","home runs"],k:["k%","strikeout %"],bb:["bb%","walk %"],
+ starterEra:["starter era","era abridor","era starter"],bullpenEra:["bullpen era","era bullpen"],defense:["defense","defensa"],
+ pf:["pf/game","puntos por partido","puntos a favor"],pa:["pa/game","puntos permitidos por partido","puntos en contra"],
+ offYards:["offensive yards","yardas ofensivas"],defYards:["defensive yards","yardas defensivas permitidas"],
+ td:["td/game","touchdowns por partido"],turnovers:["turnover differential","diferencial turnovers"],
+ thirdDown:["3rd down %","third down %","conversion 3rd"],form:["form","forma"],hold:["hold %","hold"],
+ breakPct:["break %","break"],firstServe:["first serve won %","1st serve won %","primer saque ganado"],
+ secondServe:["second serve won %","2nd serve won %","segundo saque ganado"],returnWon:["return won %","return"],
+ tiebreak:["tie-break %","tiebreak %"],fatigue:["fatigue","fatiga"]
 };
+function norm(v){return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’'`´]/g,"").replace(/&/g," y ").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ")}
+function parseCSV(t){const rows=[];let row=[],cell="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else if(c==='"')q=true;else if(c===','){row.push(cell);cell=""}else if(c==='\n'){row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[]}else if(c!=='\r')cell+=c}if(cell!==""||row.length){row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row)}if(!rows.length)return[];const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>{const o={};h.forEach((x,i)=>o[x]=(r[i]??"").trim());return o})}
+async function loadSheet(name,key){const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;const res=await fetch(u,{cache:"no-store"});if(!res.ok)throw Error(`${name}: HTTP ${res.status}`);const rows=parseCSV(await res.text());BD[key]=rows;DB_META.rows[key]=rows.length;return rows.length}
+async function loadDB(){DB_META.errors=[];setStatus("Conectando con Google Sheets…");const rs=await Promise.all(Object.entries(SHEETS).map(async([k,n])=>{try{return[k,await loadSheet(n,k),null]}catch(e){BD[k]=[];return[k,0,e.message]}}));rs.forEach(([k,n,e])=>{if(e)DB_META.errors.push(e)});DB_META.loaded=true;DB_META.loadedAt=new Date().toISOString();renderDB();if(DB_META.errors.length)setStatus("Base cargada parcialmente: "+DB_META.errors.join(" | "),"warn");else setStatus("Google Sheets conectado correctamente. Filas: "+Object.values(DB_META.rows).reduce((a,b)=>a+b,0),"ok")}
+function setStatus(t,c=""){const e=document.getElementById("status");e.textContent=t;e.className="status"+(c?" "+c:"")}
+function renderDB(){document.getElementById("dbSummary").innerHTML=`<b>Fuente:</b> Google Sheets · <b>ID:</b> ${SHEET_ID}<br><b>Última carga:</b> ${DB_META.loadedAt?new Date(DB_META.loadedAt).toLocaleString("es-MX"):"N/D"}<br><b>Filas:</b> ${Object.entries(DB_META.rows).map(([k,v])=>k+": "+v).join(" · ")||"N/D"}${DB_META.errors.length?`<br><span class="danger"><b>Errores:</b> ${DB_META.errors.join(" | ")}</span>`:""}`}
+function findCol(row,als){const ks=Object.keys(row),nk=ks.map(k=>[k,norm(k)]);for(const a of als){const x=nk.find(([k,n])=>n===norm(a));if(x)return x[0]}for(const a of als){const na=norm(a);const x=nk.find(([k,n])=>n.includes(na)||na.includes(n));if(x)return x[0]}return null}
+function num(v){if(v===null||v===undefined||String(v).trim()==="")return null;let n=Number(String(v).replace(/%/g,"").replace(/,/g,"").trim());return Number.isFinite(n)?n:null}
+function findRecord(sport,name){const rows=BD[sport]||[],q=norm(name);let best=null;if(!q)return null;for(const r of rows){const c=findCol(r,ALIASES.nombre);if(!c)continue;const n=norm(r[c]);if(!n)continue;let s=n===q?100:n.includes(q)||q.includes(n)?80:0;if(!s){const qa=new Set(q.split(" ")),na=new Set(n.split(" "));let inter=0;qa.forEach(x=>{if(na.has(x))inter++});s=inter/Math.max(qa.size,na.size)*70}if(!best||s>best.score)best={row:r,score:s,name:r[c]}}return best&&best.score>=55?best:null}
+function mapRecord(found){if(!found)return null;const o={};for(const[k,als]of Object.entries(ALIASES)){const c=findCol(found.row,als);o[k]=c?num(found.row[c]):null;if(k==="nombre")o.nombre=c?found.row[c]:found.name}o.nombre=found.name;o._source="Google Sheets";o._matchScore=found.score;o._raw=found.row;return o}
+function renderData(){const f=(x,d)=>`<div><b>${d?"Encontrado":"No encontrado"}</b> — ${d?.nombre||"N/D"} · Coincidencia ${x?.score?.toFixed(1)||0}% · Fuente ${d?d._source:"N/D"}</div>`;document.getElementById("dataView").innerHTML=f(currentData.fa,currentData.A)+f(currentData.fb,currentData.B)}
+function idsFor(s){return {futbol:["f_nombreA","f_nombreB"],mlb:["m_nombreA","m_nombreB"],nfl:["n_nombreA","n_nombreB"],tenisM:["tm_nombreA","tm_nombreB"],tenisF:["tf_nombreA","tf_nombreB"]}[s]}
+async function botFill(){if(!DB_META.loaded)await loadDB();const s=document.getElementById("sport").value,ids=idsFor(s),a=nm(ids[0]),b=nm(ids[1]);if(!a||!b){setStatus("Introduce los dos participantes antes de buscar.","warn");return}const fa=findRecord(s,a),fb=findRecord(s,b);currentData={A:mapRecord(fa),B:mapRecord(fb),fa,fb};if(!fa||!fb){setStatus("No se encontraron ambos participantes con coincidencia segura. No se inventaron datos.","warn");renderData();return}applyRecordToInputs(s,currentData.A,"A");applyRecordToInputs(s,currentData.B,"B");renderData();setStatus("Datos encontrados y aplicados desde Google Sheets. Los campos sin dato permanecen N/D.","ok")}
+const MAP={
+ futbol:{nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"corners",fouls:"fouls",cards:"cards",form10:"form10",availability:"availability"},
+ mlb:{nombre:"nombre",runs:"runs",runsAllowed:"runsAllowed",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"starterEra",bullpenEra:"bullpenEra",defense:"defense"},
+ nfl:{nombre:"nombre",elo:"elo",pf:"pf",pa:"pa",offYards:"offYards",defYards:"defYards",td:"td",turnovers:"turnovers",thirdDown:"thirdDown",availability:"availability"},
+ tenisM:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"},
+ tenisF:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"}
+};
+function applyRecordToInputs(s,d,side){if(!d)return;const m=MAP[s];for(const[k,field]of Object.entries(m)){if(d[field]===null||d[field]===undefined)continue;const id=fieldId(s,k,side);if(id){const e=document.getElementById(id);if(e)e.value=d[field]}}}
+function fieldId(s,k,side){const p={futbol:"f_",mlb:"m_",nfl:"n_",tenisM:"tm_",tenisF:"tf_"}[s];const x={nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"cor",fouls:"fou",cards:"car",form10:"form",availability:"av",runs:"r",runsAllowed:"ra",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"era",bullpenEra:"bull",defense:"def",pf:"pf",pa:"pa",offYards:"yd",defYards:"dyd",td:"td",turnovers:"to",thirdDown:"3rd",eloSuperficie:"selo",form:"form",hold:"hold",breakPct:"break",firstServe:"fs",returnWon:"ret",tiebreak:"tb",fatigue:"fat"}[k];return p&&x?`${p}${x}${side}`:null}
 
-function runAutoBot() {
-  const qA = document.getElementById('bot_queryA').value.trim().toLowerCase();
-  const qB = document.getElementById('bot_queryB').value.trim().toLowerCase();
-  const sport = document.getElementById('sport').value;
-
-  if(!qA && !qB) {
-    alert("Introduce al menos el nombre de un equipo o jugador en el bot.");
-    return;
-  }
-
-  let filledCount = 0;
-  if(qA) filledCount += fillTeamData(qA, 'A', sport);
-  if(qB) filledCount += fillTeamData(qB, 'B', sport);
-
-  if(filledCount > 0) {
-    highlightInputs();
-    alert("🤖 ¡Bot de autocompletado web ejecutado con éxito! Se rellenaron los campos correspondientes.");
-  } else {
-    alert("No se encontraron registros exactos en la base web para los nombres ingresados. Se aplicaron valores por defecto.");
-    applyDefaults(sport);
-  }
-}
-
-function fillTeamData(query, side, sport) {
-  let matchedKey = null;
-  for(const key in webDatabase) {
-    if(query.includes(key) || key.includes(query)) {
-      matchedKey = key;
-      break;
-    }
-  }
-
-  const data = matchedKey ? webDatabase[matchedKey] : getEstimatedData(sport);
-  let count = 0;
-
-  if(sport === 'futbol') {
-    const p = side === 'A' ? 'f_nombreA' : 'f_nombreB';
-    setVal(p, capitalize(query));
-    setVal(side === 'A' ? 'f_eloA' : 'f_eloB', data.elo || 1600);
-    setVal(side === 'A' ? 'f_gfA' : 'f_gfB', data.gf || 1.50);
-    setVal(side === 'A' ? 'f_gaA' : 'f_gaB', data.ga || 1.10);
-    setVal(side === 'A' ? 'f_xgA' : 'f_xgB', data.xg || 1.45);
-    setVal(side === 'A' ? 'f_xgaA' : 'f_xgaB', data.xga || 1.15);
-    setVal(side === 'A' ? 'f_sotA' : 'f_sotB', data.sot || 5.0);
-    setVal(side === 'A' ? 'f_corA' : 'f_corB', data.cor || 5.2);
-    setVal(side === 'A' ? 'f_fouA' : 'f_fouB', data.fou || 11.0);
-    setVal(side === 'A' ? 'f_carA' : 'f_carB', data.car || 2.0);
-    setVal(side === 'A' ? 'f_formA' : 'f_formB', data.form || 6);
-    setVal(side === 'A' ? 'f_avA' : 'f_avB', data.av || 90);
-    count += 10;
-  } else if(sport === 'mlb') {
-    setVal(side === 'A' ? 'm_nombreA' : 'm_nombreB', capitalize(query));
-    setVal(side === 'A' ? 'm_rA' : 'm_rB', data.r || 4.5);
-    setVal(side === 'A' ? 'm_raA' : 'm_raB', data.ra || 4.2);
-    setVal(side === 'A' ? 'm_opsA' : 'm_opsB', data.ops || 0.730);
-    setVal(side === 'A' ? 'm_hrA' : 'm_hrB', data.hr || 1.2);
-    setVal(side === 'A' ? 'm_kA' : 'm_kB', data.k || 22.0);
-    setVal(side === 'A' ? 'm_bbA' : 'm_bbB', data.bb || 8.5);
-    setVal(side === 'A' ? 'm_eraA' : 'm_eraB', data.era || 4.00);
-    setVal(side === 'A' ? 'm_bullA' : 'm_bullB', data.bull || 4.10);
-    setVal(side === 'A' ? 'm_defA' : 'm_defB', data.def || 0.45);
-    count += 9;
-  } else if(sport === 'nfl') {
-    setVal(side === 'A' ? 'n_nombreA' : 'n_nombreB', capitalize(query));
-    setVal(side === 'A' ? 'n_eloA' : 'n_eloB', data.elo || 1550);
-    setVal(side === 'A' ? 'n_pfA' : 'n_pfB', data.pf || 22.5);
-    setVal(side === 'A' ? 'n_paA' : 'n_paB', data.pa || 21.0);
-    setVal(side === 'A' ? 'n_ydA' : 'n_ydB', data.yd || 340.0);
-    setVal(side === 'A' ? 'n_dydA' : 'n_dydB', data.dyd || 340.0);
-    setVal(side === 'A' ? 'n_tdA' : 'n_tdB', data.td || 2.4);
-    setVal(side === 'A' ? 'n_toA' : 'n_toB', data.to || 0.1);
-    setVal(side === 'A' ? 'n_3rdA' : 'n_3rdB', data.third || 38.0);
-    setVal(side === 'A' ? 'n_avA' : 'n_avB', data.av || 92);
-    count += 9;
-  } else if(sport === 'tenisM' || sport === 'tenisF') {
-    const p = sport === 'tenisM' ? 'tm' : 'tf';
-    setVal(p + '_' + (side === 'A' ? 'nombreA' : 'nombreB'), capitalize(query));
-    setVal(p + '_' + (side === 'A' ? 'eloA' : 'eloB'), data.elo || 1800);
-    setVal(p + '_' + (side === 'A' ? 'seloA' : 'seloB'), data.selo || 1820);
-    setVal(p + '_' + (side === 'A' ? 'formA' : 'formB'), data.form || 75);
-    setVal(p + '_' + (side === 'A' ? 'holdA' : 'holdB'), data.hold || 82.0);
-    setVal(p + '_' + (side === 'A' ? 'breakA' : 'breakB'), data.break || 22.0);
-    setVal(p + '_' + (side === 'A' ? 'fsA' : 'fsB'), data.fs || 68.0);
-    setVal(p + '_' + (side === 'A' ? 'ssA' : 'ssB'), data.ss || 52.0);
-    setVal(p + '_' + (side === 'A' ? 'retA' : 'retB'), data.ret || 36.0);
-    setVal(p + '_' + (side === 'A' ? 'tbA' : 'tbB'), data.tb || 55.0);
-    setVal(p + '_' + (side === 'A' ? 'fatA' : 'fatB'), data.fat || 25);
-    setVal(p + '_' + (side === 'A' ? 'avA' : 'avB'), data.av || 95);
-    count += 11;
-  }
-  return count;
-}
-
-function setVal(id, val) {
-  const el = document.getElementById(id);
-  if(el) el.value = val;
-}
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function getEstimatedData(sport) {
-  return { elo: 1600, gf: 1.40, ga: 1.20, r: 4.5, ra: 4.5, pf: 21.0, pa: 21.0, form: 5 };
-}
-
-function applyDefaults(sport) {
-  if(sport === 'futbol') {
-    setVal('f_eloA', 1650); setVal('f_eloB', 1600);
-    setVal('f_gfA', 1.5); setVal('f_gaA', 1.1);
-    setVal('f_gfB', 1.3); setVal('f_gaB', 1.2);
-  }
-}
-
-function highlightInputs() {
-  const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
-  inputs.forEach(input => {
-    if(input.value && input.id !== 'seed' && input.id !== 'bankroll') {
-      const orig = input.style.background;
-      input.style.background = "#d1fae5"; // Verde claro temporal
-      setTimeout(() => { input.style.background = orig; }, 1000);
-    }
-  });
-}
-
-/* ============================================================
-   NÚCLEO
-   ============================================================ */
-let rngState=null,currentN=25000,lastPrediction=null;
-const BT_KEY='master_oros_bt_v45';
-const PENDING_KEY='master_oros_pending_v45';
-const WEIGHTS_KEY='master_oros_weights_v45';
-const RHO_KEY='master_oros_rho_v45';
-const GRID_MAX=12;
-
-function btLoad(){try{const x=JSON.parse(localStorage.getItem(BT_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
-function btSave(a){try{localStorage.setItem(BT_KEY,JSON.stringify(a))}catch(e){alert('Almacenamiento lleno.')}}
-function weightsLoad(){try{const w=JSON.parse(localStorage.getItem(WEIGHTS_KEY)||'null');return w&&typeof w==='object'?w:{}}catch(e){return{}}}
-function weightsSave(w){try{localStorage.setItem(WEIGHTS_KEY,JSON.stringify(w))}catch(e){}}
-function rhoLoad(){
-  try{
-    const r=parseFloat(localStorage.getItem(RHO_KEY));
-    if(!Number.isFinite(r)||r<-0.5||r>0.5)return -0.08;
-    return r;
-  }catch(e){return -0.08}
-}
-function rhoSave(r){
-  if(!Number.isFinite(r))r=-0.08;
-  r=Math.max(-0.5,Math.min(0.5,r));
-  try{localStorage.setItem(RHO_KEY,String(r))}catch(e){}
-}
-
+/* =========================
+   MOTOR REPRODUCIBLE
+   ========================= */
+function seedRandom(v){rngState=(Number(v)>>>0)||1}function rnd(){rngState=(1664525*rngState+1013904223)>>>0;return rngState/4294967296}
+function poisson(l){l=Math.max(0,Number(l)||0);if(l===0)return 0;const L=Math.exp(-l);let p=1,k=0;do{k++;p*=rnd()}while(p>L&&k<500);return k-1}
+function normal(mu,sd){let u=Math.max(rnd(),1e-12),v=Math.max(rnd(),1e-12);return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function val(id){const e=document.getElementById(id),x=parseFloat(e?.value);return Number.isFinite(x)?x:null}
+function nm(id){return document.getElementById(id)?.value?.trim()||""}
 function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
-function bin(p){return Math.min(9,Math.floor(clamp(p,0,0.999999)*10))}
-function logloss(p,y){p=clamp(p,1e-6,1-1e-6);return -(y*Math.log(p)+(1-y)*Math.log(1-p))}
-function pct(x){return (100*x).toFixed(1)+'%'}
-function avg(a,b){return(a+b)/2}
-function fact(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
-
-function seedRandom(v){rngState=Number.isFinite(v)&&v!==null?(v>>>0)||1:null}
-function rnd(){if(rngState===null)return Math.random();rngState=(1664525*rngState+1013904223)>>>0;return rngState/4294967296}
-function normal(mu=0,sd=1){const u=Math.max(rnd(),1e-12),v=Math.max(rnd(),1e-12);return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-function poisson(lambda){
-  lambda=Math.max(0,lambda);
-  if(lambda===0)return 0;
-  if(lambda>30)return Math.max(0,Math.round(normal(lambda,Math.sqrt(lambda))));
-  const L=Math.exp(-lambda);let p=1,k=0;
-  do{k++;p*=rnd()}while(p>L);
-  return k-1;
+function pct(x){return (100*x).toFixed(2)+"%"}
+function rec(m,k){m[k]=(m[k]||0)+1}
+function top10(m){return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
+function homeFactor(){const h=val("homeAdv");return h===null?1:1+h/100}
+function weightedAvg(arr){const v=arr.filter(x=>x!==null&&Number.isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
+function brier1x2(p,actual){return (p.A-(actual==="A"?1:0))**2+(p.D-(actual==="D"?1:0))**2+(p.B-(actual==="B"?1:0))**2}
+function logLoss(p){return -Math.log(clamp(p,1e-9,1))}
+function normalize3(a,d,b){const s=a+d+b;return s?{A:a/s,D:d/s,B:b/s}:{A:1/3,D:1/3,B:1/3}}
+function eloProb(ea,eb){return 1/(1+10**((eb-ea)/400))}
+function logistic(x){return 1/(1+Math.exp(-x))}
+function calibrated(p,sport,market){const rows=btLoad().filter(r=>r.completed&&r.sport===sport&&r.market===market&&Number.isFinite(r.pred)&&Number.isFinite(r.actualBinary));const bin=Math.min(9,Math.floor(clamp(p,0,.999999)*10)),g=rows.filter(r=>r.bin===bin);if(g.length<20)return{p,used:false,n:g.length};const y=g.reduce((a,r)=>a+r.actualBinary,0)/g.length;return{p:clamp(.7*p+.3*y,.01,.99),used:true,n:g.length,emp:y}}
+function footballN(N){
+ const gfA=val("f_gfA"),gfB=val("f_gfB");if(gfA===null||gfB===null)throw Error("Faltan GF/partido de ambos equipos.");
+ const gaA=val("f_gaA"),gaB=val("f_gaB"),xgA=val("f_xgA"),xgB=val("f_xgB"),xgaA=val("f_xgaA"),xgaB=val("f_xgaB");
+ let la=gfA,lb=gfB,used=["GF/partido"],missing=[];
+ if(xgA!==null&&xgB!==null&&xgaA!==null&&xgaB!==null){la=(xgA+xgaB)/2;lb=(xgB+xgaA)/2;used.push("xG/xGA")}
+ else if(gaA!==null&&gaB!==null){la=(gfA+gaB)/2;lb=(gfB+gaA)/2;used.push("GA/partido")}else missing.push("GA/xGA");
+ [la,lb]=[la*homeFactor(),lb];
+ let mc=la/(la+lb||1),elo=null;
+ if(val("f_eloA")!==null&&val("f_eloB")!==null){elo=eloProb(val("f_eloA"),val("f_eloB"));used.push("Elo")}else missing.push("Elo");
+ let formEdge=null;if(val("f_formA")!==null&&val("f_formB")!==null){formEdge=(val("f_formA")-val("f_formB"))/10;used.push("Forma últimos 10")}else missing.push("Forma");
+ if(elo!==null){const adj=clamp(.72*mc+.28*elo,.03,.97),tot=la+lb;la=tot*adj;lb=tot*(1-adj)}
+ if(formEdge!==null){la*=1+clamp(formEdge*.012,-.08,.08);lb*=1-clamp(formEdge*.012,-.08,.08)}
+ let wA=0,wD=0,wB=0,o=0,t=0,total=0,score={},corn={},foul={},card={},sot={};
+ for(let i=0;i<N;i++){const a=poisson(la),b=poisson(lb);total+=a+b;if(a>b)wA++;else if(a===b)wD++;else wB++;if(a+b>=3)o++;if(a>0&&b>0)t++;rec(score,a+"-"+b);
+  const ca=val("f_corA"),cb=val("f_corB");if(ca!==null&&cb!==null)rec(corn,poisson(ca)+"-"+poisson(cb));
+  const fa=val("f_fouA"),fb=val("f_fouB");if(fa!==null&&fb!==null)rec(foul,poisson(fa)+"-"+poisson(fb));
+  const ya=val("f_carA"),yb=val("f_carB");if(ya!==null&&yb!==null)rec(card,poisson(ya)+"-"+poisson(yb));
+  const sa=val("f_sotA"),sb=val("f_sotB");if(sa!==null&&sb!==null)rec(sot,poisson(sa)+"-"+poisson(sb));
+ }
+ const pMC=normalize3(wA/N,wD/N,wB/N);
+ let pH=Object.assign({},pMC);
+ if(elo!==null){const rawA=clamp(.55*elo+.45*pMC.A,.001,.999),rawB=clamp(.55*(1-elo)+.45*pMC.B,.001,.999);const rawD=clamp(1-rawA-rawB,.001,.998);pH=normalize3(rawA,rawD,rawB)}
+ const top=(m)=>top10(m).map(x=>`${x[0]} — ${x[1].toLocaleString("es-MX")} — ${pct(x[1]/N)}`);
+ const pred={sport:"Fútbol",a:nm("f_nombreA")||"Local",b:nm("f_nombreB")||"Visitante",N,seed:val("seed"),pMC:pMC,pH:pH,over25:o/N,btts:t/N,scoreTop:top(score),cornersTop:top(corn),foulsTop:top(foul),cardsTop:top(card),sotTop:top(sot),lambdaA:la,lambdaB:lb,used,missing};
+ return pred;
 }
-
-function val(id){const e=document.getElementById(id);if(!e)return null;const x=parseFloat(e.value);return Number.isFinite(x)?x:null}
-function nm(id){return document.getElementById(id)?.value?.trim()||''}
-function validate(id,min,max,name,issues){const v=val(id);if(v!==null&&(v<min||v>max))issues.push(name+'='+v+' fuera de ['+min+','+max+']')}
-
-/* ============================================================
-   LOCALÍA como redistribución
-   ============================================================ */
-function applyHome(la,lb){
-  const h=val('homeAdv');
-  if(h===null||h<-50||h>50)return[la,lb];
-  const tot=la+lb;
-  if(tot<=0)return[la,lb];
-  const newA=la*(1+h/100);
-  const cappedA=clamp(newA,0.01,tot-0.01);
-  return[cappedA,tot-cappedA];
+function twoWayBase(N,sport){
+ const isMLB=sport==="MLB",pref=isMLB?"m_":"n_",a=isMLB?val(pref+"rA"):val(pref+"pfA"),b=isMLB?val(pref+"rB"):val(pref+"pfB");if(a===null||b===null)throw Error(`Faltan ${isMLB?"carreras":"PF"} por juego de ambos equipos.`);
+ const da=isMLB?val(pref+"raA"):val(pref+"paA"),db=isMLB?val(pref+"raB"):val(pref+"paB");let la=a,lb=b,used=[isMLB?"Carreras/juego":"PF/juego"],missing=[];if(da!==null&&db!==null){la=(a+db)/2;lb=(b+da)/2;used.push(isMLB?"Carreras permitidas":"PA")}else missing.push(isMLB?"Carreras permitidas":"PA");[la,lb]=[la*homeFactor(),lb];
+ const pairs=isMLB?[["ops",.10,true],["hr",.06,true],["k",.04,false],["bb",.04,true],["era",.10,false],["bull",.05,false],["def",.04,true]]:[["elo",.12,true],["yd",.05,true],["dyd",.05,false],["td",.05,true],["to",.05,true],["3rd",.04,true],["av",.04,true]];
+ for(const[q,s,positive]of pairs){const x=val(pref+q+"A"),y=val(pref+q+"B");if(x!==null&&y!==null){const d=(x-y)/Math.max(1,Math.abs(x)+Math.abs(y));const sg=positive?1:-1;la*=1+s*sg*d;lb*=1-s*sg*d;used.push(q)}else missing.push(q)}
+ let A=0,D=0,B=0,score={},tot={};for(let i=0;i<N;i++){let x,y;if(isMLB){x=poisson(la);y=poisson(lb)}else{x=Math.max(0,Math.round(normal(la,Math.max(4,Math.sqrt(Math.max(la,1))*2.2))));y=Math.max(0,Math.round(normal(lb,Math.max(4,Math.sqrt(Math.max(lb,1))*2.2))))}if(x>y)A++;else if(x===y)D++;else B++;rec(score,x+"-"+y);rec(tot,String(x+y))}
+ return {sport,a:nm(pref+"nombreA")||"Local",b:nm(pref+"nombreB")||"Visitante",N,seed:val("seed"),pMC:normalize3(A/N,D/N,B/N),scoreTop:top10(score).map(x=>`${x[0]} — ${pct(x[1]/N)}`),totalsTop:top10(tot).map(x=>`${x[0]} — ${pct(x[1]/N)}`),used,missing};
 }
-
-/* ============================================================
-   PARES PAREADOS
-   ============================================================ */
-function applyPairs(pairs,pA,pB,used,missing,detail){
-  for(const [idA,idB,label,scale,higherBetter] of pairs){
-    const a=val(idA),b=val(idB);
-    if(a===null||b===null){missing.push(label);continue}
-    const denom=Math.max(1,Math.abs(a)+Math.abs(b));
-    const d=(a-b)/denom;
-    const sign=higherBetter?1:-1;
-    const multA=1+scale*sign*d;
-    const multB=1-scale*sign*d;
-    pA*=multA;pB*=multB;
-    if(detail)detail.push({label,adj:(multA-1)*100});
-    used.push(label);
-  }
-  return[pA,pB];
+function tennisN(N,pref,label){const ea=val(pref+"_eloA"),eb=val(pref+"_eloB");if(ea===null||eb===null)throw Error("Falta Elo general de ambos jugadores.");let p=eloProb(val(pref+"_seloA")??ea,val(pref+"_seloB")??eb),used=["Elo"],missing=[];const pairs=[["form",.001,"Forma"],["hold",.001,"Hold"],["break",.001,"Break"],["fs",.0005,"Primer servicio"],["ret",.0005,"Devolución"],["tb",.0005,"Tie-break"],["fat",-0.0005,"Fatiga"],["av",.0005,"Disponibilidad"]];for(const[q,k,n]of pairs){const a=val(pref+"_"+q+"A"),b=val(pref+"_"+q+"B");if(a!==null&&b!==null){p=clamp(p+k*(a-b),.02,.98);used.push(n)}else missing.push(n)}let A=0,B=0,sets={};for(let i=0;i<N;i++){let sa=0,sb=0;while(sa<2&&sb<2){if(rnd()<p)sa++;else sb++}if(sa>sb)A++;else B++;rec(sets,sa+"-"+sb)}return{sport:label,a:nm(pref+"_nombreA")||"Jugador A",b:nm(pref+"_nombreB")||"Jugador B",N,seed:val("seed"),pMC:{A:A/N,D:0,B:B/N},scoreTop:top10(sets).map(x=>`${x[0]} — ${pct(x[1]/N)}`),used,missing}}
+function buildHybridFootball(pred){let h=pred.pMC;if(!pred.used.includes("Elo"))return h;return normalize3(.60*h.A+.40*(1-(h.D+h.B)*.5),.60*h.D+.40*.22,.60*h.B+.40*(h.D+h.B)*.5)}
+function valueHtml(pred){const markets=[["Local/A","oddA",pred.pH.A],["Empate","oddD",pred.pH.D],["Visitante/B","oddB",pred.pH.B],["Over 2.5","oddO25",pred.over25],["BTTS","oddBTTS",pred.btts]].filter(x=>x[2]!==undefined);let h="<table class='table'><tr><th>Mercado</th><th>Prob.</th><th>Cuota</th><th>Valor esperado</th><th>Estado</th></tr>";for(const[m,id,p]of markets){const o=val(id);if(o===null||o<=1){h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>N/D</td><td>N/D</td><td>N/D</td></tr>`}else{const ev=p*(o-1)-(1-p),st=ev>0?"Valor positivo":"Sin valor positivo";h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>${o.toFixed(2)}</td><td>${(ev*100).toFixed(2)}%</td><td>${st}</td></tr>`}}return h+"</table>"}
+function renderPrediction(pred){
+ let pH=pred.pH||pred.pMC;if(pred.sport==="Fútbol")pH=buildHybridFootball(pred);pred.pH=pH;
+ let h=`<div class="result-grid"><div class="result"><b>Local / A — Monte Carlo</b>${pct(pred.pMC.A)}</div><div class="result"><b>Empate — Monte Carlo</b>${pct(pred.pMC.D)}</div><div class="result"><b>Visitante / B — Monte Carlo</b>${pct(pred.pMC.B)}</div><div class="result"><b>Local / A — Ensemble</b>${pct(pH.A)}</div><div class="result"><b>Empate — Ensemble</b>${pct(pH.D)}</div><div class="result"><b>Visitante / B — Ensemble</b>${pct(pH.B)}</div>${pred.over25!==undefined?`<div class="result"><b>Más de 2.5</b>${pct(pred.over25)}</div><div class="result"><b>Ambos marcan</b>${pct(pred.btts)}</div>`:""}</div>`;
+ if(pred.scoreTop)h+=`<div class="audit"><b>10 resultados más repetidos</b><ol>${pred.scoreTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ if(pred.cornersTop?.length)h+=`<div class="audit"><b>10 córners más repetidos</b><ol>${pred.cornersTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ if(pred.foulsTop?.length)h+=`<div class="audit"><b>10 faltas más repetidas</b><ol>${pred.foulsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ if(pred.cardsTop?.length)h+=`<div class="audit"><b>10 tarjetas más repetidas</b><ol>${pred.cardsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ if(pred.sotTop?.length)h+=`<div class="audit"><b>10 tiros a portería más repetidos</b><ol>${pred.sotTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ if(pred.totalsTop)h+=`<div class="audit"><b>10 totales más repetidos</b><ol>${pred.totalsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
+ h+=`<div class="audit"><b>Datos usados:</b> ${pred.used.join(", ")||"ninguno"}<br><b>N/D:</b> ${pred.missing.join(", ")||"ninguno"}<br><b>Semilla:</b> ${pred.seed} · <b>Simulaciones:</b> ${pred.N.toLocaleString("es-MX")}<br><b>Fuente:</b> Google Sheets / datos introducidos por el usuario. No se generaron valores faltantes.</div>`;
+ document.getElementById("results").innerHTML=`<h2>Resultado — ${pred.sport}</h2><div class="small">${pred.a} vs ${pred.b} · ${pred.N.toLocaleString("es-MX")} simulaciones · semilla ${pred.seed}</div>`+h;
+ document.getElementById("valueView").innerHTML=valueHtml(pred);
+ document.getElementById("params").textContent=JSON.stringify(pred,null,2);
+ document.getElementById("audit").innerHTML=`<b>Auditoría:</b> fuente Google Sheets · carga ${DB_META.loadedAt||"N/D"} · filas ${JSON.stringify(DB_META.rows)} · seed ${pred.seed}.`;
 }
-
-/* ============================================================
-   PESOS ADAPTATIVOS
-   ============================================================ */
-function getWeights(sport){
-  const w=weightsLoad();
-  if(w[sport])return w[sport];
-  if(sport==='Fútbol')return{elo:0.35,poisson:0.45,form:0.20};
-  if(sport==='MLB')return{elo:0.20,poisson:0.60,form:0.20};
-  if(sport==='NFL')return{elo:0.30,poisson:0.50,form:0.20};
-  return{elo:0.55,poisson:0.15,form:0.30};
-}
-function updateWeights(sport,accElo,accPois,accForm){
-  const total=accElo+accPois+accForm||1;
-  const w={elo:accElo/total,poisson:accPois/total,form:accForm/total};
-  const all=weightsLoad();all[sport]=w;weightsSave(all);
-}
-
-/* ============================================================
-   CALIBRACIÓN
-   ============================================================ */
-function learnedCal(p,sport,market){
-  if(p==null||!Number.isFinite(p))return{p,used:false,n:0};
-  const h=btLoad().filter(r=>r.completed&&r.sport===sport&&r.market===market);
-  if(h.length>=100){
-    const sorted=[...h].sort((a,b)=>a.pred-b.pred);
-    const blocks=Math.ceil(sorted.length/20);
-    let bestP=p,bestDiff=Infinity;
-    for(let i=0;i<blocks;i++){
-      const lo=i*20,hi=Math.min(sorted.length,(i+1)*20);
-      const blk=sorted.slice(lo,hi);
-      if(!blk.length)continue;
-      const avgPred=blk.reduce((s,r)=>s+r.pred,0)/blk.length;
-      const diff=Math.abs(avgPred-p);
-      if(diff<bestDiff){
-        bestDiff=diff;
-        const hit=blk.reduce((s,r)=>s+(r.actualBinary!==undefined?r.actualBinary:(r.correct?1:0)),0);
-        bestP=(hit+1)/(blk.length+2);
-      }
-    }
-    return{p:clamp(0.6*p+0.4*bestP,0.01,0.99),used:true,n:h.length,method:'iso'};
-  }
-  const same=h.filter(r=>r.bin===bin(p));
-  if(same.length<20)return{p,used:false,n:same.length};
-  let hit=0,tot=0;
-  for(const r of same){
-    if(r.actualBinary!==undefined){hit+=r.actualBinary;tot++}
-    else if(r.correct!==undefined){hit+=r.correct?1:0;tot++}
-  }
-  if(!tot)return{p,used:false,n:0};
-  const emp=(hit+1)/(tot+2);
-  return{p:clamp(0.7*p+0.3*emp,0.01,0.99),used:true,n:tot,method:'bin',emp};
-}
-
-/* ============================================================
-   WILSON CI
-   ============================================================ */
-function wilsonCI(hits,n,z=1.645){
-  if(n===0)return[0,1];
-  const p=hits/n;
-  const den=1+z*z/n;
-  const center=(p+z*z/(2*n))/den;
-  const margin=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/den;
-  return[clamp(center-margin,0,1),clamp(center+margin,0,1)];
-}
-
-/* ============================================================
-   DIXON-COLES por PESOS
-   ============================================================ */
-function poissonOnlyPMF(la,lb,Nmax){
-  const pmf=[];let sum=0;
-  for(let x=0;x<=Nmax;x++){
-    const px=Math.exp(-la)*Math.pow(la,x)/fact(x);
-    for(let y=0;y<=Nmax;y++){
-      const py=Math.exp(-lb)*Math.pow(lb,y)/fact(y);
-      const p=px*py;
-      pmf.push({x,y,p});
-      sum+=p;
-    }
-  }
-  return pmf.map(o=>({x:o.x,y:o.y,p:o.p/sum}));
-}
-function dixonColesPMF(la,lb,rho,Nmax=GRID_MAX){
-  const pmf=[];let sum=0;
-  for(let x=0;x<=Nmax;x++){
-    const px=Math.exp(-la)*Math.pow(la,x)/fact(x);
-    for(let y=0;y<=Nmax;y++){
-      const py=Math.exp(-lb)*Math.pow(lb,y)/fact(y);
-      let tau=1;
-      if(x===0&&y===0)tau=1-la*lb*rho;
-      else if(x===0&&y===1)tau=1+la*rho;
-      else if(x===1&&y===0)tau=1+lb*rho;
-      else if(x===1&&y===1)tau=1-rho;
-      tau=Math.max(0,tau);
-      const p=px*py*tau;
-      pmf.push({x,y,p});
-      sum+=p;
-    }
-  }
-  if(!Number.isFinite(sum)||sum<=0)return poissonOnlyPMF(la,lb,Nmax);
-  return pmf.map(o=>({x:o.x,y:o.y,p:o.p/sum}));
-}
-function sampleFromPMF(pmf){
-  const r=rnd();let acc=0;
-  for(const o of pmf){acc+=o.p;if(r<=acc)return o}
-  return pmf[pmf.length-1];
-}
-
-/* ============================================================
-   FÚTBOL
-   ============================================================ */
-function simFutbol(N){
-  currentN=N;
-  const gfA=val('f_gfA'),gfB=val('f_gfB');
-  if(gfA===null||gfB===null)return['Fútbol','<div class="error">Faltan GF/partido de ambos.</div>'];
-  const gaA=val('f_gaA'),gaB=val('f_gaB');
-  const used=[],missing=[],detail=[];
-  let la,lb;
-  const xgA=val('f_xgA'),xgB=val('f_xgB'),xgaA=val('f_xgaA'),xgaB=val('f_xgaB');
-  if(xgA!==null&&xgB!==null&&xgaA!==null&&xgaB!==null){
-    la=avg(xgA,xgaB);lb=avg(xgB,xgaA);used.push('xG + xGA de ambos');
-  } else if(gaA!==null&&gaB!==null){
-    la=avg(gfA,gaB);lb=avg(gfB,gaA);used.push('GF + GC de ambos');
-  } else {
-    la=gfA;lb=gfB;used.push('GF de ambos');missing.push('GC/xGA de ambos');
-  }
-  [la,lb]=applyHome(la,lb);
-  const ea=val('f_eloA'),eb=val('f_eloB');
-  let pElo=null;
-  if(ea!==null&&eb!==null){pElo=1/(1+10**((eb-ea)/400));used.push('Elo');}
-  else missing.push('Elo');
-  [la,lb]=applyPairs([
-    ['f_sotA','f_sotB','Tiros a portería',0.14,true],
-    ['f_formA','f_formB','Forma últimos 10',0.08,true],
-    ['f_avA','f_avB','Disponibilidad',0.05,true]
-  ],la,lb,used,missing,detail);
-  la=Math.max(0.05,la);lb=Math.max(0.05,lb);
-
-  const rho=rhoLoad();
-  const pmf=dixonColesPMF(la,lb,rho,GRID_MAX);
-
-  const corA=val('f_corA'),corB=val('f_corB'),fouA=val('f_fouA'),fouB=val('f_fouB'),carA=val('f_carA'),carB=val('f_carB'),sotA=val('f_sotA'),sotB=val('f_sotB');
-  const score={},cors={},fouls={},cards={},sots={};
-  let wA=0,dr=0,wB=0,o15=0,o25=0,o35=0,btts=0,sumA=0,sumB=0;
-  for(let i=0;i<N;i++){
-    const {x,y}=sampleFromPMF(pmf);
-    sumA+=x;sumB+=y;
-    if(x>y)wA++;else if(x===y)dr++;else wB++;
-    if(x+y>1.5)o15++;
-    if(x+y>2.5)o25++;
-    if(x+y>3.5)o35++;
-    if(x>0&&y>0)btts++;
-    record(score,x+'-'+y);
-    if(corA!==null&&corB!==null)record(cors,poisson(corA)+'-'+poisson(corB));
-    if(fouA!==null&&fouB!==null)record(fouls,Math.round(poisson(fouA))+'-'+Math.round(poisson(fouB)));
-    if(carA!==null&&carB!==null)record(cards,Math.round(poisson(carA))+'-'+Math.round(poisson(carB)));
-    if(sotA!==null&&sotB!==null)record(sots,Math.round(poisson(sotA))+'-'+Math.round(poisson(sotB)));
-  }
-  const pA=wA/N,pD=dr/N,pB=wB/N;
-  const pO15=o15/N,pO25=o25/N,pO35=o35/N,pBTTS=btts/N;
-
-  const poisP=poissonImplicitProb(la,lb);
-  const eloP=pElo??poisP;
-  const formP=formImplicitProb(val('f_formA'),val('f_formB'))??poisP;
-  const w=getWeights('Fútbol');
-  const pFinal=clamp(w.elo*eloP+w.poisson*poisP+w.form*formP,0.02,0.98);
-
-  const [ciA_lo,ciA_hi]=wilsonCI(wA,N);
-  const [ciB_lo,ciB_hi]=wilsonCI(wB,N);
-
-  let html='<div class="result-grid">';
-  html+='<div class="result"><b>Victoria local (MC)</b><span class="v">'+pct(pA)+'</span><div class="ci">IC90: '+pct(ciA_lo)+' – '+pct(ciA_hi)+'</div></div>';
-  html+='<div class="result"><b>Empate</b><span class="v">'+pct(pD)+'</span></div>';
-  html+='<div class="result"><b>Victoria visitante (MC)</b><span class="v">'+pct(pB)+'</span><div class="ci">IC90: '+pct(ciB_lo)+' – '+pct(ciB_hi)+'</div></div>';
-  html+='<div class="result" style="border-color:#1f6feb"><b>Prob. combinada local</b><span class="v hl">'+pct(pFinal)+'</span><div class="ci">Elo+Poisson+Forma</div></div>';
-  html+='<div class="result"><b>Más de 1.5</b><span class="v">'+pct(pO15)+'</span></div>';
-  html+='<div class="result"><b>Más de 2.5</b><span class="v">'+pct(pO25)+'</span></div>';
-  html+='<div class="result"><b>Más de 3.5</b><span class="v">'+pct(pO35)+'</span></div>';
-  html+='<div class="result"><b>Ambos marcan</b><span class="v">'+pct(pBTTS)+'</span></div>';
-  html+='<div class="result"><b>Goles esperados</b><span class="v">'+((sumA+sumB)/N).toFixed(2)+'</span><div class="ci">Local '+(sumA/N).toFixed(2)+' · Visit '+(sumB/N).toFixed(2)+'</div></div>';
-  html+='</div>';
-  html+='<div class="audit"><b>ρ Dixon-Coles activo:</b> '+rho.toFixed(3)+'</div>';
-  html+=explainBlock('Fútbol',{elo:eloP,poisson:poisP,form:formP,weights:w,final:pFinal});
-  html+=calibrationBlock('Fútbol',{pA,pD,pB});
-  html+=valueBettingBlock('Fútbol',{pA,pD,pB,pO25,pBTTS,ids:{oddA:'f_oddA',oddD:'f_oddD',oddB:'f_oddB',oddO:'f_oddO',oddU:'f_oddU',oddBS:'f_oddBS',oddBN:'f_oddBN'}});
-  html+=top10(score,'10 marcadores más probables');
-  if(Object.keys(cors).length)html+=top10(cors,'10 combinaciones de córners');
-  if(Object.keys(fouls).length)html+=top10(fouls,'10 combinaciones de faltas');
-  if(Object.keys(cards).length)html+=top10(cards,'10 combinaciones de tarjetas');
-  if(Object.keys(sots).length)html+=top10(sots,'10 combinaciones de tiros a portería');
-  html+=auditBlock(used,missing,detail);
-
-  lastPrediction={sport:'Fútbol',a:nm('f_nombreA')||'Local',b:nm('f_nombreB')||'Visitante',N,seed:val('seed'),pA,pD,pB,over25:pO25,btts:pBTTS,eloP,poisP,formP,pFinal,la,lb,rho,market:'A'};
-  return['Fútbol',html];
-}
-
-function poissonImplicitProb(la,lb){
-  const rho=rhoLoad();
-  const pmf=dixonColesPMF(la,lb,rho,GRID_MAX);
-  let pA=0,pD=0,pB=0;
-  for(const o of pmf){
-    if(o.x>o.y)pA+=o.p;else if(o.x===o.y)pD+=o.p;else pB+=o.p;
-  }
-  const s=pA+pD+pB||1;
-  return pA/s;
-}
-function formImplicitProb(fa,fb){
-  if(fa===null||fb===null)return null;
-  return clamp((fa+1)/(fa+fb+2),0.05,0.95);
-}
-
-/* ============================================================
-   MLB
-   ============================================================ */
-function simMLB(N){
-  currentN=N;
-  const rA=val('m_rA'),rB=val('m_rB'),raA=val('m_raA'),raB=val('m_raB');
-  if(rA===null||rB===null)return['MLB','<div class="error">Faltan carreras/juego.</div>'];
-  const used=[],missing=[],detail=[];
-  let la,lb;
-  if(raA!==null&&raB!==null){la=avg(rA,raB);lb=avg(rB,raA);used.push('Carreras a favor + permitidas')}
-  else{la=rA;lb=rB;used.push('Carreras a favor')}
-  [la,lb]=applyHome(la,lb);
-  [la,lb]=applyPairs([
-    ['m_opsA','m_opsB','OPS',0.10,true],
-    ['m_hrA','m_hrB','HR/juego',0.05,true],
-    ['m_kA','m_kB','K% bateo',0.03,false],
-    ['m_bbA','m_bbB','BB%',0.03,true],
-    ['m_eraA','m_eraB','ERA abridor',0.08,false],
-    ['m_bullA','m_bullB','ERA bullpen',0.05,false],
-    ['m_defA','m_defB','Defensa',0.04,true]
-  ],la,lb,used,missing,detail);
-  la=Math.max(0.3,la);lb=Math.max(0.3,lb);
-  const eraA=val('m_eraA'),eraB=val('m_eraB'),bullA=val('m_bullA'),bullB=val('m_bullB');
-  const rateA=eraA!==null?eraA/9:la/9;
-  const rateB=eraB!==null?eraB/9:lb/9;
-  const bRateA=bullA!==null?bullA/9:rateA;
-  const bRateB=bullB!==null?bullB/9:rateB;
-
-  let wa=0,wb=0,tie=0,runsA=0,runsB=0,overCount=0;
-  const score={},totals={},f5={};
-  for(let i=0;i<N;i++){
-    let x=0,y=0,f5x=0,f5y=0;
-    for(let inn=1;inn<=6;inn++){
-      const rxA=poisson(rateA),rxB=poisson(rateB);
-      x+=rxA;y+=rxB;
-      if(inn<=5){f5x+=rxA;f5y+=rxB}
-    }
-    for(let inn=7;inn<=9;inn++){x+=poisson(bRateA);y+=poisson(bRateB)}
-    runsA+=x;runsB+=y;
-    if(x>y)wa++;else if(y>x)wb++;else tie++;
-    if(x+y>8.5)overCount++;
-    record(score,x+'-'+y);
-    record(totals,String(x+y));
-    record(f5,f5x+'-'+f5y);
-  }
-  const pA=wa/N,pD=tie/N,pB=wb/N,pOver=overCount/N;
-  const [ciA_lo,ciA_hi]=wilsonCI(wa,N);
-  const [ciB_lo,ciB_hi]=wilsonCI(wb,N);
-  let html='<div class="result-grid">';
-  html+='<div class="result"><b>Victoria local</b><span class="v">'+pct(pA)+'</span><div class="ci">IC90: '+pct(ciA_lo)+' – '+pct(ciA_hi)+'</div></div>';
-  html+='<div class="result"><b>Empate 9 inn</b><span class="v">'+pct(pD)+'</span></div>';
-  html+='<div class="result"><b>Victoria visitante</b><span class="v">'+pct(pB)+'</span><div class="ci">IC90: '+pct(ciB_lo)+' – '+pct(ciB_hi)+'</div></div>';
-  html+='<div class="result"><b>Carreras prom. local</b><span class="v">'+(runsA/N).toFixed(2)+'</span></div>';
-  html+='<div class="result"><b>Carreras prom. visit.</b><span class="v">'+(runsB/N).toFixed(2)+'</span></div>';
-  html+='<div class="result"><b>Total prom.</b><span class="v">'+((runsA+runsB)/N).toFixed(2)+'</span></div>';
-  html+='<div class="result"><b>Over 8.5 carreras</b><span class="v">'+pct(pOver)+'</span></div>';
-  html+='</div>';
-  html+=calibrationBlock('MLB',{pA,pD,pB});
-  html+=valueBettingBlock('MLB',{pA,pD,pB,pOver,ids:{oddA:'m_oddA',oddB:'m_oddB',oddO:'m_oddO',oddU:'m_oddU'}});
-  html+=top10(score,'10 marcadores finales más probables');
-  html+=top10(totals,'10 totales de carreras');
-  html+=top10(f5,'10 marcadores en 5 entradas');
-  html+=auditBlock(used,missing,detail);
-  lastPrediction={sport:'MLB',a:nm('m_nombreA')||'Local',b:nm('m_nombreB')||'Visitante',N,seed:val('seed'),pA,pD,pB,market:'A'};
-  return['MLB',html];
-}
-
-/* ============================================================
-   NFL
-   ============================================================ */
-function simNFL(N){
-  currentN=N;
-  const pfA=val('n_pfA'),pfB=val('n_pfB'),paA=val('n_paA'),paB=val('n_paB');
-  if(pfA===null||pfB===null)return['NFL','<div class="error">Faltan puntos anotados/juego.</div>'];
-  const used=[],missing=[],detail=[];
-  let la,lb;
-  if(paA!==null&&paB!==null){la=avg(pfA,paB);lb=avg(pfB,paA);used.push('Puntos a favor + permitidos')}
-  else{la=pfA;lb=pfB;used.push('Puntos a favor')}
-  [la,lb]=applyHome(la,lb);
-  [la,lb]=applyPairs([
-    ['n_eloA','n_eloB','Elo',0.10,true],
-    ['n_ydA','n_ydB','Yardas ofensivas',0.04,true],
-    ['n_dydA','n_dydB','Yardas defensivas',0.04,false],
-    ['n_tdA','n_tdB','TD/juego',0.04,true],
-    ['n_toA','n_toB','TO diferencial',0.04,true],
-    ['n_3rdA','n_3rdB','3ª oportunidad',0.03,true],
-    ['n_avA','n_avB','Disponibilidad',0.03,true]
-  ],la,lb,used,missing,detail);
-  la=Math.max(3,la);lb=Math.max(3,lb);
-  const sdA=Math.max(6,Math.sqrt(la)*2.0);
-  const sdB=Math.max(6,Math.sqrt(lb)*2.0);
-
-  let wa=0,wb=0,tie=0,sumA=0,sumB=0,overCount=0;
-  const score={},totals={},spread={};
-  for(let i=0;i<N;i++){
-    const x=Math.max(0,Math.round(normal(la,sdA)));
-    const y=Math.max(0,Math.round(normal(lb,sdB)));
-    sumA+=x;sumB+=y;
-    if(x>y)wa++;else if(y>x)wb++;else tie++;
-    if(x+y>44.5)overCount++;
-    record(score,x+'-'+y);
-    record(totals,String(x+y));
-    record(spread,String(x-y));
-  }
-  const pA=wa/N,pD=tie/N,pB=wb/N,pOver=overCount/N;
-  const [ciA_lo,ciA_hi]=wilsonCI(wa,N);
-  const [ciB_lo,ciB_hi]=wilsonCI(wb,N);
-  let html='<div class="result-grid">';
-  html+='<div class="result"><b>Victoria local</b><span class="v">'+pct(pA)+'</span><div class="ci">IC90: '+pct(ciA_lo)+' – '+pct(ciA_hi)+'</div></div>';
-  html+='<div class="result"><b>Empate</b><span class="v">'+pct(pD)+'</span></div>';
-  html+='<div class="result"><b>Victoria visitante</b><span class="v">'+pct(pB)+'</span><div class="ci">IC90: '+pct(ciB_lo)+' – '+pct(ciB_hi)+'</div></div>';
-  html+='<div class="result"><b>Puntos esp. local</b><span class="v">'+(sumA/N).toFixed(1)+'</span></div>';
-  html+='<div class="result"><b>Puntos esp. visit.</b><span class="v">'+(sumB/N).toFixed(1)+'</span></div>';
-  html+='<div class="result"><b>Total esperado</b><span class="v">'+((sumA+sumB)/N).toFixed(1)+'</span></div>';
-  html+='<div class="result"><b>Over 44.5</b><span class="v">'+pct(pOver)+'</span></div>';
-  html+='</div>';
-  html+=calibrationBlock('NFL',{pA,pD,pB});
-  html+=valueBettingBlock('NFL',{pA,pD,pB,pOver,ids:{oddA:'n_oddA',oddB:'n_oddB',oddO:'n_oddO',oddU:'n_oddU'}});
-  html+=top10(score,'10 marcadores más probables');
-  html+=top10(totals,'10 totales más probables');
-  html+=top10(spread,'10 diferenciales más probables');
-  html+=auditBlock(used,missing,detail);
-  lastPrediction={sport:'NFL',a:nm('n_nombreA')||'Local',b:nm('n_nombreB')||'Visitante',N,seed:val('seed'),pA,pD,pB,market:'A'};
-  return['NFL',html];
-}
-
-/* ============================================================
-   TENIS v4.5
-   ============================================================ */
-function holdToPoint(hold){return clamp(0.5+(hold-0.5)*0.55,0.40,0.78)}
-function simTenis(N,prefix,label){
-  currentN=N;
-  const ea=val(prefix+'_eloA'),eb=val(prefix+'_eloB');
-  if(ea===null||eb===null)return[label,'<div class="error">Falta Elo general de ambos.</div>'];
-  const used=[],missing=[],detail=[];
-  const sa=val(prefix+'_seloA'),sb=val(prefix+'_seloB');
-  let eA,eB;
-  if(sa!==null&&sb!==null){eA=sa;eB=sb;used.push('Elo general + superficie')}
-  else{eA=ea;eB=eb;used.push('Elo general')}
-  
-  let pPointElo=1/(1+10**((eB-eA)/400));
-  pPointElo=clamp(0.5+(pPointElo-0.5)*0.35,0.30,0.70);
-
-  function add(fA,fB,lbl,scale,div,higherBetter){
-    const a=val(prefix+fA),b=val(prefix+fB);
-    if(a!==null&&b!==null){
-      const d=(a-b)/div*(higherBetter?1:-1);
-      pPointElo=clamp(pPointElo+d*scale,0.25,0.75);
-      used.push(lbl);
-    } else missing.push(lbl);
-  }
-  add('_formA','_formB','Forma',1,1000,true);
-  add('_breakA','_breakB','Break',1,400,true);
-  add('_tbA','_tbB','Tie-break',1,600,true);
-  add('_fatA','_fatB','Fatiga',1,1000,false);
-  add('_avA','_avB','Disponibilidad',1,2000,true);
-
-  let holdA=val(prefix+'_holdA'),holdB=val(prefix+'_holdB');
-  if(holdA!==null){used.push('Hold A')}else{missing.push('Hold A');holdA=clamp(0.5+(pPointElo-0.5)*0.55+0.15,0.50,0.90)}
-  if(holdB!==null){used.push('Hold B')}else{missing.push('Hold B');holdB=clamp(0.5-(pPointElo-0.5)*0.55+0.15,0.50,0.90)}
-  
-  const fsA=val(prefix+'_fsA'),fsB=val(prefix+'_fsB'),ssA=val(prefix+'_ssA'),ssB=val(prefix+'_ssB'),retA=val(prefix+'_retA'),retB=val(prefix+'_retB');
-  let pServeA_hold=holdA,pServeB_hold=holdB;
-  if(fsA!==null&&ssA!==null){pServeA_hold=clamp((fsA/100)*0.65+(ssA/100)*0.35,0.45,0.95);used.push('Saque A directo');}
-  if(fsB!==null&&ssB!==null){pServeB_hold=clamp((fsB/100)*0.65+(ssB/100)*0.35,0.45,0.95);used.push('Saque B directo');}
-  if(retA!==null){pServeB_hold=clamp(pServeB_hold+(0.35-retA/100)*0.3,0.45,0.95);used.push('Resto A')}
-  if(retB!==null){pServeA_hold=clamp(pServeA_hold+(0.35-retB/100)*0.3,0.45,0.95);used.push('Resto B')}
-
-  const pServePointA=holdToPoint(pServeA_hold);
-  const pServePointB=holdToPoint(pServeB_hold);
-
-  function simGame(pWinPointServer){
-    let s=0,r=0,safety=0;
-    while(true){
-      safety++;
-      if(safety>500)return s>r;
-      if(rnd()<pWinPointServer)s++;else r++;
-      if(s>=4&&s-r>=2)return true;
-      if(r>=4&&r-s>=2)return false;
-    }
-  }
-  function simTieBreak(pA_serves, pB_serves){
-    let a=0,b=0,safety=0,serverIsA=true,pointsServed=0;
-    while(true){
-      safety++;
-      if(safety>200)return a>b;
-      const pA_wins = serverIsA ? pA_serves : (1 - pB_serves);
-      if(rnd()<pA_wins)a++;else b++;
-      pointsServed++;
-      if(pointsServed===1 || (pointsServed>1 && pointsServed%2===1)) serverIsA=!serverIsA;
-      if(a>=7&&a-b>=2)return true;
-      if(b>=7&&b-a>=2)return false;
-    }
-  }
-
-  let wa=0,wb=0;
-  const setScores={},gameCounts={};
-  for(let i=0;i<N;i++){
-    let setsA=0,setsB=0,gA=0,gB=0,serverIsA=true;
-    while(setsA<2&&setsB<2){
-      let gA_set=0,gB_set=0,safety=0;
-      while(true){
-        safety++;
-        if(safety>100)break;
-        if(gA_set===6&&gB_set===6){
-          if(simTieBreak(pServePointA,pServePointB))gA_set++;else gB_set++;
-          break;
-        }
-        if(gA_set>=6&&gA_set-gB_set>=2)break;
-        if(gB_set>=6&&gB_set-gA_set>=2)break;
-        const pWinServer=serverIsA?pServePointA:pServePointB;
-        if(simGame(pWinServer)){if(serverIsA)gA_set++;else gB_set++;}
-        else{if(serverIsA)gB_set++;else gA_set++;}
-        serverIsA=!serverIsA;
-      }
-      if(gA_set>gB_set)setsA++;else setsB++;
-      gA+=gA_set;gB+=gB_set;
-    }
-    if(setsA>setsB)wa++;else wb++;
-    record(setScores,setsA+'-'+setsB);
-    record(gameCounts,gA+'-'+gB);
-  }
-  const pA=wa/N,pB=wb/N;
-  const [ciA_lo,ciA_hi]=wilsonCI(wa,N);
-  const [ciB_lo,ciB_hi]=wilsonCI(wb,N);
-  let html='<div class="result-grid">';
-  html+='<div class="result"><b>Victoria A</b><span class="v">'+pct(pA)+'</span><div class="ci">IC90: '+pct(ciA_lo)+' – '+pct(ciA_hi)+'</div></div>';
-  html+='<div class="result"><b>Victoria B</b><span class="v">'+pct(pB)+'</span><div class="ci">IC90: '+pct(ciB_lo)+' – '+pct(ciB_hi)+'</div></div>';
-  html+='<div class="result"><b>Hold A / B</b><span class="v">'+pct(pServeA_hold)+' / '+pct(pServeB_hold)+'</span></div>';
-  html+='</div>';
-  html+=calibrationBlock(label,{pA,pD:null,pB});
-  html+=valueBettingBlock(label,{pA,pD:null,pB,ids:{oddA:prefix+'_oddA',oddB:prefix+'_oddB'}});
-  html+=top10(setScores,'10 marcadores de sets');
-  html+=top10(gameCounts,'10 totales de juegos');
-  html+=auditBlock(used,missing,detail);
-  lastPrediction={sport:label,a:nm(prefix+'_nombreA')||'A',b:nm(prefix+'_nombreB')||'B',N,seed:val('seed'),pA,pB,market:'A'};
-  return[label,html];
-}
-
-/* ============================================================
-   VALUE BETTING & UI HELPERS
-   ============================================================ */
-function kellyFraction(p,odd){const b=odd-1;if(b<=0)return 0;const q=1-p;return clamp((p*b-q)/b,0,1)}
-function valueRow(label,p,odd,bankroll){
-  if(odd==null||!Number.isFinite(odd)||odd<=1)return'';
-  p=clamp(p,0.001,0.999);
-  const ev=p*odd-1,kFull=kellyFraction(p,odd),kQuarter=kFull*0.25,stake=kQuarter*bankroll;
-  let cls='value-bad',tag='Sin value';
-  if(ev>0.05){cls='value-good';tag='✅ Value claro'}
-  else if(ev>0.01){cls='value-mid';tag='⚠️ Value marginal'}
-  return '<div class="'+cls+'"><b>'+label+'</b> — p='+pct(p)+' · cuota '+odd.toFixed(2)+' · EV='+(ev*100).toFixed(2)+'% · Kelly ¼ = '+pct(kQuarter)+' → stake '+(stake>0?stake.toFixed(2):'0')+' u · <b>'+tag+'</b></div>';
-}
-function valueBettingBlock(sport,args){
-  const {pA,pD,pB,pO25,pBTTS,ids}=args;
-  const bank=val('bankroll')||100;
-  const rows=[];
-  if(pA!=null&&ids.oddA)rows.push(valueRow('Local/A',pA,val(ids.oddA),bank));
-  if(pD!=null&&ids.oddD)rows.push(valueRow('Empate',pD,val(ids.oddD),bank));
-  if(pB!=null&&ids.oddB)rows.push(valueRow('Visitante/B',pB,val(ids.oddB),bank));
-  if(pO25!=null&&ids.oddO)rows.push(valueRow('Over',pO25,val(ids.oddO),bank));
-  if(pBTTS!=null&&ids.oddBS)rows.push(valueRow('BTTS Sí',pBTTS,val(ids.oddBS),bank));
-  const active=rows.filter(r=>r);
-  if(!active.length)return'';
-  return '<div class="audit"><b>💎 Value Betting (bankroll '+bank+' u)</b>'+active.join('')+'</div>';
-}
-function record(m,k){m[k]=(m[k]||0)+1}
-function top10(m,title){
-  const e=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  return '<div class="audit"><b>'+title+'</b><ol style="margin:6px 0 0 18px;padding:0">'+e.map((x,i)=>'<li>#'+(i+1)+' <b>'+x[0]+'</b> — '+pct(x[1]/currentN)+'</li>').join('')+'</ol></div>';
-}
-function auditBlock(used,missing,detail){
-  return '<div class="audit"><b>Control de datos</b><br><span class="ok">Usados:</span> '+(used.length?used.join(', '):'ninguno')+'.<br><span class="warn">N/D:</span> '+(missing.length?missing.join(', '):'ninguno')+'.</div>';
-}
-function explainBlock(sport,parts){
-  const {elo,poisson,form,weights,final}=parts;
-  if(elo==null||poisson==null||form==null)return'';
-  return '<div class="explain"><b>Cómo se construyó la probabilidad final</b><br>Elo: '+pct(elo)+' · Poisson: '+pct(poisson)+' · Forma: '+pct(form)+'<br><b>Final combinada: '+pct(final)+'</b></div>';
-}
-function calibrationBlock(sport,preds){
-  const {pA,pD,pB}=preds;
-  const calA=learnedCal(pA,sport,'A');
-  const calB=learnedCal(pB,sport,'B');
-  return '<div class="audit"><b>Calibración aprendida</b><br>Local/A: '+pct(pA)+' → '+pct(calA.p)+' ('+calA.n+' casos)<br>Visit/B: '+pct(pB)+' → '+pct(calB.p)+' ('+calB.n+' casos)</div>';
-}
-
-function showSport(){
-  document.querySelectorAll('.sport').forEach(x=>x.style.display='none');
-  const el=document.getElementById(document.getElementById('sport').value);
-  if(el)el.style.display='block';
-}
-
 function run(){
-  const N=Number(document.getElementById('sims').value);
-  const s=val('seed');
-  seedRandom(s);
-  lastPrediction=null;
-  try{localStorage.removeItem(PENDING_KEY)}catch(e){}
-  const sport=document.getElementById('sport').value;
-  let r;
-  if(sport==='futbol')r=simFutbol(N);
-  else if(sport==='mlb')r=simMLB(N);
-  else if(sport==='nfl')r=simNFL(N);
-  else if(sport==='tenisM')r=simTenis(N,'tm','Tenis varonil');
-  else if(sport==='tenisF')r=simTenis(N,'tf','Tenis femenil');
-  else r=['—','<div class="error">Deporte no reconocido.</div>'];
-
-  const map={futbol:['f_nombreA','f_nombreB'],mlb:['m_nombreA','m_nombreB'],nfl:['n_nombreA','n_nombreB'],tenisM:['tm_nombreA','tm_nombreB'],tenisF:['tf_nombreA','tf_nombreB']};
-  const ids=map[sport]||['',''];
-  let out='<h2>Predicción — '+r[0]+'</h2><div class="small">'+(nm(ids[0])||'A/local')+' vs '+(nm(ids[1])||'B/visitante')+' · '+N.toLocaleString('es-MX')+' simulaciones</div>'+r[1];
-  document.getElementById('results').innerHTML=out;
-  if(lastPrediction){
-    try{localStorage.setItem(PENDING_KEY,JSON.stringify(lastPrediction))}catch(e){}
-  }
+ try{
+  const N=Number(document.getElementById("sims").value);seedRandom(val("seed")??20260923);currentN=N;
+  const s=document.getElementById("sport").value;let p;
+  if(s==="futbol")p=footballN(N);
+  else if(s==="mlb")p=twoWayBase(N,"MLB");
+  else if(s==="nfl")p=twoWayBase(N,"NFL");
+  else p=tennisN(N,s==="tenisM"?"tm":"tf",s==="tenisM"?"Tenis varonil":"Tenis femenil");
+  if(s!=="futbol")p.pH=p.pMC;
+  lastPrediction=p;
+  for(const [market,prob] of Object.entries({A:p.pH.A,B:p.pH.B,D:p.pH.D,O25:p.over25,BTTS:p.btts}))if(prob!==undefined){const c=calibrated(prob,p.sport,market);p["cal_"+market]=c.p;p["calUsed_"+market]=c.used}
+  lastPrediction.pending=true;localStorage.setItem("master_oros_pending_v4_7",JSON.stringify(lastPrediction));renderPrediction(lastPrediction);renderBT();
+  document.getElementById("bt_status").innerHTML=`<b>Pronóstico listo para backtesting.</b> ${p.a} vs ${p.b}. Registra el resultado cuando termine.`;
+ }catch(e){document.getElementById("results").innerHTML=`<h2>Resultado</h2><div class="error"><b>NO SE EJECUTÓ:</b> ${e.message}</div>`}
 }
-
+function btLoad(){try{const x=JSON.parse(localStorage.getItem(BT_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function btSave(x){localStorage.setItem(BT_KEY,JSON.stringify(x))}
 function registerActual(){
-  if(!lastPrediction){alert('Primero ejecuta una predicción.');return}
-  const a=Number(document.getElementById('bt_scoreA').value);
-  const b=Number(document.getElementById('bt_scoreB').value);
-  if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0){alert('Introduce el resultado real.');return}
-  const actual=a>b?'A':a<b?'B':'D';
-  const rows=btLoad();
-  const base={...lastPrediction,completed:true,actualScoreA:a,actualScoreB:b,actual,date:new Date().toISOString().slice(0,10)};
-  rows.push({...base,market:'A',pred:base.pA,bin:bin(base.pA),correct:actual==='A'});
-  btSave(rows);
-  document.getElementById('bt_status').innerHTML='<b>Resultado registrado.</b>';
-  showBacktest();
+ if(!lastPrediction){alert("Primero ejecuta una simulación.");return}
+ const a=Number(document.getElementById("bt_scoreA").value),b=Number(document.getElementById("bt_scoreB").value);if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0){alert("Introduce ambos resultados reales.");return}
+ const actual=a>b?"A":a<b?"B":"D",p=lastPrediction.pH||lastPrediction.pMC,rows=btLoad(),date=document.getElementById("bt_date").value||new Date().toISOString().slice(0,10);
+ const recBase={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),sport:lastPrediction.sport,a:lastPrediction.a,b:lastPrediction.b,N:lastPrediction.N,seed:lastPrediction.seed,date,actualScoreA:a,actualScoreB:b,actual,rawP:{...p},usedP:{A:lastPrediction.cal_A??p.A,D:lastPrediction.cal_D??p.D,B:lastPrediction.cal_B??p.B,O25:lastPrediction.cal_O25??lastPrediction.over25,BTTS:lastPrediction.cal_BTTS??lastPrediction.btts},odds:{A:val("oddA"),D:val("oddD"),B:val("oddB"),O25:val("oddO25"),BTTS:val("oddBTTS")},createdAt:new Date().toISOString(),completed:true};
+ [["A",p.A,actual==="A"],["D",p.D,actual==="D"],["B",p.B,actual==="B"]].forEach(([m,pr,y])=>rows.push({...recBase,market:m,pred:pr,actualBinary:y?1:0,correct:y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))}));
+ if(lastPrediction.over25!==undefined){const y=a+b>=3?1:0,pr=lastPrediction.cal_O25??lastPrediction.over25;rows.push({...recBase,market:"O25",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
+ if(lastPrediction.btts!==undefined){const y=a>0&&b>0?1:0,pr=lastPrediction.cal_BTTS??lastPrediction.btts;rows.push({...recBase,market:"BTTS",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
+ btSave(rows);localStorage.removeItem("master_oros_pending_v4_7");document.getElementById("bt_scoreA").value="";document.getElementById("bt_scoreB").value="";document.getElementById("bt_status").innerHTML="<b>Resultado registrado.</b>";renderBT();
 }
-
-function relearnRho(){
-  const futbol=btLoad().filter(r=>r.completed&&r.market==='A'&&r.sport==='Fútbol'&&r.la!=null&&r.lb!=null);
-  if(futbol.length<5){alert('Necesitas al menos 5 partidos de fútbol registrados.');return}
-  rhoSave(-0.08);
-  alert('ρ recalculado.');
-  showBacktest();
+function renderBT(){
+ const rows=btLoad(),g=rows.filter(r=>r.completed&&["A","D","B"].includes(r.market)),by={};g.forEach(r=>(by[r.sport]??=[]).push(r));
+ let h=`<b>Registros de mercados 1X2:</b> ${g.length/3||0}`;if(!g.length){document.getElementById("bt_analysis").innerHTML=h+"<br>Sin resultados reales.";return}
+ h+=`<table class="table"><tr><th>Deporte</th><th>Partidos</th><th>Accuracy</th><th>Brier 1X2</th><th>Log Loss</th></tr>`;
+ for(const[s,arr]of Object.entries(by)){const ids=[...new Map(arr.map(r=>[r.id,r])).values()],acc=ids.filter(r=>{const pr=r.usedP||r.rawP;return(pr[r.actual]??0)>=Math.max(pr.A??0,pr.D??0,pr.B??0)}).length/ids.length;
+  let br=0,ll=0;ids.forEach(r=>{const p=r.rawP;br+=brier1x2(p,r.actual);ll+=logLoss(p[r.actual])});h+=`<tr><td>${s}</td><td>${ids.length}</td><td>${pct(acc)}</td><td>${(br/ids.length).toFixed(4)}</td><td>${(ll/ids.length).toFixed(4)}</td></tr>`}
+ h+="</table>";
+ for(const m of["O25","BTTS"]){const a=rows.filter(r=>r.completed&&r.market===m);if(a.length){h+=`<div style="margin-top:7px"><b>${m}</b> — ${a.length} casos · accuracy ${pct(a.filter(r=>r.correct).length/a.length)}</div>`}}
+ document.getElementById("bt_analysis").innerHTML=h;
 }
-
-function showBacktest(){
-  const rows=btLoad();
-  const base=rows.filter(r=>r.completed&&r.market==='A');
-  let html='<b>Análisis</b> — '+base.length+' partidos';
-  document.getElementById('bt_analysis').innerHTML=html;
-}
-
-function exportBacktest(){
-  const data=JSON.stringify({rows:btLoad(),weights:weightsLoad(),rho:rhoLoad()},null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MasterOros_backtest.json';a.click();
-}
-function importBacktest(){document.getElementById('bt_file').click()}
-function loadBacktestFile(e){e.target.value='';}
-function clearBacktest(){if(confirm('¿Borrar historial?')){localStorage.clear();location.reload();}}
-function clearAll(){
-  document.querySelectorAll('input').forEach(e=>{if(e.id!=='seed'&&e.type!=='date'&&e.type!=='file'&&e.id!=='bankroll')e.value='';});
-  document.getElementById('results').innerHTML='<h2>Resultado</h2>';
-}
-
-showSport();
-showBacktest();
-</script><script>
-// ✅ ID de tu hoja de Google Sheets
-const ID_HOJA = "1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
-
-// Base de datos global
-const BD = {
-  futbol: [],
-  mlb: [],
-  nfl: [],
-  tenis_varonil: [],
-  tenis_femenil: []
-};
-
-// Cargar cada pestaña
-async function cargarPestana(nombreHoja, claveBD) {
-  const url = `https://docs.google.com/spreadsheets/d/${ID_HOJA}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombreHoja)}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("No se pudo leer");
-    const texto = await res.text();
-    BD[claveBD] = csvAArray(texto);
-    console.log(`✅ ${nombreHoja}: ${BD[claveBD].length} filas cargadas`);
-  } catch (error) {
-    console.error(`❌ Error en ${nombreHoja}:`, error.message);
-  }
-}
-
-// Convertir CSV a tabla usable
-function csvAArray(texto) {
-  const lineas = texto.trim().split("\n").filter(l => l.trim() !== "");
-  if (lineas.length < 2) return [];
-  const encabezados = lineas[0].split(",").map(e => e.replace(/"/g, "").trim());
-  return lineas.slice(1).map(linea => {
-    const valores = linea.split(",").map(v => v.replace(/"/g, "").trim());
-    return Object.fromEntries(encabezados.map((h, i) => [h, valores[i] || ""]));
-  });
-}
-
-// Iniciar TODO con los NOMBRES EXACTOS de tus pestañas
-async function iniciarBaseDatos() {
-  await Promise.all([
-    cargarPestana("00futbol", "futbol"),
-    cargarPestana("00MLB", "mlb"),
-    cargarPestana("00NFL", "nfl"),
-    cargarPestana("00Tenis varonil", "tenis_varonil"),
-    cargarPestana("0Tenis femenil", "tenis_femenil")
-  ]);
-  console.log("✅ BASE DE DATOS CONECTADA — LISTA PARA SIMULAR");
-  
-  // ✅ Aquí se llama a tu simulación cuando los datos estén listos:
-  // iniciarSimulacion();
-}
-
-// Ejecutar todo
-iniciarBaseDatos();
+function exportBT(){const blob=new Blob([JSON.stringify(btLoad(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Master_Oros_v4_7_backtesting.json";a.click();URL.revokeObjectURL(a.href)}
+function importBT(){document.getElementById("bt_file").click()}
+function loadBT(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw Error("El JSON no contiene un arreglo.");btSave(x);renderBT();alert("Historial importado y validado.");}catch(err){alert("No se pudo importar: "+err.message)}};r.readAsText(f);e.target.value=""}
+function clearBT(){if(confirm("¿Borrar solo el historial de Master Oros v4.7 de este dispositivo?")){localStorage.removeItem(BT_KEY);localStorage.removeItem("master_oros_pending_v4_7");lastPrediction=null;renderBT();document.getElementById("bt_status").textContent="Historial borrado."}}
+function clearAll(){document.querySelectorAll("input").forEach(e=>{if(e.id!=="seed")e.value=""});document.getElementById("seed").value="20260923";document.getElementById("homeAdv").value="";lastPrediction=null;currentData={A:null,B:null};document.getElementById("results").innerHTML="<h2>Resultado</h2><div class='note'>Entradas limpiadas.</div>";document.getElementById("valueView").textContent="Ejecuta una simulación para calcular valor.";document.getElementById("dataView").textContent="No se ha realizado búsqueda."}
+function showSport(){document.querySelectorAll(".sport").forEach(e=>e.style.display="none");document.getElementById(document.getElementById("sport").value).style.display="block"}
+document.getElementById("loadDb").onclick=()=>loadDB().catch(e=>setStatus("No se pudo cargar la base: "+e.message,"bad"));
+document.getElementById("bot").onclick=()=>botFill().catch(e=>setStatus("Error en búsqueda: "+e.message,"bad"));
+document.getElementById("run").onclick=run;document.getElementById("clear").onclick=clearAll;
+document.getElementById("register").onclick=registerActual;document.getElementById("refreshBT").onclick=renderBT;document.getElementById("exportBT").onclick=exportBT;document.getElementById("importBT").onclick=importBT;document.getElementById("bt_file").addEventListener("change",loadBT);document.getElementById("clearBT").onclick=clearBT;
+document.getElementById("bt_date").value=new Date().toISOString().slice(0,10);showSport();renderBT();loadDB().catch(()=>{});
 </script>
-
-</body></html>
+</body>
+</html>
