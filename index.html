@@ -1670,50 +1670,62 @@ const ALIASES={
    DETECCIÓN DE COLUMNAS
    ========================================================= */
 
-function findCol(row,aliases,used=new Set()){
+function rowName(row){
+ const keys=Object.keys(row||{});
+ /* Primero usa encabezados conocidos. */
+ for(const key of keys){
+  const n=norm(key);
+  if(n==='nombre'||n==='name'||n==='jugador'||n==='player'||n.includes('nombre')){
+   const v=String(row[key]??'').trim();
+   if(v)return v;
+  }
+ }
+ /* Respaldo para 00futbol: la columna B es Nombre. */
+ if(keys.length>1){
+  const v=String(row[keys[1]]??'').trim();
+  if(v && numericCell(v)===null)return v;
+ }
+ return '';
+}
 
- const keys=Object.keys(row);
+function findNameCol(row){
+ const keys=Object.keys(row||{});
+ for(const key of keys){
+  const n=norm(key);
+  if(n==='nombre'||n==='name'||n==='jugador'||n==='player'||n.includes('nombre'))return key;
+ }
+ if(keys.length>1)return keys[1];
+ return null;
+}
+
+function findCol(row,aliases,used=new Set()){
+ const keys=Object.keys(row||{});
  const normalized=keys.map(k=>[k,norm(k)]);
  let best=null;
  let bestScore=0;
-
  for(const [key,n] of normalized){
   if(used.has(key)||!n)continue;
-
   for(const alias of aliases){
    const a=norm(alias);
    if(!a)continue;
-
    let score=0;
-   if(n===a) score=100;
-   else if(n.startsWith(a)) score=94;
-   else if(n.endsWith(a)) score=90;
-   else if(n.includes(a)) score=84;
-   else if(a.includes(n)) score=72;
+   if(n===a)score=100;
+   else if(n.startsWith(a))score=94;
+   else if(n.endsWith(a))score=90;
+   else if(n.includes(a))score=84;
+   else if(a.includes(n))score=72;
    else {
     const ns=new Set(n.split(' '));
     const as=a.split(' ').filter(Boolean);
     const hits=as.filter(t=>ns.has(t)).length;
-    if(hits) score=55+30*(hits/as.length);
+    if(hits)score=55+30*(hits/as.length);
    }
-
-   if(score>bestScore){
-    bestScore=score;
-    best=key;
-   }
+   if(score>bestScore){bestScore=score;best=key;}
   }
  }
-
  return best;
 }
 
-/*
-  Algunas hojas antiguas usan encabezados poco descriptivos o
-  diferentes a los nombres actuales del formulario. Como respaldo,
-  se conserva el orden histórico de columnas de cada deporte.
-  Este respaldo SOLO se usa cuando el encabezado no permite detectar
-  la columna y además se comprueba que el valor de la fila sea numérico.
-*/
 const FALLBACK_COLUMNS={
  futbol:['nombre','elo','gf','ga','xg','xga','sot','corners','fouls','cards','form10','availability'],
  mlb:['nombre','elo','runs','runsAllowed','ops','hr','k','bb','starterEra','bullpenEra','defense'],
@@ -1732,55 +1744,23 @@ function numericCell(v){
 }
 
 function findFieldCol(row,sport,key,used=new Set()){
- const aliases=ALIASES[key]||[];
- const direct=findCol(row,aliases,used);
+ const direct=findCol(row,ALIASES[key]||[],used);
  if(direct)return direct;
-
- /*
-   Respaldo robusto: algunas versiones de la hoja tienen encabezados
-   diferentes o poco descriptivos. En ese caso usamos la posición de la
-   columna de Nombre como ancla y seguimos el orden histórico de las
-   estadísticas del deporte. Así no dependemos de que el encabezado sea
-   exactamente "GF", "GA", "xG", etc.
- */
+ const keys=Object.keys(row||{});
  const order=FALLBACK_COLUMNS[sport]||[];
  const statIndex=order.indexOf(key);
  if(statIndex<1)return null;
-
- const keys=Object.keys(row);
- const nameCol=findCol(row,ALIASES.nombre,new Set());
+ const nameCol=findNameCol(row);
  let anchor=nameCol?keys.indexOf(nameCol):-1;
-
- /* Si no se pudo localizar el nombre por encabezado, intenta encontrarlo
-    entre las columnas de texto del registro. */
- if(anchor<0){
-  for(let i=0;i<keys.length;i++){
-   if(used.has(keys[i]))continue;
-   const v=String(row[keys[i]]??'').trim();
-   if(v && numericCell(v)===null){
-    anchor=i;
-    break;
-   }
-  }
+ if(anchor<0)anchor=1;
+ const candidate=keys[anchor+statIndex];
+ if(candidate && !used.has(candidate)){
+  const value=row[candidate];
+  if(numericCell(value)!==null || key==='form' || key==='availability')return candidate;
  }
-
- if(anchor>=0){
-  const candidate=keys[anchor+statIndex];
-  if(candidate && !used.has(candidate)){
-   const value=row[candidate];
-   /* Acepta también valores textuales útiles; para los campos estadísticos
-      normales exigimos que el valor pueda convertirse a número. */
-   if(numericCell(value)!==null || key==='form' || key==='availability'){
-    return candidate;
-   }
-  }
- }
-
- /* Último respaldo: buscar una columna numérica no usada en el orden
-    esperado, sin reutilizar una columna ya asignada. */
+ /* Fallback final: columnas numéricas en el orden físico de la fila. */
  const numericKeys=keys.filter(k=>!used.has(k)&&numericCell(row[k])!==null);
- const candidate=numericKeys[statIndex-1];
- return candidate||null;
+ return numericKeys[statIndex-1]||null;
 }
 
 
@@ -1830,35 +1810,38 @@ function scoreName(query,candidate){
 }
 
 function getSuggestions(sport,name,limit=6){
- const q=String(name||"").trim();
+ const q=String(name||'').trim();
  if(!q)return [];
-
  const rows=BD[sport]||[];
  const out=[];
-
  for(const row of rows){
-  const col=findCol(row,ALIASES.nombre);
-  if(!col)continue;
-
-  const candidate=String(row[col]??"").trim();
+  const candidate=rowName(row);
   if(!candidate)continue;
-
   const score=scoreName(q,candidate);
-  if(score>=35)out.push({row,name:candidate,score,found:{row,score,name:candidate}});
+  if(score>=25)out.push({row,name:candidate,score,found:{row,score,name:candidate}});
  }
-
  const unique=new Map();
  out.sort((a,b)=>b.score-a.score).forEach(x=>{
   const key=norm(x.name);
   if(!unique.has(key))unique.set(key,x);
  });
-
  return [...unique.values()].slice(0,limit);
 }
 
 function findRecord(sport,name){
- const best=getSuggestions(sport,name,1)[0];
- return best&&best.score>=60?best.found:null;
+ const q=norm(name);
+ if(!q)return null;
+ const rows=BD[sport]||[];
+ let best=null;
+ for(const row of rows){
+  const candidate=rowName(row);
+  if(!candidate)continue;
+  const cn=norm(candidate);
+  if(cn===q)return {row,score:100,name:candidate};
+  const score=scoreName(name,candidate);
+  if(!best||score>best.score)best={row,score,name:candidate};
+ }
+ return best&&best.score>=45?best:null;
 }
 
 
@@ -1867,7 +1850,7 @@ function mapRecord(found,sport){
  if(!found)return null;
 
  const out={
-  nombre:found.name,
+  nombre:found.name||rowName(found.row),
   _source:"Google Sheets",
   _matchScore:found.score,
   _raw:found.row,
@@ -1875,7 +1858,7 @@ function mapRecord(found,sport){
  };
 
  const used=new Set();
- const nameCol=findCol(found.row,ALIASES.nombre,used);
+ const nameCol=findNameCol(found.row);
  if(nameCol)used.add(nameCol);
 
  for(const key of Object.keys(ALIASES)){
@@ -1890,6 +1873,26 @@ function mapRecord(found,sport){
    out[key]=null;
   }
  }
+
+ /* Si la hoja usa encabezados repetidos o nombres poco descriptivos,
+    completa lo que siga vacío usando la posición real de las columnas.
+    En 00futbol: B=Nombre, C=Elo, D=GF/partido, etc. */
+ const keys=Object.keys(found.row||{});
+ const nameIndex=nameCol?keys.indexOf(nameCol):1;
+ const order=FALLBACK_COLUMNS[sport]||[];
+ order.forEach((key,idx)=>{
+  if(key==='nombre'||out[key]!==null&&out[key]!==undefined) return;
+  const col=keys[nameIndex+idx];
+  if(!col)return;
+  const raw=found.row[col];
+  if(raw!==null&&raw!==undefined&&String(raw).trim()!==''){
+   const value=numericCell(raw);
+   if(value!==null || key==='form' || key==='availability'){
+    out[key]=value!==null?value:String(raw).trim();
+    out._mappedColumns[key]=col;
+   }
+  }
+ });
 
  return out;
 }
