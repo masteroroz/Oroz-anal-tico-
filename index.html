@@ -92,6 +92,27 @@ button{cursor:pointer;font-weight:700}
  padding:10px;border:1px solid #e0b4b4;
  background:#fff7f7;border-radius:9px
 }
+.autocomplete{
+ position:relative;margin-top:6px;z-index:20
+}
+.autocomplete-list{
+ display:none;border:1px solid var(--line);border-radius:9px;
+ background:#fff;box-shadow:0 8px 22px rgba(16,24,40,.10);overflow:hidden
+}
+.autocomplete-list.open{display:block}
+.autocomplete-item{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:8px 9px;border-bottom:1px solid #eef0f3;cursor:pointer
+}
+.autocomplete-item:last-child{border-bottom:0}
+.autocomplete-item:hover{background:#f5f8fc}
+.autocomplete-name{font-weight:750}
+.autocomplete-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.autocomplete-action{
+ width:auto;flex:0 0 auto;padding:6px 9px;background:#eef4fb;
+ color:var(--accent);border-color:#cfe0f2
+}
+.autocomplete-empty{padding:9px;color:var(--muted);font-size:12px}
 .good{color:var(--ok)}
 .danger{color:var(--bad)}
 .warnText{color:var(--warn)}
@@ -243,6 +264,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="f_nombreA">
+<div class="autocomplete" data-for="f_nombreA"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -316,6 +338,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="f_nombreB">
+<div class="autocomplete" data-for="f_nombreB"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -400,6 +423,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="m_nombreA">
+<div class="autocomplete" data-for="m_nombreA"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -463,6 +487,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="m_nombreB">
+<div class="autocomplete" data-for="m_nombreB"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -537,6 +562,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="n_nombreA">
+<div class="autocomplete" data-for="n_nombreA"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -600,6 +626,7 @@ No se ha realizado búsqueda.
 <div>
 <label>Nombre</label>
 <input id="n_nombreB">
+<div class="autocomplete" data-for="n_nombreB"><div class="autocomplete-list"></div></div>
 </div>
 
 <div>
@@ -671,7 +698,8 @@ No se ha realizado búsqueda.
 
 <div class="metrics">
 
-<div><label>Nombre</label><input id="tm_nombreA"></div>
+<div><label>Nombre</label><input id="tm_nombreA">
+<div class="autocomplete" data-for="tm_nombreA"><div class="autocomplete-list"></div></div></div>
 <div><label>Elo general *</label><input id="tm_eloA" type="number"></div>
 <div><label>Elo superficie</label><input id="tm_seloA" type="number"></div>
 <div><label>Forma 0-100</label><input id="tm_formA" type="number"></div>
@@ -696,7 +724,8 @@ No se ha realizado búsqueda.
 
 <div class="metrics">
 
-<div><label>Nombre</label><input id="tm_nombreB"></div>
+<div><label>Nombre</label><input id="tm_nombreB">
+<div class="autocomplete" data-for="tm_nombreB"><div class="autocomplete-list"></div></div></div>
 <div><label>Elo general *</label><input id="tm_eloB" type="number"></div>
 <div><label>Elo superficie</label><input id="tm_seloB" type="number"></div>
 <div><label>Forma 0-100</label><input id="tm_formB" type="number"></div>
@@ -732,7 +761,8 @@ No se ha realizado búsqueda.
 
 <div class="metrics">
 
-<div><label>Nombre</label><input id="tf_nombreA"></div>
+<div><label>Nombre</label><input id="tf_nombreA">
+<div class="autocomplete" data-for="tf_nombreA"><div class="autocomplete-list"></div></div></div>
 <div><label>Elo general *</label><input id="tf_eloA" type="number"></div>
 <div><label>Elo superficie</label><input id="tf_seloA" type="number"></div>
 <div><label>Forma 0-100</label><input id="tf_formA" type="number"></div>
@@ -757,7 +787,8 @@ No se ha realizado búsqueda.
 
 <div class="metrics">
 
-<div><label>Nombre</label><input id="tf_nombreB"></div>
+<div><label>Nombre</label><input id="tf_nombreB">
+<div class="autocomplete" data-for="tf_nombreB"><div class="autocomplete-list"></div></div></div>
 <div><label>Elo general *</label><input id="tf_eloB" type="number"></div>
 <div><label>Elo superficie</label><input id="tf_seloB" type="number"></div>
 <div><label>Forma 0-100</label><input id="tf_formB" type="number"></div>
@@ -1648,84 +1679,81 @@ function findCol(row,aliases){
 }
 
 
-function findRecord(sport,name){
+function levenshtein(a,b){
+ a=String(a||""); b=String(b||"");
+ if(a===b)return 0;
+ if(!a.length)return b.length;
+ if(!b.length)return a.length;
+ let prev=Array.from({length:b.length+1},(_,i)=>i);
+ for(let i=1;i<=a.length;i++){
+  const cur=[i];
+  for(let j=1;j<=b.length;j++){
+   cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+  }
+  prev=cur;
+ }
+ return prev[b.length];
+}
+
+function similarity(a,b){
+ a=norm(a);b=norm(b);
+ if(!a||!b)return 0;
+ return 1-levenshtein(a,b)/Math.max(a.length,b.length);
+}
+
+function tokenSimilarity(a,b){
+ const aw=new Set(norm(a).split(" ").filter(Boolean));
+ const bw=new Set(norm(b).split(" ").filter(Boolean));
+ if(!aw.size||!bw.size)return 0;
+ let inter=0;
+ aw.forEach(x=>{if(bw.has(x))inter++;});
+ return inter/Math.max(aw.size,bw.size);
+}
+
+function scoreName(query,candidate){
+ const q=norm(query),c=norm(candidate);
+ if(!q||!c)return 0;
+ if(q===c)return 100;
+
+ const sim=similarity(q,c);
+ const tok=tokenSimilarity(q,c);
+
+ if(c.startsWith(q)||q.startsWith(c))return Math.max(92,85+10*sim);
+ if(c.includes(q)||q.includes(c))return Math.max(84,78+12*sim);
+
+ return clamp(45*sim+45*tok+(sim>=.85?10:0),0,99);
+}
+
+function getSuggestions(sport,name,limit=6){
+ const q=String(name||"").trim();
+ if(!q)return [];
 
  const rows=BD[sport]||[];
-
- const q=norm(name);
-
- if(!q)return null;
-
- let best=null;
+ const out=[];
 
  for(const row of rows){
-
-  const col=
-   findCol(
-    row,
-    ALIASES.nombre
-   );
-
+  const col=findCol(row,ALIASES.nombre);
   if(!col)continue;
 
-  const candidate=
-   norm(row[col]);
-
+  const candidate=String(row[col]??"").trim();
   if(!candidate)continue;
 
-  let score=0;
-
-  if(candidate===q){
-   score=100;
-  }else if(
-   candidate.includes(q)||
-   q.includes(candidate)
-  ){
-   score=85;
-  }else{
-
-   const qWords=
-    new Set(q.split(" "));
-
-   const cWords=
-    new Set(candidate.split(" "));
-
-   let inter=0;
-
-   qWords.forEach(
-    x=>{
-     if(cWords.has(x))inter++;
-    }
-   );
-
-   score=
-    70*
-    inter/
-    Math.max(
-     qWords.size,
-     cWords.size
-    );
-  }
-
-  if(
-   !best||
-   score>best.score
-  ){
-   best={
-    row,
-    score,
-    name:row[col]
-   };
-  }
+  const score=scoreName(q,candidate);
+  if(score>=35)out.push({row,name:candidate,score,found:{row,score,name:candidate}});
  }
 
- /*
-   Umbral deliberadamente conservador:
-   no rellenar si la coincidencia es dudosa.
- */
- return best&&best.score>=60
-  ?best
-  :null;
+ const unique=new Map();
+ out.sort((a,b)=>b.score-a.score).forEach(x=>{
+  const key=norm(x.name);
+  if(!unique.has(key))unique.set(key,x);
+ });
+
+ return [...unique.values()].slice(0,limit);
+}
+
+function findRecord(sport,name){
+ const best=getSuggestions(sport,name,1)[0];
+ return best&&best.score>=60?best.found:null;
 }
 
 
@@ -1864,6 +1892,173 @@ function applyRecordToInputs(
    BOT
    ========================================================= */
 
+/* =========================================================
+   AUTOCOMPLETADO DINÁMICO DE EQUIPOS / JUGADORES
+   ========================================================= */
+
+const autocompleteTimers=new Map();
+
+function closeAutocomplete(inputId){
+ const wrap=document.querySelector(`.autocomplete[data-for="${inputId}"]`);
+ const list=wrap?.querySelector(".autocomplete-list");
+ if(list){list.classList.remove("open");list.innerHTML="";}
+}
+
+function closeAllAutocomplete(exceptId=null){
+ document.querySelectorAll(".autocomplete[data-for]").forEach(wrap=>{
+  const id=wrap.dataset.for;
+  if(id!==exceptId){
+   const list=wrap.querySelector(".autocomplete-list");
+   if(list){list.classList.remove("open");list.innerHTML="";}
+  }
+ });
+}
+
+function renderAutocomplete(inputId,suggestions,message=""){
+ const wrap=document.querySelector(`.autocomplete[data-for="${inputId}"]`);
+ const list=wrap?.querySelector(".autocomplete-list");
+ if(!list)return;
+ list.innerHTML="";
+
+ if(message){
+  list.innerHTML=`<div class="autocomplete-empty">${message}</div>`;
+  list.classList.add("open");
+  return;
+ }
+
+ if(!suggestions.length){
+  list.innerHTML=`<div class="autocomplete-empty">No encontré una coincidencia clara. Revisa la ortografía o actualiza la base.</div>`;
+  list.classList.add("open");
+  return;
+ }
+
+ suggestions.forEach((item,index)=>{
+  const row=document.createElement("div");
+  row.className="autocomplete-item";
+
+  const info=document.createElement("div");
+  info.style.minWidth="0";
+
+  const name=document.createElement("div");
+  name.className="autocomplete-name";
+  name.textContent=item.name;
+
+  const meta=document.createElement("div");
+  meta.className="autocomplete-meta";
+  meta.textContent=index===0&&item.score>=80
+   ?`Coincidencia ${item.score.toFixed(0)}% · posible corrección`
+   :`Coincidencia ${item.score.toFixed(0)}%`;
+
+  info.append(name,meta);
+
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="autocomplete-action";
+  button.textContent="Completar";
+  button.addEventListener("click",ev=>{
+   ev.preventDefault();
+   ev.stopPropagation();
+   chooseAutocomplete(inputId,item);
+  });
+
+  row.append(info,button);
+  row.addEventListener("mousedown",ev=>{
+   if(ev.target!==button){
+    ev.preventDefault();
+    chooseAutocomplete(inputId,item);
+   }
+  });
+  list.appendChild(row);
+ });
+
+ list.classList.add("open");
+}
+
+function chooseAutocomplete(inputId,item){
+ const input=$(inputId);
+ if(!input)return;
+
+ const sport=$("sport").value;
+ const side=inputId.endsWith("A")?"A":"B";
+ const record=mapRecord(item.found);
+
+ input.value=item.name;
+ applyRecordToInputs(sport,record,side);
+
+ currentData[side==="A"?"A":"B"]=record;
+ currentData[side==="A"?"fa":"fb"]=item.found;
+
+ closeAllAutocomplete();
+ renderData();
+
+ setStatus(
+  `Bot: ${item.name} seleccionado y datos completados (${item.score.toFixed(0)}% de coincidencia).`,
+  item.score>=70?"ok":"warn"
+ );
+}
+
+async function autocompleteName(inputId){
+ const input=$(inputId);
+ if(!input)return;
+
+ const value=input.value.trim();
+ const sport=$("sport").value;
+
+ if(value.length<2){
+  closeAutocomplete(inputId);
+  return;
+ }
+
+ if(!DB_META.loaded){
+  renderAutocomplete(inputId,[],"Conectando con la base para buscar…");
+  try{await loadDB();}
+  catch{
+   renderAutocomplete(inputId,[],"No se pudo conectar con la base. Usa «Conectar / actualizar Google Sheets».");
+   return;
+  }
+  if(!DB_META.loaded){
+   renderAutocomplete(inputId,[],"La base todavía no está disponible.");
+   return;
+  }
+ }
+
+ renderAutocomplete(inputId,getSuggestions(sport,value,6));
+}
+
+function setupAutocomplete(){
+ const ids=[
+  "f_nombreA","f_nombreB","m_nombreA","m_nombreB",
+  "n_nombreA","n_nombreB","tm_nombreA","tm_nombreB",
+  "tf_nombreA","tf_nombreB"
+ ];
+
+ ids.forEach(id=>{
+  const input=$(id);
+  if(!input)return;
+
+  input.setAttribute("autocomplete","off");
+  input.setAttribute("spellcheck","false");
+
+  input.addEventListener("input",()=>{
+   clearTimeout(autocompleteTimers.get(id));
+   closeAllAutocomplete(id);
+   autocompleteTimers.set(id,setTimeout(()=>autocompleteName(id),180));
+  });
+
+  input.addEventListener("focus",()=>{
+   if(input.value.trim().length>=2)autocompleteName(id);
+  });
+
+  input.addEventListener("keydown",ev=>{
+   if(ev.key==="Escape")closeAutocomplete(id);
+  });
+
+  input.addEventListener("blur",()=>{
+   setTimeout(()=>closeAutocomplete(id),180);
+  });
+ });
+}
+
 function idsForSport(sport){
 
  return {
@@ -1974,15 +2169,18 @@ async function botFill(){
 
  }else if(fa||fb){
 
+  const missing=fa?ids[1]:ids[0];
+  const missingName=fa?nameB:nameA;
+
   setStatus(
-   "Bot: solo se encontró uno de los participantes. No se inventó el otro.",
+   `Bot: falta ${missingName}. Puedes corregirlo o elegir una sugerencia en el campo ${missing}.`,
    "warn"
   );
 
  }else{
 
   setStatus(
-   "Bot: no se encontraron coincidencias suficientemente seguras.",
+   "Bot: no hubo coincidencias suficientemente seguras. Escribe el nombre y elige una sugerencia para corregirlo/completarlo.",
    "warn"
   );
  }
@@ -4909,7 +5107,10 @@ function showSport(){
    ========================================================= */
 
 $("sport").onchange=
- showSport;
+ ()=>{
+  showSport();
+  closeAllAutocomplete();
+ };
 
 
 $("sheetUrl").addEventListener(
@@ -4995,6 +5196,7 @@ $("sheetUrl").value=
 updateSheetId();
 
 showSport();
+setupAutocomplete();
 
 renderBT();
 
