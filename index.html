@@ -1633,46 +1633,87 @@ const ALIASES={
    DETECCIÓN DE COLUMNAS
    ========================================================= */
 
-function findCol(row,aliases){
+function findCol(row,aliases,used=new Set()){
 
  const keys=Object.keys(row);
+ const normalized=keys.map(k=>[k,norm(k)]);
+ let best=null;
+ let bestScore=0;
 
- const normalized=
-  keys.map(k=>[
-   k,
-   norm(k)
-  ]);
+ for(const [key,n] of normalized){
+  if(used.has(key)||!n)continue;
 
- /*
-   Primero coincidencia exacta.
- */
- for(const alias of aliases){
+  for(const alias of aliases){
+   const a=norm(alias);
+   if(!a)continue;
 
-  const a=norm(alias);
+   let score=0;
+   if(n===a) score=100;
+   else if(n.startsWith(a)) score=94;
+   else if(n.endsWith(a)) score=90;
+   else if(n.includes(a)) score=84;
+   else if(a.includes(n)) score=72;
+   else {
+    const ns=new Set(n.split(' '));
+    const as=a.split(' ').filter(Boolean);
+    const hits=as.filter(t=>ns.has(t)).length;
+    if(hits) score=55+30*(hits/as.length);
+   }
 
-  const found=
-   normalized.find(
-    ([,n])=>n===a
-   );
-
-  if(found)return found[0];
+   if(score>bestScore){
+    bestScore=score;
+    best=key;
+   }
+  }
  }
 
- /*
-   Después coincidencia contenida.
- */
- for(const alias of aliases){
+ return best;
+}
 
-  const a=norm(alias);
+/*
+  Algunas hojas antiguas usan encabezados poco descriptivos o
+  diferentes a los nombres actuales del formulario. Como respaldo,
+  se conserva el orden histórico de columnas de cada deporte.
+  Este respaldo SOLO se usa cuando el encabezado no permite detectar
+  la columna y además se comprueba que el valor de la fila sea numérico.
+*/
+const FALLBACK_COLUMNS={
+ futbol:['nombre','elo','gf','ga','xg','xga','sot','corners','fouls','cards','form10','availability'],
+ mlb:['nombre','elo','runs','runsAllowed','ops','hr','k','bb','starterEra','bullpenEra','defense'],
+ nfl:['nombre','elo','pf','pa','offYards','defYards','td','turnovers','thirdDown','form','availability'],
+ tenisM:['nombre','elo','eloSuperficie','form','hold','breakPct','firstServe','returnWon','tiebreak','fatigue'],
+ tenisF:['nombre','elo','eloSuperficie','form','hold','breakPct','firstServe','returnWon','tiebreak','fatigue']
+};
 
-  const found=
-   normalized.find(
-    ([,n])=>
-     n.includes(a)||
-     a.includes(n)
-   );
+function numericCell(v){
+ if(v===null||v===undefined)return null;
+ const direct=num(v);
+ if(direct!==null)return direct;
+ const s=String(v).trim();
+ const m=s.match(/[-+]?\d+(?:[.,]\d+)?/);
+ return m?num(m[0]):null;
+}
 
-  if(found)return found[0];
+function findFieldCol(row,sport,key,used=new Set()){
+ const aliases=ALIASES[key]||[];
+ const direct=findCol(row,aliases,used);
+ if(direct)return direct;
+
+ const order=FALLBACK_COLUMNS[sport]||[];
+ const idx=order.indexOf(key);
+ if(idx<0)return null;
+
+ const keys=Object.keys(row);
+ const candidate=keys[idx];
+ if(candidate && !used.has(candidate) && numericCell(row[candidate])!==null){
+  return candidate;
+ }
+
+ /* Último intento: buscar una columna numérica no usada en la posición
+    esperada, tolerando una columna extra de ID al principio. */
+ const shifted=keys[idx+1];
+ if(shifted && !used.has(shifted) && numericCell(row[shifted])!==null){
+  return shifted;
  }
 
  return null;
@@ -1757,7 +1798,7 @@ function findRecord(sport,name){
 }
 
 
-function mapRecord(found){
+function mapRecord(found,sport){
 
  if(!found)return null;
 
@@ -1765,26 +1806,25 @@ function mapRecord(found){
   nombre:found.name,
   _source:"Google Sheets",
   _matchScore:found.score,
-  _raw:found.row
+  _raw:found.row,
+  _mappedColumns:{}
  };
 
- for(
-  const [key,aliases]
-  of Object.entries(ALIASES)
- ){
+ const used=new Set();
+ const nameCol=findCol(found.row,ALIASES.nombre,used);
+ if(nameCol)used.add(nameCol);
 
+ for(const key of Object.keys(ALIASES)){
   if(key==="nombre")continue;
 
-  const col=
-   findCol(
-    found.row,
-    aliases
-   );
-
-  out[key]=
-   col?
-   num(found.row[col]):
-   null;
+  const col=findFieldCol(found.row,sport,key,used);
+  if(col){
+   used.add(col);
+   out._mappedColumns[key]=col;
+   out[key]=numericCell(found.row[col]);
+  }else{
+   out[key]=null;
+  }
  }
 
  return out;
@@ -1980,7 +2020,7 @@ function chooseAutocomplete(inputId,item){
 
  const sport=$("sport").value;
  const side=inputId.endsWith("A")?"A":"B";
- const record=mapRecord(item.found);
+ const record=mapRecord(item.found,sport);
 
  input.value=item.name;
  applyRecordToInputs(sport,record,side);
@@ -2130,10 +2170,10 @@ async function botFill(){
   );
 
  const A=
-  mapRecord(fa);
+  mapRecord(fa,sport);
 
  const B=
-  mapRecord(fb);
+  mapRecord(fb,sport);
 
  currentData={
   A,
@@ -2255,6 +2295,7 @@ function renderData(){
  ${currentData.fa?.score?.toFixed(1)||"0"}%
  · campos:
  ${a?countKnown(a):0}
+ ${a?`· mapeados: ${Object.keys(a._mappedColumns||{}).length}`:""}
 
  <br>
 
@@ -2264,6 +2305,7 @@ function renderData(){
  ${currentData.fb?.score?.toFixed(1)||"0"}%
  · campos:
  ${b?countKnown(b):0}
+ ${b?`· mapeados: ${Object.keys(b._mappedColumns||{}).length}`:""}
 
  <br><br>
 
