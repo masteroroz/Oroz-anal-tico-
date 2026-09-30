@@ -982,11 +982,11 @@ const DEFAULT_SHEET_ID =
 "1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
 
 const SHEETS = {
- futbol:["00futbol","00Futbol","Futbol","Fútbol"],
+ futbol:["00futbol ","00futbol","00Futbol","Futbol","Fútbol"],
  mlb:["00MLB","MLB"],
  nfl:["00NFL","NFL"],
  tenisM:["00Tenis varonil","Tenis varonil","00TenisM"],
- tenisF:["0Tenis femenil","Tenis femenil","00TenisF"]
+ tenisF:["0Tenis femenil ","0Tenis femenil","Tenis femenil","00TenisF"]
 };
 
 const BT_KEY="master_oros_backtesting_v5_0";
@@ -1217,9 +1217,10 @@ function updateSheetId(){
 function parseCSV(text){
 
  /*
-   IMPORTANTE: las pestañas 00futbol/00MLB/etc. pueden tener filas vacías
-   arriba y, además, repetir la fila de encabezados al comenzar otra liga.
-   Por eso NO podemos asumir que rows[0] es el encabezado.
+   Lector del CSV de Google Sheets.
+   IMPORTANTE: las hojas reales tienen columnas vacías a la izquierda y
+   encabezados diferentes según el deporte. El bot SOLO usa esta función
+   para sincronizar la base; no modifica ninguna fórmula ni cálculo analítico.
  */
  const rows=[];
  let row=[];
@@ -1227,7 +1228,6 @@ function parseCSV(text){
  let quoted=false;
 
  for(let i=0;i<text.length;i++){
-
   const c=text[i];
 
   if(quoted){
@@ -1260,25 +1260,45 @@ function parseCSV(text){
  if(row.length)rows.push(row);
  if(!rows.length)return[];
 
- const norm=s=>String(s??"")
+ const nrm=s=>String(s??"")
   .normalize("NFD")
   .replace(/[\u0300-\u036f]/g,"")
   .toLowerCase()
   .trim()
   .replace(/\s+/g," ");
 
- /* Busca una fila que realmente sea de encabezados. En la captura del
-    usuario es la fila que contiene "Nombre" y "Elo", no la primera fila
-    vacía de la hoja. */
+ const isNameHeader=v=>{
+  const n=nrm(v);
+  return [
+   "nombre","name","equipo","team","jugador","player",
+   "club","seleccion","seleccion nacional","player name"
+  ].includes(n);
+ };
+
+ /*
+   No suponemos que la primera fila sea el encabezado.
+   Buscamos una fila que tenga una columna de nombre y, además, al menos
+   una columna estadística conocida por el bot. Esto evita el fallo anterior
+   con encabezados reales como "GF/partido", "Carreras/juego",
+   "Puntos anotados/j" y "1erSaqueGanado%".
+ */
+ const aliasNorms=new Set(
+  Object.values(ALIASES||{})
+   .flat()
+   .map(nrm)
+   .filter(Boolean)
+ );
+
  let headerIndex=-1;
  let headers=[];
 
  for(let i=0;i<rows.length;i++){
   const r=rows[i];
-  const n=r.map(norm);
-  const hasName=n.some(x=>x==="nombre"||x==="name"||x.includes("nombre"));
-  const hasElo=n.some(x=>x==="elo"||x.includes("elo"));
-  if(hasName && hasElo){
+  const n=r.map(nrm);
+  const hasName=n.some(isNameHeader);
+  const hasKnownField=n.some(x=>aliasNorms.has(x));
+
+  if(hasName&&hasKnownField){
    headerIndex=i;
    headers=r.map((h,j)=>String(h??"").trim()||`col_${j+1}`);
    break;
@@ -1293,31 +1313,25 @@ function parseCSV(text){
   const r=rows[i];
   if(!r.some(x=>String(x??"").trim()!==""))continue;
 
-  const normalized=r.map(norm);
-  /* Encabezado repetido (por ejemplo al iniciar MLS en la fila 24). */
-  if(normalized.some(x=>x==="nombre"||x==="name") &&
-     normalized.some(x=>x==="elo"||x.includes("elo"))){
-   continue;
-  }
+  const normalized=r.map(nrm);
+
+  /* Ignora encabezados repetidos dentro de una misma pestaña. */
+  if(normalized.some(isNameHeader)&&normalized.some(x=>aliasNorms.has(x)))continue;
 
   const obj={};
   headers.forEach((h,j)=>{
    obj[h]=r[j]??"";
   });
 
-  /* Ignora filas que no tienen nombre de equipo/jugador. */
-  const nameKey=headers.find(h=>{
-   const n=norm(h);
-   return n==="nombre"||n==="name"||n.includes("nombre");
-  });
-  if(nameKey && String(obj[nameKey]??"").trim()!==""){
+  /* Solo entran registros que realmente tienen nombre/equipo/jugador. */
+  const nameKey=headers.find(h=>isNameHeader(h));
+  if(nameKey&&String(obj[nameKey]??"").trim()!==""){
    out.push(obj);
   }
  }
 
  return out;
 }
-
 
 /*
   Se intenta:
@@ -1549,17 +1563,16 @@ const ALIASES={
  ],
 
  availability:[
-  "availability","disponibilidad",
-  "disponibilidad %"
+  "availability","disponibilidad","disponibilidad %","disponibilidad (%)"
  ],
 
  runs:[
-  "runs/game","carreras por partido",
+  "runs/game","carreras por partido","carreras/juego",
   "runs","r/game"
  ],
 
  runsAllowed:[
-  "runs allowed/game",
+  "runs allowed/game","carreras permitidas/j",
   "carreras permitidas",
   "runs allowed","ra/game"
  ],
@@ -1569,12 +1582,12 @@ const ALIASES={
  ],
 
  hr:[
-  "hr/game","jonrones por partido",
+  "hr/game","hr/juego","jonrones por partido",
   "home runs","hr"
  ],
 
  k:[
-  "k%","strikeout %","strikeouts"
+  "k%","k% bateo","strikeout %","strikeouts"
  ],
 
  bb:[
@@ -1597,38 +1610,38 @@ const ALIASES={
  ],
 
  pf:[
-  "pf/game","puntos por partido",
+  "pf/game","puntos por partido","puntos anotados/j",
   "puntos a favor","points for"
  ],
 
  pa:[
-  "pa/game","puntos permitidos por partido",
+  "pa/game","puntos permitidos por partido","puntos permitidos/j",
   "puntos en contra","points against"
  ],
 
  offYards:[
-  "offensive yards","yardas ofensivas",
+  "offensive yards","yardas ofensivas","yardas ofensivas/j",
   "off yds"
  ],
 
  defYards:[
-  "defensive yards","yardas defensivas permitidas",
+  "defensive yards","yardas defensivas permitidas","yardas defensivas/j",
   "def yds","yards allowed"
  ],
 
  td:[
-  "td/game","touchdowns por partido",
+  "td/game","touchdowns por partido","td/juego",
   "touchdowns","td"
  ],
 
  turnovers:[
-  "turnover differential",
+  "turnover differential","to diferencial/j",
   "diferencial turnovers",
   "turnover diff","turnovers"
  ],
 
  thirdDown:[
-  "3rd down %","third down %",
+  "3rd down %","3rd down %","3a oportunidad %","third down %",
   "conversion 3rd","third down"
  ],
 
@@ -1637,20 +1650,20 @@ const ALIASES={
  ],
 
  hold:[
-  "hold %","hold","service hold"
+  "hold %","hold","hold%","service hold"
  ],
 
  breakPct:[
-  "break %","break","break points won"
+  "break %","break","break%","break points won"
  ],
 
  firstServe:[
-  "first serve won %","1st serve won %",
+  "first serve won %","1st serve won %","1ersaqueganado%",
   "primer saque ganado","first serve"
  ],
 
  returnWon:[
-  "return won %","return",
+  "return won %","return","restoganado%",
   "restos ganados","return points"
  ],
 
@@ -1670,62 +1683,50 @@ const ALIASES={
    DETECCIÓN DE COLUMNAS
    ========================================================= */
 
-function rowName(row){
- const keys=Object.keys(row||{});
- /* Primero usa encabezados conocidos. */
- for(const key of keys){
-  const n=norm(key);
-  if(n==='nombre'||n==='name'||n==='jugador'||n==='player'||n.includes('nombre')){
-   const v=String(row[key]??'').trim();
-   if(v)return v;
-  }
- }
- /* Respaldo para 00futbol: la columna B es Nombre. */
- if(keys.length>1){
-  const v=String(row[keys[1]]??'').trim();
-  if(v && numericCell(v)===null)return v;
- }
- return '';
-}
-
-function findNameCol(row){
- const keys=Object.keys(row||{});
- for(const key of keys){
-  const n=norm(key);
-  if(n==='nombre'||n==='name'||n==='jugador'||n==='player'||n.includes('nombre'))return key;
- }
- if(keys.length>1)return keys[1];
- return null;
-}
-
 function findCol(row,aliases,used=new Set()){
- const keys=Object.keys(row||{});
+
+ const keys=Object.keys(row);
  const normalized=keys.map(k=>[k,norm(k)]);
  let best=null;
  let bestScore=0;
+
  for(const [key,n] of normalized){
   if(used.has(key)||!n)continue;
+
   for(const alias of aliases){
    const a=norm(alias);
    if(!a)continue;
+
    let score=0;
-   if(n===a)score=100;
-   else if(n.startsWith(a))score=94;
-   else if(n.endsWith(a))score=90;
-   else if(n.includes(a))score=84;
-   else if(a.includes(n))score=72;
+   if(n===a) score=100;
+   else if(n.startsWith(a)) score=94;
+   else if(n.endsWith(a)) score=90;
+   else if(n.includes(a)) score=84;
+   else if(a.includes(n)) score=72;
    else {
     const ns=new Set(n.split(' '));
     const as=a.split(' ').filter(Boolean);
     const hits=as.filter(t=>ns.has(t)).length;
-    if(hits)score=55+30*(hits/as.length);
+    if(hits) score=55+30*(hits/as.length);
    }
-   if(score>bestScore){bestScore=score;best=key;}
+
+   if(score>bestScore){
+    bestScore=score;
+    best=key;
+   }
   }
  }
+
  return best;
 }
 
+/*
+  Algunas hojas antiguas usan encabezados poco descriptivos o
+  diferentes a los nombres actuales del formulario. Como respaldo,
+  se conserva el orden histórico de columnas de cada deporte.
+  Este respaldo SOLO se usa cuando el encabezado no permite detectar
+  la columna y además se comprueba que el valor de la fila sea numérico.
+*/
 const FALLBACK_COLUMNS={
  futbol:['nombre','elo','gf','ga','xg','xga','sot','corners','fouls','cards','form10','availability'],
  mlb:['nombre','elo','runs','runsAllowed','ops','hr','k','bb','starterEra','bullpenEra','defense'],
@@ -1744,23 +1745,55 @@ function numericCell(v){
 }
 
 function findFieldCol(row,sport,key,used=new Set()){
- const direct=findCol(row,ALIASES[key]||[],used);
+ const aliases=ALIASES[key]||[];
+ const direct=findCol(row,aliases,used);
  if(direct)return direct;
- const keys=Object.keys(row||{});
+
+ /*
+   Respaldo robusto: algunas versiones de la hoja tienen encabezados
+   diferentes o poco descriptivos. En ese caso usamos la posición de la
+   columna de Nombre como ancla y seguimos el orden histórico de las
+   estadísticas del deporte. Así no dependemos de que el encabezado sea
+   exactamente "GF", "GA", "xG", etc.
+ */
  const order=FALLBACK_COLUMNS[sport]||[];
  const statIndex=order.indexOf(key);
  if(statIndex<1)return null;
- const nameCol=findNameCol(row);
+
+ const keys=Object.keys(row);
+ const nameCol=findCol(row,ALIASES.nombre,new Set());
  let anchor=nameCol?keys.indexOf(nameCol):-1;
- if(anchor<0)anchor=1;
- const candidate=keys[anchor+statIndex];
- if(candidate && !used.has(candidate)){
-  const value=row[candidate];
-  if(numericCell(value)!==null || key==='form' || key==='availability')return candidate;
+
+ /* Si no se pudo localizar el nombre por encabezado, intenta encontrarlo
+    entre las columnas de texto del registro. */
+ if(anchor<0){
+  for(let i=0;i<keys.length;i++){
+   if(used.has(keys[i]))continue;
+   const v=String(row[keys[i]]??'').trim();
+   if(v && numericCell(v)===null){
+    anchor=i;
+    break;
+   }
+  }
  }
- /* Fallback final: columnas numéricas en el orden físico de la fila. */
+
+ if(anchor>=0){
+  const candidate=keys[anchor+statIndex];
+  if(candidate && !used.has(candidate)){
+   const value=row[candidate];
+   /* Acepta también valores textuales útiles; para los campos estadísticos
+      normales exigimos que el valor pueda convertirse a número. */
+   if(numericCell(value)!==null || key==='form' || key==='availability'){
+    return candidate;
+   }
+  }
+ }
+
+ /* Último respaldo: buscar una columna numérica no usada en el orden
+    esperado, sin reutilizar una columna ya asignada. */
  const numericKeys=keys.filter(k=>!used.has(k)&&numericCell(row[k])!==null);
- return numericKeys[statIndex-1]||null;
+ const candidate=numericKeys[statIndex-1];
+ return candidate||null;
 }
 
 
@@ -1810,21 +1843,29 @@ function scoreName(query,candidate){
 }
 
 function getSuggestions(sport,name,limit=6){
- const q=String(name||'').trim();
+ const q=String(name||"").trim();
  if(!q)return [];
+
  const rows=BD[sport]||[];
  const out=[];
+
  for(const row of rows){
-  const candidate=rowName(row);
+  const col=findCol(row,ALIASES.nombre);
+  if(!col)continue;
+
+  const candidate=String(row[col]??"").trim();
   if(!candidate)continue;
+
   const score=scoreName(q,candidate);
-  if(score>=25)out.push({row,name:candidate,score,found:{row,score,name:candidate}});
+  if(score>=35)out.push({row,name:candidate,score,found:{row,score,name:candidate}});
  }
+
  const unique=new Map();
  out.sort((a,b)=>b.score-a.score).forEach(x=>{
   const key=norm(x.name);
   if(!unique.has(key))unique.set(key,x);
  });
+
  return [...unique.values()].slice(0,limit);
 }
 
@@ -1833,15 +1874,19 @@ function findRecord(sport,name){
  if(!q)return null;
  const rows=BD[sport]||[];
  let best=null;
+ let bestScore=-1;
  for(const row of rows){
-  const candidate=rowName(row);
+  const col=findCol(row,ALIASES.nombre);
+  if(!col)continue;
+  const candidate=String(row[col]??"").trim();
   if(!candidate)continue;
-  const cn=norm(candidate);
-  if(cn===q)return {row,score:100,name:candidate};
-  const score=scoreName(name,candidate);
-  if(!best||score>best.score)best={row,score,name:candidate};
+  const score=scoreName(q,candidate);
+  if(score>bestScore){
+   bestScore=score;
+   best={row,score,name:candidate};
+  }
  }
- return best&&best.score>=45?best:null;
+ return best&&best.score>=60?best:null;
 }
 
 
@@ -1850,7 +1895,7 @@ function mapRecord(found,sport){
  if(!found)return null;
 
  const out={
-  nombre:found.name||rowName(found.row),
+  nombre:found.name,
   _source:"Google Sheets",
   _matchScore:found.score,
   _raw:found.row,
@@ -1858,7 +1903,7 @@ function mapRecord(found,sport){
  };
 
  const used=new Set();
- const nameCol=findNameCol(found.row);
+ const nameCol=findCol(found.row,ALIASES.nombre,used);
  if(nameCol)used.add(nameCol);
 
  for(const key of Object.keys(ALIASES)){
@@ -1873,26 +1918,6 @@ function mapRecord(found,sport){
    out[key]=null;
   }
  }
-
- /* Si la hoja usa encabezados repetidos o nombres poco descriptivos,
-    completa lo que siga vacío usando la posición real de las columnas.
-    En 00futbol: B=Nombre, C=Elo, D=GF/partido, etc. */
- const keys=Object.keys(found.row||{});
- const nameIndex=nameCol?keys.indexOf(nameCol):1;
- const order=FALLBACK_COLUMNS[sport]||[];
- order.forEach((key,idx)=>{
-  if(key==='nombre'||out[key]!==null&&out[key]!==undefined) return;
-  const col=keys[nameIndex+idx];
-  if(!col)return;
-  const raw=found.row[col];
-  if(raw!==null&&raw!==undefined&&String(raw).trim()!==''){
-   const value=numericCell(raw);
-   if(value!==null || key==='form' || key==='availability'){
-    out[key]=value!==null?value:String(raw).trim();
-    out._mappedColumns[key]=col;
-   }
-  }
- });
 
  return out;
 }
@@ -2185,11 +2210,11 @@ async function botFill(){
  const sport=
   $("sport").value;
 
- if(!DB_META.loaded){
+ if(!DB_META.loaded || !(BD[sport]||[]).length){
   await loadDB();
  }
 
- if(!DB_META.loaded){
+ if(!DB_META.loaded || !(BD[sport]||[]).length){
 
   setStatus(
    "El bot no puede buscar porque Google Sheets no está disponible.",
