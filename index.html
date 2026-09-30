@@ -1216,6 +1216,11 @@ function updateSheetId(){
 */
 function parseCSV(text){
 
+ /*
+   IMPORTANTE: las pestañas 00futbol/00MLB/etc. pueden tener filas vacías
+   arriba y, además, repetir la fila de encabezados al comenzar otra liga.
+   Por eso NO podemos asumir que rows[0] es el encabezado.
+ */
  const rows=[];
  let row=[];
  let cell="";
@@ -1226,7 +1231,6 @@ function parseCSV(text){
   const c=text[i];
 
   if(quoted){
-
    if(c==='"'&&text[i+1]==='"'){
     cell+='"';
     i++;
@@ -1235,9 +1239,7 @@ function parseCSV(text){
    }else{
     cell+=c;
    }
-
   }else{
-
    if(c==='"'){
     quoted=true;
    }else if(c===','){
@@ -1246,11 +1248,7 @@ function parseCSV(text){
    }else if(c==='\n'){
     row.push(cell);
     cell="";
-
-    if(row.some(x=>String(x).trim()!=="")){
-     rows.push(row);
-    }
-
+    rows.push(row);
     row=[];
    }else if(c!=='\r'){
     cell+=c;
@@ -1258,30 +1256,66 @@ function parseCSV(text){
   }
  }
 
- if(cell!==""||row.length){
-  row.push(cell);
+ if(cell!==""||row.length)row.push(cell);
+ if(row.length)rows.push(row);
+ if(!rows.length)return[];
 
-  if(row.some(x=>String(x).trim()!=="")){
-   rows.push(row);
+ const norm=s=>String(s??"")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"")
+  .toLowerCase()
+  .trim()
+  .replace(/\s+/g," ");
+
+ /* Busca una fila que realmente sea de encabezados. En la captura del
+    usuario es la fila que contiene "Nombre" y "Elo", no la primera fila
+    vacía de la hoja. */
+ let headerIndex=-1;
+ let headers=[];
+
+ for(let i=0;i<rows.length;i++){
+  const r=rows[i];
+  const n=r.map(norm);
+  const hasName=n.some(x=>x==="nombre"||x==="name"||x.includes("nombre"));
+  const hasElo=n.some(x=>x==="elo"||x.includes("elo"));
+  if(hasName && hasElo){
+   headerIndex=i;
+   headers=r.map((h,j)=>String(h??"").trim()||`col_${j+1}`);
+   break;
   }
  }
 
- if(!rows.length)return[];
+ if(headerIndex<0)return[];
 
- const headers=rows[0].map(
-  x=>String(x).trim()
- );
+ const out=[];
 
- return rows.slice(1).map(r=>{
+ for(let i=headerIndex+1;i<rows.length;i++){
+  const r=rows[i];
+  if(!r.some(x=>String(x??"").trim()!==""))continue;
+
+  const normalized=r.map(norm);
+  /* Encabezado repetido (por ejemplo al iniciar MLS en la fila 24). */
+  if(normalized.some(x=>x==="nombre"||x==="name") &&
+     normalized.some(x=>x==="elo"||x.includes("elo"))){
+   continue;
+  }
 
   const obj={};
-
-  headers.forEach((h,i)=>{
-   obj[h]=r[i]??"";
+  headers.forEach((h,j)=>{
+   obj[h]=r[j]??"";
   });
 
-  return obj;
- });
+  /* Ignora filas que no tienen nombre de equipo/jugador. */
+  const nameKey=headers.find(h=>{
+   const n=norm(h);
+   return n==="nombre"||n==="name"||n.includes("nombre");
+  });
+  if(nameKey && String(obj[nameKey]??"").trim()!==""){
+   out.push(obj);
+  }
+ }
+
+ return out;
 }
 
 
@@ -1298,7 +1332,7 @@ async function loadSheetByName(id,sheetName){
 
  const url=
   base+
-  `?tqx=out%3Acsv&headers=1&sheet=${encodeURIComponent(sheetName)}`;
+  `?tqx=out%3Acsv&headers=0&sheet=${encodeURIComponent(sheetName)}`;
 
  const response=await fetch(
   url,
