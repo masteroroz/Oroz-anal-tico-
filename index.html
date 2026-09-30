@@ -1217,10 +1217,15 @@ function updateSheetId(){
 function parseCSV(text){
 
  /*
-   Lector del CSV de Google Sheets.
-   IMPORTANTE: las hojas reales tienen columnas vacías a la izquierda y
-   encabezados diferentes según el deporte. El bot SOLO usa esta función
-   para sincronizar la base; no modifica ninguna fórmula ni cálculo analítico.
+   Lector flexible de CSV para la sincronización del bot.
+
+   Importante:
+   - NO exige que exista una sola tabla por pestaña.
+   - Detecta varias tablas apiladas verticalmente.
+   - Cada tabla puede tener sus propias columnas.
+   - Conserva columnas nuevas aunque todavía no exista un campo equivalente
+     en el formulario.
+   - No toca ninguna fórmula ni cálculo del simulador.
  */
  const rows=[];
  let row=[];
@@ -1275,13 +1280,6 @@ function parseCSV(text){
   ].includes(n);
  };
 
- /*
-   No suponemos que la primera fila sea el encabezado.
-   Buscamos una fila que tenga una columna de nombre y, además, al menos
-   una columna estadística conocida por el bot. Esto evita el fallo anterior
-   con encabezados reales como "GF/partido", "Carreras/juego",
-   "Puntos anotados/j" y "1erSaqueGanado%".
- */
  const aliasNorms=new Set(
   Object.values(ALIASES||{})
    .flat()
@@ -1289,48 +1287,114 @@ function parseCSV(text){
    .filter(Boolean)
  );
 
- let headerIndex=-1;
- let headers=[];
+ /*
+   Una fila se considera encabezado si contiene un campo de nombre y al
+   menos otra columna. Si además contiene un alias conocido, mejor todavía.
+   Esto permite que una tabla nueva tenga columnas completamente nuevas.
+ */
+ const isHeaderRow=r=>{
+  const nonEmpty=r
+   .map(v=>String(v??"").trim())
+   .filter(Boolean);
 
- for(let i=0;i<rows.length;i++){
-  const r=rows[i];
-  const n=r.map(nrm);
-  const hasName=n.some(isNameHeader);
-  const hasKnownField=n.some(x=>aliasNorms.has(x));
-
-  if(hasName&&hasKnownField){
-   headerIndex=i;
-   headers=r.map((h,j)=>String(h??"").trim()||`col_${j+1}`);
-   break;
-  }
- }
-
- if(headerIndex<0)return[];
-
- const out=[];
-
- for(let i=headerIndex+1;i<rows.length;i++){
-  const r=rows[i];
-  if(!r.some(x=>String(x??"").trim()!==""))continue;
+  if(nonEmpty.length<2)return false;
 
   const normalized=r.map(nrm);
+  const hasName=normalized.some(isNameHeader);
+  if(!hasName)return false;
 
-  /* Ignora encabezados repetidos dentro de una misma pestaña. */
-  if(normalized.some(isNameHeader)&&normalized.some(x=>aliasNorms.has(x)))continue;
+  const hasKnown=normalized.some(x=>aliasNorms.has(x));
+  return hasKnown||nonEmpty.length>=2;
+ };
 
-  const obj={};
-  headers.forEach((h,j)=>{
-   obj[h]=r[j]??"";
-  });
+ const parsed=[];
+ let tableCount=0;
 
-  /* Solo entran registros que realmente tienen nombre/equipo/jugador. */
-  const nameKey=headers.find(h=>isNameHeader(h));
-  if(nameKey&&String(obj[nameKey]??"").trim()!==""){
-   out.push(obj);
+ for(let h=0;h<rows.length;h++){
+
+  if(!isHeaderRow(rows[h]))continue;
+
+  tableCount++;
+
+  const headers=rows[h].map(
+   (v,j)=>String(v??"").trim()||`col_${j+1}`
+  );
+
+  const nameKey=headers.find(isNameHeader);
+  if(!nameKey)continue;
+
+  for(let i=h+1;i<rows.length;i++){
+
+   const r=rows[i];
+
+   /* Una nueva fila de encabezado inicia otra tabla. */
+   if(isHeaderRow(r))break;
+
+   const nonEmpty=r
+    .map(v=>String(v??"").trim())
+    .filter(Boolean);
+
+   /* Separadores y títulos sueltos no son registros. */
+   if(nonEmpty.length<2)continue;
+
+   const obj={};
+   headers.forEach((header,j)=>{
+    obj[header]=r[j]??"";
+   });
+
+   const name=String(obj[nameKey]??"").trim();
+   if(!name)continue;
+
+   obj.__tableIndex=tableCount;
+   parsed.push(obj);
   }
  }
 
- return out;
+ if(!parsed.length)return[];
+
+ /*
+   Si una misma entidad aparece en varias tablas, fusionamos las columnas.
+   Así puedes tener, por ejemplo, una tabla de ataque y otra de defensa
+   para los mismos equipos sin perder información.
+ */
+ const merged=new Map();
+
+ for(const obj of parsed){
+
+  const nameKey=Object.keys(obj).find(isNameHeader);
+  const name=String(nameKey?obj[nameKey]:"").trim();
+  const key=nrm(name);
+
+  if(!key)continue;
+
+  if(!merged.has(key)){
+   merged.set(key,{...obj});
+   continue;
+  }
+
+  const previous=merged.get(key);
+
+  for(const [header,value] of Object.entries(obj)){
+   if(header==="__tableIndex")continue;
+
+   const old=String(previous[header]??"").trim();
+   const fresh=String(value??"").trim();
+
+   if(old===""&&fresh!==""){
+    previous[header]=value;
+   }
+  }
+ }
+
+ const result=[...merged.values()];
+
+ /* Metadato no utilizado por el análisis; sirve solo para auditoría. */
+ Object.defineProperty(result,"_tableCount",{
+  value:tableCount,
+  enumerable:false
+ });
+
+ return result;
 }
 
 /*
@@ -1899,7 +1963,8 @@ function mapRecord(found,sport){
   _source:"Google Sheets",
   _matchScore:found.score,
   _raw:found.row,
-  _mappedColumns:{}
+  _mappedColumns:{},
+  _extras:{}
  };
 
  const used=new Set();
@@ -1917,6 +1982,20 @@ function mapRecord(found,sport){
   }else{
    out[key]=null;
   }
+ }
+
+ /* Conservamos también las columnas nuevas que todavía no tienen un
+    campo analítico conocido. Esto permite que la base crezca sin romper
+    el bot y deja sus datos disponibles para un campo futuro del formulario. */
+ const mapped=new Set(Object.values(out._mappedColumns||{}));
+ const nameColRaw=findCol(found.row,ALIASES.nombre,new Set());
+
+ for(const [header,value] of Object.entries(found.row)){
+  if(header===nameColRaw)continue;
+  if(mapped.has(header))continue;
+  if(header==="__tableIndex")continue;
+  if(String(value??"").trim()==="")continue;
+  out._extras[header]=value;
  }
 
  return out;
@@ -1985,6 +2064,86 @@ function fieldId(sport,key,side){
 }
 
 
+function inputLabelText(input){
+ const wrapper=input.closest("div");
+ const label=wrapper?.querySelector("label");
+ return label?.textContent?.trim()||"";
+}
+
+function scoreHeaderToLabel(header,label){
+ const a=norm(header);
+ const b=norm(label);
+ if(!a||!b)return 0;
+ if(a===b)return 100;
+ if(b.includes(a)||a.includes(b))return 92;
+ const aw=new Set(a.split(" ").filter(Boolean));
+ const bw=new Set(b.split(" ").filter(Boolean));
+ if(!aw.size||!bw.size)return 0;
+ let hits=0;
+ aw.forEach(t=>{if(bw.has(t))hits++;});
+ const ratio=hits/Math.max(aw.size,bw.size);
+ return 55+45*ratio;
+}
+
+/*
+   Si en el futuro agregas un nuevo campo al formulario y su etiqueta
+   coincide con una columna nueva de la base, el bot puede rellenarlo sin
+   modificar la lógica analítica. Las columnas ya mapeadas por ALIASES no
+   pasan por esta heurística.
+ */
+function applyDynamicExtrasToInputs(sport,record,side,fillOnlyEmpty=true){
+ if(!record||!record._extras)return;
+
+ const section=$(sport);
+ if(!section)return;
+
+ const inputs=[...section.querySelectorAll("input[id]")]
+  .filter(input=>{
+   const id=input.id||"";
+   return id.endsWith(side);
+  })
+  .map(input=>({
+   input,
+   label:inputLabelText(input),
+   score:0
+  }))
+  .filter(x=>x.label);
+
+ const usedInputs=new Set();
+
+ for(const [header,rawValue] of Object.entries(record._extras)){
+
+  let best=null;
+
+  for(const candidate of inputs){
+   if(usedInputs.has(candidate.input.id))continue;
+
+   const score=scoreHeaderToLabel(header,candidate.label);
+   if(!best||score>best.score){
+    best={...candidate,score};
+   }
+  }
+
+  /* Umbral alto para no alterar por accidente campos analíticos. */
+  if(!best||best.score<90)continue;
+
+  const input=best.input;
+  if(fillOnlyEmpty&&String(input.value??"").trim()!=="")continue;
+
+  const value=input.type==="number"
+   ?numericCell(rawValue)
+   :rawValue;
+
+  if(value===null||value===undefined||value==="")continue;
+
+  input.value=value;
+  input.dispatchEvent(new Event("input",{bubbles:true}));
+  input.dispatchEvent(new Event("change",{bubbles:true}));
+  usedInputs.add(input.id);
+ }
+}
+
+
 function applyRecordToInputs(
  sport,
  record,
@@ -2011,6 +2170,15 @@ function applyRecordToInputs(
   input.dispatchEvent(new Event("input",{bubbles:true}));
   input.dispatchEvent(new Event("change",{bubbles:true}));
  }
+
+ /* Segundo paso: campos nuevos cuyo encabezado coincide explícitamente
+    con una etiqueta nueva del formulario. */
+ applyDynamicExtrasToInputs(
+  sport,
+  record,
+  side,
+  fillOnlyEmpty
+ );
 }
 
 
@@ -2384,6 +2552,7 @@ function renderData(){
  · campos:
  ${a?countKnown(a):0}
  ${a?`· mapeados: ${Object.keys(a._mappedColumns||{}).length}`:""}
+ ${a?`· extras leídos: ${Object.keys(a._extras||{}).length}`:""}
 
  <br>
 
@@ -2394,6 +2563,7 @@ function renderData(){
  · campos:
  ${b?countKnown(b):0}
  ${b?`· mapeados: ${Object.keys(b._mappedColumns||{}).length}`:""}
+ ${b?`· extras leídos: ${Object.keys(b._extras||{}).length}`:""}
 
  <br><br>
 
