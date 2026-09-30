@@ -1468,22 +1468,25 @@ const ALIASES={
  ],
 
  gf:[
-  "gf","gf/game","goles por partido",
-  "goles a favor partido","goals for"
+  "gf","gf/game","gf partido","gf / partido","gf por partido",
+  "goles por partido","goles a favor partido","goles a favor / partido",
+  "goles a favor","goals for"
  ],
 
  ga:[
-  "ga","ga/game","goles recibidos partido",
-  "goles en contra partido","goals against"
+  "ga","ga/game","ga partido","ga / partido","ga por partido",
+  "goles recibidos partido","goles en contra partido",
+  "goles en contra","goals against"
  ],
 
  xg:[
-  "xg","xg por partido","expected goals"
+  "xg","xg/game","xg partido","xg / partido","xg por partido",
+  "expected goals","expected goals per game"
  ],
 
  xga:[
-  "xga","xga por partido",
-  "expected goals against"
+  "xga","xga/game","xga partido","xga / partido","xga por partido",
+  "expected goals against","expected goals against per game"
  ],
 
  sot:[
@@ -1699,24 +1702,51 @@ function findFieldCol(row,sport,key,used=new Set()){
  const direct=findCol(row,aliases,used);
  if(direct)return direct;
 
+ /*
+   Respaldo robusto: algunas versiones de la hoja tienen encabezados
+   diferentes o poco descriptivos. En ese caso usamos la posición de la
+   columna de Nombre como ancla y seguimos el orden histórico de las
+   estadísticas del deporte. Así no dependemos de que el encabezado sea
+   exactamente "GF", "GA", "xG", etc.
+ */
  const order=FALLBACK_COLUMNS[sport]||[];
- const idx=order.indexOf(key);
- if(idx<0)return null;
+ const statIndex=order.indexOf(key);
+ if(statIndex<1)return null;
 
  const keys=Object.keys(row);
- const candidate=keys[idx];
- if(candidate && !used.has(candidate) && numericCell(row[candidate])!==null){
-  return candidate;
+ const nameCol=findCol(row,ALIASES.nombre,new Set());
+ let anchor=nameCol?keys.indexOf(nameCol):-1;
+
+ /* Si no se pudo localizar el nombre por encabezado, intenta encontrarlo
+    entre las columnas de texto del registro. */
+ if(anchor<0){
+  for(let i=0;i<keys.length;i++){
+   if(used.has(keys[i]))continue;
+   const v=String(row[keys[i]]??'').trim();
+   if(v && numericCell(v)===null){
+    anchor=i;
+    break;
+   }
+  }
  }
 
- /* Último intento: buscar una columna numérica no usada en la posición
-    esperada, tolerando una columna extra de ID al principio. */
- const shifted=keys[idx+1];
- if(shifted && !used.has(shifted) && numericCell(row[shifted])!==null){
-  return shifted;
+ if(anchor>=0){
+  const candidate=keys[anchor+statIndex];
+  if(candidate && !used.has(candidate)){
+   const value=row[candidate];
+   /* Acepta también valores textuales útiles; para los campos estadísticos
+      normales exigimos que el valor pueda convertirse a número. */
+   if(numericCell(value)!==null || key==='form' || key==='availability'){
+    return candidate;
+   }
+  }
  }
 
- return null;
+ /* Último respaldo: buscar una columna numérica no usada en el orden
+    esperado, sin reutilizar una columna ya asignada. */
+ const numericKeys=keys.filter(k=>!used.has(k)&&numericCell(row[k])!==null);
+ const candidate=numericKeys[statIndex-1];
+ return candidate||null;
 }
 
 
@@ -1896,34 +1926,28 @@ function fieldId(sport,key,side){
 function applyRecordToInputs(
  sport,
  record,
- side
+ side,
+ fillOnlyEmpty=true
 ){
 
  if(!record)return;
 
- for(
-  const key
-  of Object.keys(ALIASES)
- ){
+ for(const key of Object.keys(ALIASES)){
+  const value=record[key];
 
-  const value=
-   record[key];
+  if(value===null||value===undefined||value==="")continue;
 
-  if(
-   value===null||
-   value===undefined
-  )continue;
+  const id=fieldId(sport,key,side);
+  const input=id?$(id):null;
+  if(!input)continue;
 
-  const id=
-   fieldId(
-    sport,
-    key,
-    side
-   );
+  /* El bot completa las celdas vacías sin destruir datos que el usuario
+     haya escrito manualmente. */
+  if(fillOnlyEmpty && String(input.value??"").trim()!=="")continue;
 
-  if(id&&$(id)){
-   $(id).value=value;
-  }
+  input.value=value;
+  input.dispatchEvent(new Event("input",{bubbles:true}));
+  input.dispatchEvent(new Event("change",{bubbles:true}));
  }
 }
 
@@ -2202,8 +2226,10 @@ async function botFill(){
 
  if(fa&&fb){
 
+  const ca=countKnown(A);
+  const cb=countKnown(B);
   setStatus(
-   "Bot: ambos participantes encontrados y datos aplicados.",
+   `Bot: datos completados. A: ${ca} campos · B: ${cb} campos.`,
    "ok"
   );
 
