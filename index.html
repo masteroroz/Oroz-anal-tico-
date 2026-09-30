@@ -3,55 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Master Oros v4.7 — Simulador Multideporte + Google Sheets + Backtesting</title>
+<title>Master Oros v4.8 — Simulador Multideporte + Auditoría + Backtesting</title>
 <style>
 :root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee5;--accent:#1769aa;--ok:#16803c;--warn:#b26a00;--bad:#b42318}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 .wrap{max-width:1280px;margin:auto;padding:14px}header,.panel,.results,.team-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px}
 h1{margin:0 0 6px;font-size:25px}h2{margin:0 0 12px;font-size:19px}.small,.note{color:var(--muted);line-height:1.45}
 .toolbar,.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:end}.control{min-width:165px;flex:1}label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
-input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font:inherit;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.warn{background:var(--warn);color:#fff;border-color:var(--warn)}.secondary{background:#fff}
+input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font:inherit;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
 .status{padding:10px;border-radius:9px;background:#eef2f7;margin-top:10px}.status.ok{background:#eaf7ee;color:var(--ok)}.status.warn{background:#fff6e8;color:var(--warn)}.status.bad{background:#fff0f0;color:var(--bad)}
 .teams{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team-panel.local{border-top:5px solid #176b4d}.team-panel.visitor{border-top:5px solid #8a3b12}.team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.badge{font-size:11px;font-weight:800;padding:4px 7px;border-radius:99px;background:#eef1f4}
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:800;margin-top:4px}
 .result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}.result{border:1px solid var(--line);border-radius:9px;padding:10px}.result b{display:block;margin-bottom:4px}
 .audit{margin-top:10px;padding:10px;border-radius:9px;background:#f7f8fa;border:1px solid var(--line);font-size:12px;line-height:1.5}
 .table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}.table th,.table td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}.error{padding:10px;border:1px solid #e0b4b4;background:#fff7f7;border-radius:9px}
-.sport{display:none}.hidden{display:none}.danger{color:var(--bad)}.good{color:var(--ok)}.mono{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.sport{display:none}.danger{color:var(--bad)}.good{color:var(--ok)}.mono{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
 @media(max-width:760px){.teams{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.wrap{padding:9px}h1{font-size:21px}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-<h1>Master Oros v4.7</h1>
-<div class="note">Simulador multideporte con Monte Carlo reproducible, base Google Sheets, control de procedencia, value betting y backtesting. <b>Cero datos inventados:</b> un campo sin dato verificable permanece N/D.</div>
+<h1>Master Oros v4.8</h1>
+<div class="note">Motor reproducible Monte Carlo con Poisson, Elo, forma, componentes experimentales, control de procedencia, value betting y backtesting. <b>Cero datos inventados:</b> los campos sin dato verificable permanecen N/D y no se sustituyen automáticamente.</div>
 <div class="toolbar" style="margin-top:12px">
-<div class="control"><label>Deporte</label><select id="sport" onchange="showSport()">
+<div class="control"><label>Deporte</label><select id="sport">
 <option value="futbol">⚽ Fútbol</option><option value="mlb">⚾ MLB</option><option value="nfl">🏈 NFL</option><option value="tenisM">🎾 Tenis varonil</option><option value="tenisF">🎾 Tenis femenil</option></select></div>
 <div class="control"><label>Simulaciones</label><select id="sims"><option>1000</option><option>5000</option><option selected>25000</option><option>50000</option><option>100000</option></select></div>
-<div class="control"><label>Semilla</label><input id="seed" type="number" value="20260923"></div>
-<div class="control"><label>Localía % (solo si está verificada)</label><input id="homeAdv" type="number" step="0.1" placeholder="N/D"></div>
+<div class="control"><label>Semilla reproducible</label><input id="seed" type="number" value="20260923"></div>
+<div class="control"><label>Ventaja local % — solo si está verificada</label><input id="homeAdv" type="number" step=".1" placeholder="N/D"></div>
 </div>
 <div class="actions" style="margin-top:10px">
-<div class="control"><button class="secondary" id="loadDb">Conectar / actualizar Google Sheets</button></div>
+<div class="control"><button id="loadDb">Conectar / actualizar Google Sheets</button></div>
 <div class="control"><button class="ok" id="bot">Buscar y rellenar desde la base</button></div>
 <div class="control"><button class="primary" id="run">Ejecutar simulador</button></div>
-<div class="control"><button class="secondary" id="clear">Limpiar entradas</button></div>
+<div class="control"><button id="clear">Limpiar entradas</button></div>
 </div>
 <div id="status" class="status">Base: no cargada.</div>
 </header>
 
-<section class="panel">
-<h2>Base de datos y auditoría de fuente</h2>
-<div id="dbSummary" class="note">Google Sheets: pendiente de conexión.</div>
-<div id="dataView" class="audit">No se ha realizado búsqueda.</div>
-</section>
+<section class="panel"><h2>Base de datos y auditoría</h2><div id="dbSummary" class="note">Google Sheets: pendiente.</div><div id="dataView" class="audit">No se ha realizado búsqueda.</div></section>
 
 <!-- FÚTBOL -->
 <section id="futbol" class="sport">
-<h2>⚽ Fútbol</h2>
-<div class="teams">
+<h2>⚽ Fútbol</h2><div class="teams">
 <div class="team-panel local"><div class="team-head"><h3>Equipo local</h3><span class="badge">LOCAL</span></div><div class="metrics">
 <div><label>Nombre</label><input id="f_nombreA"></div><div><label>Elo</label><input id="f_eloA" type="number"></div>
 <div><label>GF / partido *</label><input id="f_gfA" type="number" step=".01"></div><div><label>GA / partido</label><input id="f_gaA" type="number" step=".01"></div>
@@ -110,221 +105,235 @@ input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radiu
 <div><label>Nombre</label><input id="tf_nombreB"></div><div><label>Elo general *</label><input id="tf_eloB" type="number"></div><div><label>Elo superficie</label><input id="tf_seloB" type="number"></div><div><label>Forma 0-100</label><input id="tf_formB" type="number"></div><div><label>Hold %</label><input id="tf_holdB" type="number"></div><div><label>Break %</label><input id="tf_breakB" type="number"></div><div><label>1er servicio ganado %</label><input id="tf_fsB" type="number"></div><div><label>Restos ganados %</label><input id="tf_retB" type="number"></div><div><label>Tie-break %</label><input id="tf_tbB" type="number"></div><div><label>Fatiga 0-100</label><input id="tf_fatB" type="number"></div><div><label>Disponibilidad %</label><input id="tf_avB" type="number"></div>
 </div></div></div></section>
 
-<section class="panel">
-<h2>🎯 Value Betting</h2>
-<div class="note">Introduce cuotas decimales reales. El valor esperado se calcula solo con la probabilidad del modelo y la cuota introducida; si no hay cuota, queda N/D.</div>
-<div class="toolbar" style="margin-top:8px">
-<div class="control"><label>Cuota Local / A</label><input id="oddA" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota Empate</label><input id="oddD" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota Visitante / B</label><input id="oddB" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota Over 2.5</label><input id="oddO25" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota BTTS</label><input id="oddBTTS" type="number" step=".01" min="1"></div>
-</div>
-<div id="valueView" class="audit">Ejecuta una simulación para calcular valor.</div>
-</section>
+<section class="panel"><h2>🎯 Value Betting</h2><div class="note">Solo calcula valor esperado cuando existe una cuota decimal válida. No convierte automáticamente valor positivo en recomendación.</div>
+<div class="toolbar"><div class="control"><label>Cuota A / local</label><input id="oddA" type="number" step=".01" min="1"></div><div class="control"><label>Cuota empate</label><input id="oddD" type="number" step=".01" min="1"></div><div class="control"><label>Cuota B / visitante</label><input id="oddB" type="number" step=".01" min="1"></div><div class="control"><label>Cuota Over 2.5</label><input id="oddO25" type="number" step=".01" min="1"></div><div class="control"><label>Cuota BTTS</label><input id="oddBTTS" type="number" step=".01" min="1"></div></div>
+<div id="valueView" class="audit">Ejecuta una simulación.</div></section>
 
 <section id="results" class="results"><h2>Resultado</h2><div class="note">Aún no se ha ejecutado una simulación.</div></section>
 
-<section class="panel">
-<h2>🧠 Backtesting, calibración y aprendizaje</h2>
-<div class="note">Se guardan las probabilidades originales y las calibradas. Brier y Log Loss se calculan con probabilidades 1X2 coherentes. El aprendizaje solo se aplica con historial suficiente; no modifica registros pasados.</div>
-<div class="toolbar" style="margin-top:9px">
-<div class="control"><label>Resultado real A / local</label><input id="bt_scoreA" type="number" min="0"></div>
-<div class="control"><label>Resultado real B / visitante</label><input id="bt_scoreB" type="number" min="0"></div>
-<div class="control"><label>Fecha real</label><input id="bt_date" type="date"></div>
-</div>
-<div class="actions" style="margin-top:9px">
-<div class="control"><button class="primary" id="register">Registrar resultado real</button></div>
-<div class="control"><button class="secondary" id="refreshBT">Actualizar análisis</button></div>
-<div class="control"><button class="secondary" id="exportBT">Exportar historial</button></div>
-<div class="control"><button class="secondary" id="importBT">Importar historial</button></div>
-<div class="control"><button class="warn" id="clearBT">Borrar historial</button></div>
-</div>
-<input id="bt_file" type="file" accept="application/json" style="display:none">
-<div id="bt_status" class="audit">Sin pronóstico pendiente.</div>
-<div id="bt_analysis" class="audit">Sin historial.</div>
-</section>
-<section class="panel">
-<h2>📋 Parámetros y auditoría de la última simulación</h2>
-<div id="params" class="audit">N/D</div><div id="audit" class="audit">N/D</div>
-</section>
+<section class="panel"><h2>🧠 Backtesting, calibración y aprendizaje</h2>
+<div class="note">La calibración solo entra cuando existen al menos 20 casos en el mismo deporte, mercado y intervalo de probabilidad. Los registros históricos no se modifican.</div>
+<div class="toolbar"><div class="control"><label>Resultado real A / local</label><input id="bt_scoreA" type="number" min="0"></div><div class="control"><label>Resultado real B / visitante</label><input id="bt_scoreB" type="number" min="0"></div><div class="control"><label>Fecha real</label><input id="bt_date" type="date"></div></div>
+<div class="actions" style="margin-top:9px"><div class="control"><button class="primary" id="register">Registrar resultado real</button></div><div class="control"><button id="refreshBT">Actualizar análisis</button></div><div class="control"><button id="exportBT">Exportar historial</button></div><div class="control"><button id="importBT">Importar historial</button></div><div class="control"><button class="warn" id="clearBT">Borrar historial</button></div></div>
+<input id="bt_file" type="file" accept="application/json" style="display:none"><div id="bt_status" class="audit">Sin pronóstico pendiente.</div><div id="bt_analysis" class="audit">Sin historial.</div></section>
+
+<section class="panel"><h2>📋 Parámetros y auditoría de la última simulación</h2><div id="params" class="audit">N/D</div><div id="audit" class="audit">N/D</div></section>
 </div>
 
 <script>
 "use strict";
-/* =========================
-   CONFIGURACIÓN / DATOS
-   ========================= */
+
+/* ===== CONFIGURACIÓN ===== */
 const SHEET_ID="1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
 const SHEETS={futbol:"00futbol",mlb:"00MLB",nfl:"00NFL",tenisM:"00Tenis varonil",tenisF:"0Tenis femenil"};
+const BT_KEY="master_oros_backtesting_v4_8";
+const PENDING_KEY="master_oros_pending_v4_8";
 const BD={futbol:[],mlb:[],nfl:[],tenisM:[],tenisF:[]};
 const DB_META={loaded:false,loadedAt:null,errors:[],rows:{}};
-const BT_KEY="master_oros_backtesting_v4_7";
-let rngState=20260923,lastPrediction=null,currentData={A:null,B:null},currentN=25000;
+let rngState=20260923,lastPrediction=null,currentData={A:null,B:null,fa:null,fb:null};
 
-const ALIASES={
- nombre:["equipo","team","nombre","jugador","player","club","seleccion","selección","name"],
- elo:["elo","elo general","rating elo"],eloSuperficie:["elo superficie","surface elo","elo pista"],
- gf:["gf","gf/game","goles por partido","goles a favor partido"],ga:["ga","ga/game","goles recibidos partido","goles en contra partido"],
- xg:["xg","xg por partido","expected goals"],xga:["xga","xga por partido","expected goals against"],
- sot:["shots on target","tiros a puerta","tiros a porteria","tiros a portería","sot"],corners:["corners","tiros de esquina","saques de esquina"],
- fouls:["fouls","faltas","faltas cometidas"],cards:["cards","tarjetas","amarillas","yellow cards"],
- form10:["wins last 10","victorias ultimos 10","victorias últimos 10","forma 10","last 10"],
- availability:["availability","disponibilidad","bajas","lesiones","disponibilidad %"],
- runs:["runs/game","carreras por partido","runs"],runsAllowed:["runs allowed/game","carreras permitidas","runs allowed"],
- ops:["ops"],hr:["hr/game","jonrones por partido","home runs"],k:["k%","strikeout %"],bb:["bb%","walk %"],
- starterEra:["starter era","era abridor","era starter"],bullpenEra:["bullpen era","era bullpen"],defense:["defense","defensa"],
- pf:["pf/game","puntos por partido","puntos a favor"],pa:["pa/game","puntos permitidos por partido","puntos en contra"],
- offYards:["offensive yards","yardas ofensivas"],defYards:["defensive yards","yardas defensivas permitidas"],
- td:["td/game","touchdowns por partido"],turnovers:["turnover differential","diferencial turnovers"],
- thirdDown:["3rd down %","third down %","conversion 3rd"],form:["form","forma"],hold:["hold %","hold"],
- breakPct:["break %","break"],firstServe:["first serve won %","1st serve won %","primer saque ganado"],
- secondServe:["second serve won %","2nd serve won %","segundo saque ganado"],returnWon:["return won %","return"],
- tiebreak:["tie-break %","tiebreak %"],fatigue:["fatigue","fatiga"]
-};
-function norm(v){return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’'`´]/g,"").replace(/&/g," y ").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ")}
-function parseCSV(t){const rows=[];let row=[],cell="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else if(c==='"')q=true;else if(c===','){row.push(cell);cell=""}else if(c==='\n'){row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[]}else if(c!=='\r')cell+=c}if(cell!==""||row.length){row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row)}if(!rows.length)return[];const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>{const o={};h.forEach((x,i)=>o[x]=(r[i]??"").trim());return o})}
-async function loadSheet(name,key){const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;const res=await fetch(u,{cache:"no-store"});if(!res.ok)throw Error(`${name}: HTTP ${res.status}`);const rows=parseCSV(await res.text());BD[key]=rows;DB_META.rows[key]=rows.length;return rows.length}
-async function loadDB(){DB_META.errors=[];setStatus("Conectando con Google Sheets…");const rs=await Promise.all(Object.entries(SHEETS).map(async([k,n])=>{try{return[k,await loadSheet(n,k),null]}catch(e){BD[k]=[];return[k,0,e.message]}}));rs.forEach(([k,n,e])=>{if(e)DB_META.errors.push(e)});DB_META.loaded=true;DB_META.loadedAt=new Date().toISOString();renderDB();if(DB_META.errors.length)setStatus("Base cargada parcialmente: "+DB_META.errors.join(" | "),"warn");else setStatus("Google Sheets conectado correctamente. Filas: "+Object.values(DB_META.rows).reduce((a,b)=>a+b,0),"ok")}
-function setStatus(t,c=""){const e=document.getElementById("status");e.textContent=t;e.className="status"+(c?" "+c:"")}
-function renderDB(){document.getElementById("dbSummary").innerHTML=`<b>Fuente:</b> Google Sheets · <b>ID:</b> ${SHEET_ID}<br><b>Última carga:</b> ${DB_META.loadedAt?new Date(DB_META.loadedAt).toLocaleString("es-MX"):"N/D"}<br><b>Filas:</b> ${Object.entries(DB_META.rows).map(([k,v])=>k+": "+v).join(" · ")||"N/D"}${DB_META.errors.length?`<br><span class="danger"><b>Errores:</b> ${DB_META.errors.join(" | ")}</span>`:""}`}
-function findCol(row,als){const ks=Object.keys(row),nk=ks.map(k=>[k,norm(k)]);for(const a of als){const x=nk.find(([k,n])=>n===norm(a));if(x)return x[0]}for(const a of als){const na=norm(a);const x=nk.find(([k,n])=>n.includes(na)||na.includes(n));if(x)return x[0]}return null}
-function num(v){if(v===null||v===undefined||String(v).trim()==="")return null;let n=Number(String(v).replace(/%/g,"").replace(/,/g,"").trim());return Number.isFinite(n)?n:null}
-function findRecord(sport,name){const rows=BD[sport]||[],q=norm(name);let best=null;if(!q)return null;for(const r of rows){const c=findCol(r,ALIASES.nombre);if(!c)continue;const n=norm(r[c]);if(!n)continue;let s=n===q?100:n.includes(q)||q.includes(n)?80:0;if(!s){const qa=new Set(q.split(" ")),na=new Set(n.split(" "));let inter=0;qa.forEach(x=>{if(na.has(x))inter++});s=inter/Math.max(qa.size,na.size)*70}if(!best||s>best.score)best={row:r,score:s,name:r[c]}}return best&&best.score>=55?best:null}
-function mapRecord(found){if(!found)return null;const o={};for(const[k,als]of Object.entries(ALIASES)){const c=findCol(found.row,als);o[k]=c?num(found.row[c]):null;if(k==="nombre")o.nombre=c?found.row[c]:found.name}o.nombre=found.name;o._source="Google Sheets";o._matchScore=found.score;o._raw=found.row;return o}
-function renderData(){const f=(x,d)=>`<div><b>${d?"Encontrado":"No encontrado"}</b> — ${d?.nombre||"N/D"} · Coincidencia ${x?.score?.toFixed(1)||0}% · Fuente ${d?d._source:"N/D"}</div>`;document.getElementById("dataView").innerHTML=f(currentData.fa,currentData.A)+f(currentData.fb,currentData.B)}
-function idsFor(s){return {futbol:["f_nombreA","f_nombreB"],mlb:["m_nombreA","m_nombreB"],nfl:["n_nombreA","n_nombreB"],tenisM:["tm_nombreA","tm_nombreB"],tenisF:["tf_nombreA","tf_nombreB"]}[s]}
-async function botFill(){if(!DB_META.loaded)await loadDB();const s=document.getElementById("sport").value,ids=idsFor(s),a=nm(ids[0]),b=nm(ids[1]);if(!a||!b){setStatus("Introduce los dos participantes antes de buscar.","warn");return}const fa=findRecord(s,a),fb=findRecord(s,b);currentData={A:mapRecord(fa),B:mapRecord(fb),fa,fb};if(!fa||!fb){setStatus("No se encontraron ambos participantes con coincidencia segura. No se inventaron datos.","warn");renderData();return}applyRecordToInputs(s,currentData.A,"A");applyRecordToInputs(s,currentData.B,"B");renderData();setStatus("Datos encontrados y aplicados desde Google Sheets. Los campos sin dato permanecen N/D.","ok")}
-const MAP={
- futbol:{nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"corners",fouls:"fouls",cards:"cards",form10:"form10",availability:"availability"},
- mlb:{nombre:"nombre",runs:"runs",runsAllowed:"runsAllowed",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"starterEra",bullpenEra:"bullpenEra",defense:"defense"},
- nfl:{nombre:"nombre",elo:"elo",pf:"pf",pa:"pa",offYards:"offYards",defYards:"defYards",td:"td",turnovers:"turnovers",thirdDown:"thirdDown",availability:"availability"},
- tenisM:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"},
- tenisF:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"}
-};
-function applyRecordToInputs(s,d,side){if(!d)return;const m=MAP[s];for(const[k,field]of Object.entries(m)){if(d[field]===null||d[field]===undefined)continue;const id=fieldId(s,k,side);if(id){const e=document.getElementById(id);if(e)e.value=d[field]}}}
-function fieldId(s,k,side){const p={futbol:"f_",mlb:"m_",nfl:"n_",tenisM:"tm_",tenisF:"tf_"}[s];const x={nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"cor",fouls:"fou",cards:"car",form10:"form",availability:"av",runs:"r",runsAllowed:"ra",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"era",bullpenEra:"bull",defense:"def",pf:"pf",pa:"pa",offYards:"yd",defYards:"dyd",td:"td",turnovers:"to",thirdDown:"3rd",eloSuperficie:"selo",form:"form",hold:"hold",breakPct:"break",firstServe:"fs",returnWon:"ret",tiebreak:"tb",fatigue:"fat"}[k];return p&&x?`${p}${x}${side}`:null}
-
-/* =========================
-   MOTOR REPRODUCIBLE
-   ========================= */
-function seedRandom(v){rngState=(Number(v)>>>0)||1}function rnd(){rngState=(1664525*rngState+1013904223)>>>0;return rngState/4294967296}
-function poisson(l){l=Math.max(0,Number(l)||0);if(l===0)return 0;const L=Math.exp(-l);let p=1,k=0;do{k++;p*=rnd()}while(p>L&&k<500);return k-1}
-function normal(mu,sd){let u=Math.max(rnd(),1e-12),v=Math.max(rnd(),1e-12);return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-function val(id){const e=document.getElementById(id),x=parseFloat(e?.value);return Number.isFinite(x)?x:null}
-function nm(id){return document.getElementById(id)?.value?.trim()||""}
+/* ===== UTILIDADES ===== */
+const $=id=>document.getElementById(id);
+function norm(v){return String(v??"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[’'`´]/g,"").replace(/&/g," y ").replace(/[^a-z0-9]+/g," ").trim().replace(/\\s+/g," ")}
+function num(v){if(v===null||v===undefined||String(v).trim()==="")return null;const n=Number(String(v).replace(/%/g,"").replace(/,/g,"").trim());return Number.isFinite(n)?n:null}
+function val(id){const e=$(id),n=parseFloat(e?.value);return Number.isFinite(n)?n:null}
+function nm(id){return $(id)?.value?.trim()||""}
 function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
 function pct(x){return (100*x).toFixed(2)+"%"}
 function rec(m,k){m[k]=(m[k]||0)+1}
-function top10(m){return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
-function homeFactor(){const h=val("homeAdv");return h===null?1:1+h/100}
-function weightedAvg(arr){const v=arr.filter(x=>x!==null&&Number.isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
-function brier1x2(p,actual){return (p.A-(actual==="A"?1:0))**2+(p.D-(actual==="D"?1:0))**2+(p.B-(actual==="B"?1:0))**2}
-function logLoss(p){return -Math.log(clamp(p,1e-9,1))}
+function top10(m,N){return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10).map(x=>({key:x[0],n:x[1],p:x[1]/N}))}
 function normalize3(a,d,b){const s=a+d+b;return s?{A:a/s,D:d/s,B:b/s}:{A:1/3,D:1/3,B:1/3}}
-function eloProb(ea,eb){return 1/(1+10**((eb-ea)/400))}
+function eloProb(a,b){return 1/(1+10**((b-a)/400))}
 function logistic(x){return 1/(1+Math.exp(-x))}
-function calibrated(p,sport,market){const rows=btLoad().filter(r=>r.completed&&r.sport===sport&&r.market===market&&Number.isFinite(r.pred)&&Number.isFinite(r.actualBinary));const bin=Math.min(9,Math.floor(clamp(p,0,.999999)*10)),g=rows.filter(r=>r.bin===bin);if(g.length<20)return{p,used:false,n:g.length};const y=g.reduce((a,r)=>a+r.actualBinary,0)/g.length;return{p:clamp(.7*p+.3*y,.01,.99),used:true,n:g.length,emp:y}}
+function setStatus(t,c=""){$("status").textContent=t;$("status").className="status"+(c?" "+c:"")}
+function seedRandom(v){rngState=(Number(v)>>>0)||1}
+function rnd(){rngState=(1664525*rngState+1013904223)>>>0;return rngState/4294967296}
+function poisson(lambda){lambda=Math.max(0,Number(lambda)||0);if(lambda===0)return 0;if(lambda>70){return Math.max(0,Math.round(normal(lambda,Math.sqrt(lambda))))}const L=Math.exp(-lambda);let p=1,k=0;do{k++;p*=rnd()}while(p>L&&k<1000);return k-1}
+function normal(mu,sd){let u=Math.max(rnd(),1e-12),v=Math.max(rnd(),1e-12);return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function homeFactor(){const h=val("homeAdv");return h===null?1:clamp(1+h/100,.80,1.30)}
+function dateISO(){return new Date().toISOString().slice(0,10)}
+
+/* ===== GOOGLE SHEETS ===== */
+const ALIASES={
+nombre:["equipo","team","nombre","jugador","player","club","seleccion","selección","name"],
+elo:["elo","elo general","rating elo"],eloSuperficie:["elo superficie","surface elo","elo pista"],
+gf:["gf","gf/game","goles por partido","goles a favor partido"],ga:["ga","ga/game","goles recibidos partido","goles en contra partido"],
+xg:["xg","xg por partido","expected goals"],xga:["xga","xga por partido","expected goals against"],
+sot:["shots on target","tiros a puerta","tiros a porteria","tiros a portería","sot"],corners:["corners","tiros de esquina","saques de esquina"],
+fouls:["fouls","faltas","faltas cometidas"],cards:["cards","tarjetas","amarillas","yellow cards"],
+form10:["wins last 10","victorias ultimos 10","victorias últimos 10","forma 10","last 10"],availability:["availability","disponibilidad","disponibilidad %"],
+runs:["runs/game","carreras por partido","runs"],runsAllowed:["runs allowed/game","carreras permitidas","runs allowed"],
+ops:["ops"],hr:["hr/game","jonrones por partido","home runs"],k:["k%","strikeout %"],bb:["bb%","walk %"],
+starterEra:["starter era","era abridor","era starter"],bullpenEra:["bullpen era","era bullpen"],defense:["defense","defensa"],
+pf:["pf/game","puntos por partido","puntos a favor"],pa:["pa/game","puntos permitidos por partido","puntos en contra"],
+offYards:["offensive yards","yardas ofensivas"],defYards:["defensive yards","yardas defensivas permitidas"],
+td:["td/game","touchdowns por partido"],turnovers:["turnover differential","diferencial turnovers"],
+thirdDown:["3rd down %","third down %","conversion 3rd"],
+form:["form","forma"],hold:["hold %","hold"],breakPct:["break %","break"],firstServe:["first serve won %","1st serve won %","primer saque ganado"],
+returnWon:["return won %","return"],tiebreak:["tie-break %","tiebreak %"],fatigue:["fatigue","fatiga"]
+};
+function parseCSV(t){const rows=[];let row=[],cell="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else if(c==='"')q=true;else if(c===','){row.push(cell);cell=""}else if(c==='\\n'){row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[]}else if(c!=='\\r')cell+=c}if(cell!==""||row.length){row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row)}if(!rows.length)return[];const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>{const o={};h.forEach((x,i)=>o[x]=(r[i]??"").trim());return o})}
+function findCol(row,als){const keys=Object.keys(row),nk=keys.map(k=>[k,norm(k)]);for(const a of als){const z=nk.find(([k,n])=>n===norm(a));if(z)return z[0]}for(const a of als){const na=norm(a),z=nk.find(([k,n])=>n.includes(na)||na.includes(n));if(z)return z[0]}return null}
+async function loadSheet(name,key){const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);const rows=parseCSV(await r.text());BD[key]=rows;DB_META.rows[key]=rows.length;return rows.length}
+async function loadDB(){DB_META.errors=[];setStatus("Conectando con Google Sheets…");for(const [k,n] of Object.entries(SHEETS)){try{await loadSheet(n,k)}catch(e){BD[k]=[];DB_META.rows[k]=0;DB_META.errors.push(e.message)}}DB_META.loaded=true;DB_META.loadedAt=new Date().toISOString();renderDB();setStatus(DB_META.errors.length?"Base cargada parcialmente: "+DB_META.errors.join(" | "):"Google Sheets conectado correctamente.","ok")}
+function findRecord(sport,name){const rows=BD[sport]||[],q=norm(name);let best=null;if(!q)return null;for(const r of rows){const c=findCol(r,ALIASES.nombre);if(!c)continue;const n=norm(r[c]);if(!n)continue;let s=n===q?100:n.includes(q)||q.includes(n)?80:0;if(!s){const qa=new Set(q.split(" ")),na=new Set(n.split(" "));let inter=0;qa.forEach(x=>{if(na.has(x))inter++});s=inter/Math.max(qa.size,na.size)*70}if(!best||s>best.score)best={row:r,score:s,name:r[c]}}return best&&best.score>=55?best:null}
+function mapRecord(found){if(!found)return null;const o={nombre:found.name,_source:"Google Sheets",_matchScore:found.score,_raw:found.row};for(const[k,als]of Object.entries(ALIASES)){const c=findCol(found.row,als);if(k!=="nombre")o[k]=c?num(found.row[c]):null}return o}
+function idsFor(s){return {futbol:["f_nombreA","f_nombreB"],mlb:["m_nombreA","m_nombreB"],nfl:["n_nombreA","n_nombreB"],tenisM:["tm_nombreA","tm_nombreB"],tenisF:["tf_nombreA","tf_nombreB"]}[s]}
+const MAP={
+futbol:{nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"corners",fouls:"fouls",cards:"cards",form10:"form10",availability:"availability"},
+mlb:{nombre:"nombre",runs:"runs",runsAllowed:"runsAllowed",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"starterEra",bullpenEra:"bullpenEra",defense:"defense"},
+nfl:{nombre:"nombre",elo:"elo",pf:"pf",pa:"pa",offYards:"offYards",defYards:"defYards",td:"td",turnovers:"turnovers",thirdDown:"thirdDown",availability:"availability"},
+tenisM:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"},
+tenisF:{nombre:"nombre",elo:"elo",eloSuperficie:"eloSuperficie",form:"form",hold:"hold",breakPct:"breakPct",firstServe:"firstServe",returnWon:"returnWon",tiebreak:"tiebreak",fatigue:"fatigue",availability:"availability"}
+};
+function fieldId(s,k,side){const p={futbol:"f_",mlb:"m_",nfl:"n_",tenisM:"tm_",tenisF:"tf_"}[s];const x={nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"cor",fouls:"fou",cards:"car",form10:"form",availability:"av",runs:"r",runsAllowed:"ra",ops:"ops",hr:"hr",k:"k",bb:"bb",starterEra:"era",bullpenEra:"bull",defense:"def",pf:"pf",pa:"pa",offYards:"yd",defYards:"dyd",td:"td",turnovers:"to",thirdDown:"3rd",eloSuperficie:"selo",form:"form",hold:"hold",breakPct:"break",firstServe:"fs",returnWon:"ret",tiebreak:"tb",fatigue:"fat"}[k];return p&&x?`${p}${x}${side}`:null}
+function applyRecordToInputs(s,d,side){if(!d)return;for(const k of Object.keys(MAP[s])){if(d[k]===null||d[k]===undefined)continue;const id=fieldId(s,k,side);if(id&&$(id))$(id).value=d[k]}}
+function renderDB(){$("dbSummary").innerHTML=`<b>Fuente:</b> Google Sheets · <b>Última carga:</b> ${DB_META.loadedAt?new Date(DB_META.loadedAt).toLocaleString("es-MX"):"N/D"}<br><b>Filas:</b> ${Object.entries(DB_META.rows).map(([k,v])=>k+": "+v).join(" · ")||"N/D"}${DB_META.errors.length?`<br><span class="danger"><b>Errores:</b> ${DB_META.errors.join(" | ")}</span>`:""}`}
+function renderData(){$("dataView").innerHTML=`<b>A:</b> ${currentData.A?.nombre||"N/D"} · coincidencia ${currentData.fa?.score?.toFixed(1)||0}% · ${currentData.A?"Google Sheets":"N/D"}<br><b>B:</b> ${currentData.B?.nombre||"N/D"} · coincidencia ${currentData.fb?.score?.toFixed(1)||0}% · ${currentData.B?"Google Sheets":"N/D"}`}
+async function botFill(){if(!DB_META.loaded)await loadDB();const s=$("sport").value,ids=idsFor(s),a=nm(ids[0]),b=nm(ids[1]);if(!a||!b){setStatus("Introduce ambos participantes antes de buscar.","warn");return}const fa=findRecord(s,a),fb=findRecord(s,b);currentData={A:mapRecord(fa),B:mapRecord(fb),fa,fb};if(fa)applyRecordToInputs(s,currentData.A,"A");if(fb)applyRecordToInputs(s,currentData.B,"B");renderData();setStatus(fa&&fb?"Datos encontrados y aplicados. Los N/D permanecen N/D.":"No se encontraron ambos participantes con coincidencia segura.","warn")}
+
+/* ===== BACKTEST / CALIBRACIÓN ===== */
+function btLoad(){try{const x=JSON.parse(localStorage.getItem(BT_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return[]}}
+function btSave(x){localStorage.setItem(BT_KEY,JSON.stringify(x))}
+function calibrate(p,sport,market){const rows=btLoad().filter(r=>r.completed&&r.sport===sport&&r.market===market&&Number.isFinite(r.pred)&&Number.isFinite(r.actualBinary));const bin=Math.min(9,Math.floor(clamp(p,0,.999999)*10));const g=rows.filter(r=>r.bin===bin);if(g.length<20)return{p,used:false,n:g.length,bin};const emp=g.reduce((a,r)=>a+r.actualBinary,0)/g.length;return{p:clamp(.75*p+.25*emp,.01,.99),used:true,n:g.length,bin,emp}}
+function brier(p,a){return (p.A-(a==="A"?1:0))**2+(p.D-(a==="D"?1:0))**2+(p.B-(a==="B"?1:0))**2}
+function logloss(p){return -Math.log(clamp(p,1e-9,1))}
+function renderBT(){
+ const rows=btLoad(),ids=[...new Map(rows.filter(r=>r.completed&&["A","D","B"].includes(r.market)).map(r=>[r.id,r])).values()];
+ let h=`<b>Partidos registrados:</b> ${ids.length}`;
+ if(!ids.length){$("bt_analysis").innerHTML=h+"<br>Sin resultados reales.";return}
+ h+=`<table class="table"><tr><th>Deporte</th><th>Partidos</th><th>Accuracy</th><th>Brier 1X2</th><th>Log Loss</th></tr>`;
+ const by={};ids.forEach(r=>(by[r.sport]??=[]).push(r));
+ for(const [s,a] of Object.entries(by)){let acc=0,br=0,ll=0;a.forEach(r=>{const p=r.usedP||r.rawP;const max=Math.max(p.A,p.D,p.B);if(p[r.actual]===max)acc++;br+=brier(p,r.actual);ll+=logloss(p[r.actual])});h+=`<tr><td>${s}</td><td>${a.length}</td><td>${pct(acc/a.length)}</td><td>${(br/a.length).toFixed(4)}</td><td>${(ll/a.length).toFixed(4)}</td></tr>`}
+ h+="</table>";
+ for(const m of ["O25","BTTS"]){const a=rows.filter(r=>r.completed&&r.market===m);if(a.length)h+=`<div style="margin-top:7px"><b>${m}</b> · ${a.length} casos · accuracy ${pct(a.filter(r=>r.correct).length/a.length)}</div>`}
+ $("bt_analysis").innerHTML=h;
+}
+
+/* ===== FÚTBOL ===== */
 function footballN(N){
  const gfA=val("f_gfA"),gfB=val("f_gfB");if(gfA===null||gfB===null)throw Error("Faltan GF/partido de ambos equipos.");
  const gaA=val("f_gaA"),gaB=val("f_gaB"),xgA=val("f_xgA"),xgB=val("f_xgB"),xgaA=val("f_xgaA"),xgaB=val("f_xgaB");
- let la=gfA,lb=gfB,used=["GF/partido"],missing=[];
- if(xgA!==null&&xgB!==null&&xgaA!==null&&xgaB!==null){la=(xgA+xgaB)/2;lb=(xgB+xgaA)/2;used.push("xG/xGA")}
- else if(gaA!==null&&gaB!==null){la=(gfA+gaB)/2;lb=(gfB+gaA)/2;used.push("GA/partido")}else missing.push("GA/xGA");
- [la,lb]=[la*homeFactor(),lb];
- let mc=la/(la+lb||1),elo=null;
- if(val("f_eloA")!==null&&val("f_eloB")!==null){elo=eloProb(val("f_eloA"),val("f_eloB"));used.push("Elo")}else missing.push("Elo");
- let formEdge=null;if(val("f_formA")!==null&&val("f_formB")!==null){formEdge=(val("f_formA")-val("f_formB"))/10;used.push("Forma últimos 10")}else missing.push("Forma");
- if(elo!==null){const adj=clamp(.72*mc+.28*elo,.03,.97),tot=la+lb;la=tot*adj;lb=tot*(1-adj)}
- if(formEdge!==null){la*=1+clamp(formEdge*.012,-.08,.08);lb*=1-clamp(formEdge*.012,-.08,.08)}
- let wA=0,wD=0,wB=0,o=0,t=0,total=0,score={},corn={},foul={},card={},sot={};
- for(let i=0;i<N;i++){const a=poisson(la),b=poisson(lb);total+=a+b;if(a>b)wA++;else if(a===b)wD++;else wB++;if(a+b>=3)o++;if(a>0&&b>0)t++;rec(score,a+"-"+b);
-  const ca=val("f_corA"),cb=val("f_corB");if(ca!==null&&cb!==null)rec(corn,poisson(ca)+"-"+poisson(cb));
-  const fa=val("f_fouA"),fb=val("f_fouB");if(fa!==null&&fb!==null)rec(foul,poisson(fa)+"-"+poisson(fb));
-  const ya=val("f_carA"),yb=val("f_carB");if(ya!==null&&yb!==null)rec(card,poisson(ya)+"-"+poisson(yb));
-  const sa=val("f_sotA"),sb=val("f_sotB");if(sa!==null&&sb!==null)rec(sot,poisson(sa)+"-"+poisson(sb));
+ let la=(gfA+(gaB??gfB))/2,lb=(gfB+(gaA??gfA))/2,used=["GF/partido"],missing=[];
+ if(gaA!==null&&gaB!==null)used.push("GA/partido");else missing.push("GA/partido");
+ if(xgA!==null&&xgB!==null&&xgaA!==null&&xgaB!==null){la=.5*la+.5*((xgA+xgaB)/2);lb=.5*lb+.5*((xgB+xgaA)/2);used.push("xG/xGA")}else missing.push("xG/xGA");
+ la*=homeFactor();
+
+ let pElo=null,pForm=null,pLogit=null;
+ const eloA=val("f_eloA"),eloB=val("f_eloB"),formA=val("f_formA"),formB=val("f_formB"),avA=val("f_avA"),avB=val("f_avB");
+ if(eloA!==null&&eloB!==null){pElo=eloProb(eloA+((val("homeAdv")??0)*2),eloB);used.push("Elo")}else missing.push("Elo");
+ if(formA!==null&&formB!==null){pForm=clamp(.5+(formA-formB)/20,.05,.95);used.push("Forma últimos 10")}else missing.push("Forma últimos 10");
+ if(pElo!==null||pForm!==null){
+   const e=pElo??.5,f=pForm??.5;
+   pLogit=logistic(2.25*(e-.5)+1.15*(f-.5));
+ }
+ if(avA!==null&&avB!==null){const d=clamp((avA-avB)/100,-.20,.20);la*=1+d;lb*=1-d;used.push("Disponibilidad %")}else missing.push("Disponibilidad %");
+
+ const pGoal=clamp(la/(la+lb||1),.03,.97);
+ let wA=0,wD=0,wB=0,o=0,t=0,score={},corn={},foul={},card={},sot={};
+ const ca=val("f_corA"),cb=val("f_corB"),fa=val("f_fouA"),fb=val("f_fouB"),ya=val("f_carA"),yb=val("f_carB"),sa=val("f_sotA"),sb=val("f_sotB");
+ for(let i=0;i<N;i++){
+   const a=poisson(la),b=poisson(lb);
+   if(a>b)wA++;else if(a===b)wD++;else wB++;
+   if(a+b>=3)o++;if(a>0&&b>0)t++;rec(score,a+"-"+b);
+   if(ca!==null&&cb!==null)rec(corn,poisson(ca)+"-"+poisson(cb));
+   if(fa!==null&&fb!==null)rec(foul,poisson(fa)+"-"+poisson(fb));
+   if(ya!==null&&yb!==null)rec(card,poisson(ya)+"-"+poisson(yb));
+   if(sa!==null&&sb!==null)rec(sot,poisson(sa)+"-"+poisson(sb));
  }
  const pMC=normalize3(wA/N,wD/N,wB/N);
- let pH=Object.assign({},pMC);
- if(elo!==null){const rawA=clamp(.55*elo+.45*pMC.A,.001,.999),rawB=clamp(.55*(1-elo)+.45*pMC.B,.001,.999);const rawD=clamp(1-rawA-rawB,.001,.998);pH=normalize3(rawA,rawD,rawB)}
- const top=(m)=>top10(m).map(x=>`${x[0]} — ${x[1].toLocaleString("es-MX")} — ${pct(x[1]/N)}`);
- const pred={sport:"Fútbol",a:nm("f_nombreA")||"Local",b:nm("f_nombreB")||"Visitante",N,seed:val("seed"),pMC:pMC,pH:pH,over25:o/N,btts:t/N,scoreTop:top(score),cornersTop:top(corn),foulsTop:top(foul),cardsTop:top(card),sotTop:top(sot),lambdaA:la,lambdaB:lb,used,missing};
- return pred;
+ const elo3=pElo===null?null:normalize3(pElo,.18,1-pElo);
+ const log3=pLogit===null?null:normalize3(pLogit,.18,1-pLogit);
+ let pH=pMC;
+ const parts=[pMC,elo3,log3].filter(Boolean);
+ if(parts.length>1){
+   const weights=parts.length===3?[.55,.25,.20]:[.70,.30];
+   pH=normalize3(parts.reduce((s,p,i)=>s+weights[i]*p.A,0),parts.reduce((s,p,i)=>s+weights[i]*p.D,0),parts.reduce((s,p,i)=>s+weights[i]*p.B,0));
+ }
+ return {sport:"Fútbol",a:nm("f_nombreA")||"Local",b:nm("f_nombreB")||"Visitante",N,seed:val("seed"),pMC,pH,pElo,pForm,pLogit,over25:o/N,btts:t/N,scoreTop:top10(score,N),cornersTop:top10(corn,N),foulsTop:top10(foul,N),cardsTop:top10(card,N),sotTop:top10(sot,N),lambdaA:la,lambdaB:lb,used,missing,components:{MonteCarlo:pMC,Elo:elo3,LogisticoExperimental:log3}};
 }
+
+/* ===== MLB / NFL ===== */
 function twoWayBase(N,sport){
- const isMLB=sport==="MLB",pref=isMLB?"m_":"n_",a=isMLB?val(pref+"rA"):val(pref+"pfA"),b=isMLB?val(pref+"rB"):val(pref+"pfB");if(a===null||b===null)throw Error(`Faltan ${isMLB?"carreras":"PF"} por juego de ambos equipos.`);
- const da=isMLB?val(pref+"raA"):val(pref+"paA"),db=isMLB?val(pref+"raB"):val(pref+"paB");let la=a,lb=b,used=[isMLB?"Carreras/juego":"PF/juego"],missing=[];if(da!==null&&db!==null){la=(a+db)/2;lb=(b+da)/2;used.push(isMLB?"Carreras permitidas":"PA")}else missing.push(isMLB?"Carreras permitidas":"PA");[la,lb]=[la*homeFactor(),lb];
- const pairs=isMLB?[["ops",.10,true],["hr",.06,true],["k",.04,false],["bb",.04,true],["era",.10,false],["bull",.05,false],["def",.04,true]]:[["elo",.12,true],["yd",.05,true],["dyd",.05,false],["td",.05,true],["to",.05,true],["3rd",.04,true],["av",.04,true]];
- for(const[q,s,positive]of pairs){const x=val(pref+q+"A"),y=val(pref+q+"B");if(x!==null&&y!==null){const d=(x-y)/Math.max(1,Math.abs(x)+Math.abs(y));const sg=positive?1:-1;la*=1+s*sg*d;lb*=1-s*sg*d;used.push(q)}else missing.push(q)}
- let A=0,D=0,B=0,score={},tot={};for(let i=0;i<N;i++){let x,y;if(isMLB){x=poisson(la);y=poisson(lb)}else{x=Math.max(0,Math.round(normal(la,Math.max(4,Math.sqrt(Math.max(la,1))*2.2))));y=Math.max(0,Math.round(normal(lb,Math.max(4,Math.sqrt(Math.max(lb,1))*2.2))))}if(x>y)A++;else if(x===y)D++;else B++;rec(score,x+"-"+y);rec(tot,String(x+y))}
- return {sport,a:nm(pref+"nombreA")||"Local",b:nm(pref+"nombreB")||"Visitante",N,seed:val("seed"),pMC:normalize3(A/N,D/N,B/N),scoreTop:top10(score).map(x=>`${x[0]} — ${pct(x[1]/N)}`),totalsTop:top10(tot).map(x=>`${x[0]} — ${pct(x[1]/N)}`),used,missing};
+ const mlb=sport==="MLB",p=mlb?"m_":"n_",a=mlb?val(p+"rA"):val(p+"pfA"),b=mlb?val(p+"rB"):val(p+"pfB");if(a===null||b===null)throw Error(`Faltan ${mlb?"carreras":"PF"} por juego de ambos equipos.`);
+ const da=mlb?val(p+"raA"):val(p+"paA"),db=mlb?val(p+"raB"):val(p+"paB");let la=(a+(db??b))/2,lb=(b+(da??a))/2,used=[mlb?"Carreras/juego":"PF/juego"],missing=[];
+ if(da!==null&&db!==null)used.push(mlb?"Carreras permitidas":"PA");else missing.push(mlb?"Carreras permitidas":"PA");
+ la*=homeFactor();
+ const pairs=mlb?[["ops",.08,1],["hr",.04,1],["k",.025,-1],["bb",.025,1],["era",.07,-1],["bull",.04,-1],["def",.03,1]]:[["elo",.10,1],["yd",.04,1],["dyd",.04,-1],["td",.04,1],["to",.035,1],["3rd",.025,1],["av",.025,1]];
+ for(const[q,s,sg]of pairs){const x=val(p+q+"A"),y=val(p+q+"B");if(x!==null&&y!==null){const d=(x-y)/Math.max(1,Math.abs(x)+Math.abs(y));la*=1+s*sg*d;lb*=1-s*sg*d;used.push(q)}else missing.push(q)}
+ la=Math.max(.2,la);lb=Math.max(.2,lb);
+ let A=0,D=0,B=0,score={},totals={};
+ for(let i=0;i<N;i++){let x,y;if(mlb){x=poisson(la);y=poisson(lb)}else{x=Math.max(0,Math.round(normal(la,Math.max(3.5,Math.sqrt(Math.max(la,1))*2.0))));y=Math.max(0,Math.round(normal(lb,Math.max(3.5,Math.sqrt(Math.max(lb,1))*2.0))))}if(x>y)A++;else if(x===y)D++;else B++;rec(score,x+"-"+y);rec(totals,String(x+y))}
+ const pMC=normalize3(A/N,D/N,B/N);
+ return {sport,a:nm(p+"nombreA")||"Local",b:nm(p+"nombreB")||"Visitante",N,seed:val("seed"),pMC,pH:pMC,scoreTop:top10(score,N),totalsTop:top10(totals,N),used,missing,lambdaA:la,lambdaB:lb,components:{MonteCarlo:pMC}};
 }
-function tennisN(N,pref,label){const ea=val(pref+"_eloA"),eb=val(pref+"_eloB");if(ea===null||eb===null)throw Error("Falta Elo general de ambos jugadores.");let p=eloProb(val(pref+"_seloA")??ea,val(pref+"_seloB")??eb),used=["Elo"],missing=[];const pairs=[["form",.001,"Forma"],["hold",.001,"Hold"],["break",.001,"Break"],["fs",.0005,"Primer servicio"],["ret",.0005,"Devolución"],["tb",.0005,"Tie-break"],["fat",-0.0005,"Fatiga"],["av",.0005,"Disponibilidad"]];for(const[q,k,n]of pairs){const a=val(pref+"_"+q+"A"),b=val(pref+"_"+q+"B");if(a!==null&&b!==null){p=clamp(p+k*(a-b),.02,.98);used.push(n)}else missing.push(n)}let A=0,B=0,sets={};for(let i=0;i<N;i++){let sa=0,sb=0;while(sa<2&&sb<2){if(rnd()<p)sa++;else sb++}if(sa>sb)A++;else B++;rec(sets,sa+"-"+sb)}return{sport:label,a:nm(pref+"_nombreA")||"Jugador A",b:nm(pref+"_nombreB")||"Jugador B",N,seed:val("seed"),pMC:{A:A/N,D:0,B:B/N},scoreTop:top10(sets).map(x=>`${x[0]} — ${pct(x[1]/N)}`),used,missing}}
-function buildHybridFootball(pred){let h=pred.pMC;if(!pred.used.includes("Elo"))return h;return normalize3(.60*h.A+.40*(1-(h.D+h.B)*.5),.60*h.D+.40*.22,.60*h.B+.40*(h.D+h.B)*.5)}
-function valueHtml(pred){const markets=[["Local/A","oddA",pred.pH.A],["Empate","oddD",pred.pH.D],["Visitante/B","oddB",pred.pH.B],["Over 2.5","oddO25",pred.over25],["BTTS","oddBTTS",pred.btts]].filter(x=>x[2]!==undefined);let h="<table class='table'><tr><th>Mercado</th><th>Prob.</th><th>Cuota</th><th>Valor esperado</th><th>Estado</th></tr>";for(const[m,id,p]of markets){const o=val(id);if(o===null||o<=1){h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>N/D</td><td>N/D</td><td>N/D</td></tr>`}else{const ev=p*(o-1)-(1-p),st=ev>0?"Valor positivo":"Sin valor positivo";h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>${o.toFixed(2)}</td><td>${(ev*100).toFixed(2)}%</td><td>${st}</td></tr>`}}return h+"</table>"}
-function renderPrediction(pred){
- let pH=pred.pH||pred.pMC;if(pred.sport==="Fútbol")pH=buildHybridFootball(pred);pred.pH=pH;
- let h=`<div class="result-grid"><div class="result"><b>Local / A — Monte Carlo</b>${pct(pred.pMC.A)}</div><div class="result"><b>Empate — Monte Carlo</b>${pct(pred.pMC.D)}</div><div class="result"><b>Visitante / B — Monte Carlo</b>${pct(pred.pMC.B)}</div><div class="result"><b>Local / A — Ensemble</b>${pct(pH.A)}</div><div class="result"><b>Empate — Ensemble</b>${pct(pH.D)}</div><div class="result"><b>Visitante / B — Ensemble</b>${pct(pH.B)}</div>${pred.over25!==undefined?`<div class="result"><b>Más de 2.5</b>${pct(pred.over25)}</div><div class="result"><b>Ambos marcan</b>${pct(pred.btts)}</div>`:""}</div>`;
- if(pred.scoreTop)h+=`<div class="audit"><b>10 resultados más repetidos</b><ol>${pred.scoreTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- if(pred.cornersTop?.length)h+=`<div class="audit"><b>10 córners más repetidos</b><ol>${pred.cornersTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- if(pred.foulsTop?.length)h+=`<div class="audit"><b>10 faltas más repetidas</b><ol>${pred.foulsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- if(pred.cardsTop?.length)h+=`<div class="audit"><b>10 tarjetas más repetidas</b><ol>${pred.cardsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- if(pred.sotTop?.length)h+=`<div class="audit"><b>10 tiros a portería más repetidos</b><ol>${pred.sotTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- if(pred.totalsTop)h+=`<div class="audit"><b>10 totales más repetidos</b><ol>${pred.totalsTop.map(x=>"<li>"+x+"</li>").join("")}</ol></div>`;
- h+=`<div class="audit"><b>Datos usados:</b> ${pred.used.join(", ")||"ninguno"}<br><b>N/D:</b> ${pred.missing.join(", ")||"ninguno"}<br><b>Semilla:</b> ${pred.seed} · <b>Simulaciones:</b> ${pred.N.toLocaleString("es-MX")}<br><b>Fuente:</b> Google Sheets / datos introducidos por el usuario. No se generaron valores faltantes.</div>`;
- document.getElementById("results").innerHTML=`<h2>Resultado — ${pred.sport}</h2><div class="small">${pred.a} vs ${pred.b} · ${pred.N.toLocaleString("es-MX")} simulaciones · semilla ${pred.seed}</div>`+h;
- document.getElementById("valueView").innerHTML=valueHtml(pred);
- document.getElementById("params").textContent=JSON.stringify(pred,null,2);
- document.getElementById("audit").innerHTML=`<b>Auditoría:</b> fuente Google Sheets · carga ${DB_META.loadedAt||"N/D"} · filas ${JSON.stringify(DB_META.rows)} · seed ${pred.seed}.`;
+
+/* ===== TENIS ===== */
+function tennisN(N,pref,label){
+ const ea=val(pref+"_eloA"),eb=val(pref+"_eloB");if(ea===null||eb===null)throw Error("Falta Elo general de ambos jugadores.");
+ let p=eloProb(val(pref+"_seloA")??ea,val(pref+"_seloB")??eb),used=["Elo"],missing=[];
+ const pairs=[["form",.001,"Forma"],["hold",.001,"Hold"],["break",.001,"Break"],["fs",.0005,"Primer servicio"],["ret",.0005,"Devolución"],["tb",.0005,"Tie-break"],["fat",-0.0005,"Fatiga"],["av",.0005,"Disponibilidad"]];
+ for(const[q,k,n]of pairs){const a=val(pref+"_"+q+"A"),b=val(pref+"_"+q+"B");if(a!==null&&b!==null){p=clamp(p+k*(a-b),.02,.98);used.push(n)}else missing.push(n)}
+ let A=0,B=0,sets={};for(let i=0;i<N;i++){let sa=0,sb=0;while(sa<2&&sb<2){if(rnd()<p)sa++;else sb++}if(sa>sb)A++;else B++;rec(sets,sa+"-"+sb)}
+ return {sport:label,a:nm(pref+"_nombreA")||"Jugador A",b:nm(pref+"_nombreB")||"Jugador B",N,seed:val("seed"),pMC:{A:A/N,D:0,B:B/N},pH:{A:A/N,D:0,B:B/N},scoreTop:top10(sets,N),used,missing,components:{MonteCarlo:{A:A/N,D:0,B:B/N}}};
+}
+
+/* ===== RENDER ===== */
+function valueHtml(pred){
+ const markets=[["A / Local","oddA",pred.pH.A],["Empate","oddD",pred.pH.D],["B / Visitante","oddB",pred.pH.B],["Over 2.5","oddO25",pred.over25],["BTTS","oddBTTS",pred.btts]].filter(x=>x[2]!==undefined);
+ let h="<table class='table'><tr><th>Mercado</th><th>Prob.</th><th>Cuota</th><th>EV</th></tr>";
+ for(const[m,id,p]of markets){const o=val(id);if(o===null||o<=1)h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>N/D</td><td>N/D</td></tr>`;else{const ev=p*(o-1)-(1-p);h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>${o.toFixed(2)}</td><td>${(ev*100).toFixed(2)}%</td></tr>`}}
+ return h+"</table>";
+}
+function listHtml(title,arr){if(!arr?.length)return"";return`<div class="audit"><b>${title}</b><ol>${arr.map(x=>`<li>${x.key} — ${x.n.toLocaleString("es-MX")} — ${pct(x.p)}</li>`).join("")}</ol></div>`}
+function renderPrediction(p){
+ const ph=p.pH||p.pMC;
+ let h=`<div class="result-grid">
+ <div class="result"><b>Local / A — Monte Carlo</b>${pct(p.pMC.A)}</div>
+ <div class="result"><b>Empate — Monte Carlo</b>${pct(p.pMC.D)}</div>
+ <div class="result"><b>Visitante / B — Monte Carlo</b>${pct(p.pMC.B)}</div>
+ <div class="result"><b>Local / A — Ensemble</b>${pct(ph.A)}</div>
+ <div class="result"><b>Empate — Ensemble</b>${pct(ph.D)}</div>
+ <div class="result"><b>Visitante / B — Ensemble</b>${pct(ph.B)}</div>
+ ${p.over25!==undefined?`<div class="result"><b>Más de 2.5</b>${pct(p.over25)}</div><div class="result"><b>Ambos marcan</b>${pct(p.btts)}</div>`:""}</div>`;
+ if(p.components){h+=`<div class="audit"><b>Componentes del modelo</b><br>${Object.entries(p.components).map(([k,v])=>`${k}: ${v?`A ${pct(v.A)} · D ${pct(v.D)} · B ${pct(v.B)}`:"N/D"}`).join("<br>")}</div>`}
+ h+=listHtml("10 resultados más repetidos",p.scoreTop)+listHtml("10 córners más repetidos",p.cornersTop)+listHtml("10 faltas más repetidas",p.foulsTop)+listHtml("10 tarjetas más repetidas",p.cardsTop)+listHtml("10 tiros a portería más repetidos",p.sotTop)+listHtml("10 totales más repetidos",p.totalsTop);
+ h+=`<div class="audit"><b>Parámetros usados:</b> ${p.used.join(", ")||"ninguno"}<br><b>N/D:</b> ${p.missing.join(", ")||"ninguno"}<br><b>λ A:</b> ${p.lambdaA??"N/D"} · <b>λ B:</b> ${p.lambdaB??"N/D"}<br><b>Semilla:</b> ${p.seed} · <b>Simulaciones:</b> ${p.N.toLocaleString("es-MX")}</div>`;
+ $("results").innerHTML=`<h2>Resultado — ${p.sport}</h2><div class="small">${p.a} vs ${p.b} · ${p.N.toLocaleString("es-MX")} simulaciones · seed ${p.seed}</div>`+h;
+ $("valueView").innerHTML=valueHtml(p);$("params").textContent=JSON.stringify(p,null,2);
+ $("audit").innerHTML=`<b>Auditoría:</b> versión 4.8 · seed ${p.seed} · fuente declarada: Google Sheets / entrada manual · carga DB ${DB_META.loadedAt||"N/D"}.`;
 }
 function run(){
  try{
-  const N=Number(document.getElementById("sims").value);seedRandom(val("seed")??20260923);currentN=N;
-  const s=document.getElementById("sport").value;let p;
-  if(s==="futbol")p=footballN(N);
-  else if(s==="mlb")p=twoWayBase(N,"MLB");
-  else if(s==="nfl")p=twoWayBase(N,"NFL");
-  else p=tennisN(N,s==="tenisM"?"tm":"tf",s==="tenisM"?"Tenis varonil":"Tenis femenil");
-  if(s!=="futbol")p.pH=p.pMC;
-  lastPrediction=p;
-  for(const [market,prob] of Object.entries({A:p.pH.A,B:p.pH.B,D:p.pH.D,O25:p.over25,BTTS:p.btts}))if(prob!==undefined){const c=calibrated(prob,p.sport,market);p["cal_"+market]=c.p;p["calUsed_"+market]=c.used}
-  lastPrediction.pending=true;localStorage.setItem("master_oros_pending_v4_7",JSON.stringify(lastPrediction));renderPrediction(lastPrediction);renderBT();
-  document.getElementById("bt_status").innerHTML=`<b>Pronóstico listo para backtesting.</b> ${p.a} vs ${p.b}. Registra el resultado cuando termine.`;
- }catch(e){document.getElementById("results").innerHTML=`<h2>Resultado</h2><div class="error"><b>NO SE EJECUTÓ:</b> ${e.message}</div>`}
+  const N=Number($("sims").value);seedRandom(val("seed")??20260923);const s=$("sport").value;let p;
+  if(s==="futbol")p=footballN(N);else if(s==="mlb")p=twoWayBase(N,"MLB");else if(s==="nfl")p=twoWayBase(N,"NFL");else p=tennisN(N,s==="tenisM"?"tm":"tf",s==="tenisM"?"Tenis varonil":"Tenis femenil");
+  for(const [m,prob] of Object.entries({A:p.pH.A,D:p.pH.D,B:p.pH.B,O25:p.over25,BTTS:p.btts})){if(prob===undefined)continue;const c=calibrate(prob,p.sport,m);p["cal_"+m]=c.p;p["calUsed_"+m]=c.used;p["calN_"+m]=c.n}
+  lastPrediction=p;localStorage.setItem(PENDING_KEY,JSON.stringify(p));renderPrediction(p);renderBT();$("bt_status").innerHTML=`<b>Pronóstico listo para backtesting.</b> ${p.a} vs ${p.b}.`;
+ }catch(e){$("results").innerHTML=`<h2>Resultado</h2><div class="error"><b>NO SE EJECUTÓ:</b> ${e.message}</div>`}
 }
-function btLoad(){try{const x=JSON.parse(localStorage.getItem(BT_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
-function btSave(x){localStorage.setItem(BT_KEY,JSON.stringify(x))}
 function registerActual(){
  if(!lastPrediction){alert("Primero ejecuta una simulación.");return}
- const a=Number(document.getElementById("bt_scoreA").value),b=Number(document.getElementById("bt_scoreB").value);if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0){alert("Introduce ambos resultados reales.");return}
- const actual=a>b?"A":a<b?"B":"D",p=lastPrediction.pH||lastPrediction.pMC,rows=btLoad(),date=document.getElementById("bt_date").value||new Date().toISOString().slice(0,10);
- const recBase={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),sport:lastPrediction.sport,a:lastPrediction.a,b:lastPrediction.b,N:lastPrediction.N,seed:lastPrediction.seed,date,actualScoreA:a,actualScoreB:b,actual,rawP:{...p},usedP:{A:lastPrediction.cal_A??p.A,D:lastPrediction.cal_D??p.D,B:lastPrediction.cal_B??p.B,O25:lastPrediction.cal_O25??lastPrediction.over25,BTTS:lastPrediction.cal_BTTS??lastPrediction.btts},odds:{A:val("oddA"),D:val("oddD"),B:val("oddB"),O25:val("oddO25"),BTTS:val("oddBTTS")},createdAt:new Date().toISOString(),completed:true};
- [["A",p.A,actual==="A"],["D",p.D,actual==="D"],["B",p.B,actual==="B"]].forEach(([m,pr,y])=>rows.push({...recBase,market:m,pred:pr,actualBinary:y?1:0,correct:y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))}));
- if(lastPrediction.over25!==undefined){const y=a+b>=3?1:0,pr=lastPrediction.cal_O25??lastPrediction.over25;rows.push({...recBase,market:"O25",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
- if(lastPrediction.btts!==undefined){const y=a>0&&b>0?1:0,pr=lastPrediction.cal_BTTS??lastPrediction.btts;rows.push({...recBase,market:"BTTS",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
- btSave(rows);localStorage.removeItem("master_oros_pending_v4_7");document.getElementById("bt_scoreA").value="";document.getElementById("bt_scoreB").value="";document.getElementById("bt_status").innerHTML="<b>Resultado registrado.</b>";renderBT();
+ const a=Number($("bt_scoreA").value),b=Number($("bt_scoreB").value);if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0){alert("Introduce ambos resultados reales.");return}
+ const actual=a>b?"A":a<b?"B":"D",id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+"_"+Math.random()),date=$("bt_date").value||dateISO(),p=lastPrediction.pH||lastPrediction.pMC,rows=btLoad();
+ const base={id,sport:lastPrediction.sport,a:lastPrediction.a,b:lastPrediction.b,N:lastPrediction.N,seed:lastPrediction.seed,date,actualScoreA:a,actualScoreB:b,actual,rawP:{...p},usedP:{A:lastPrediction.cal_A??p.A,D:lastPrediction.cal_D??p.D,B:lastPrediction.cal_B??p.B,O25:lastPrediction.cal_O25??lastPrediction.over25,BTTS:lastPrediction.cal_BTTS??lastPrediction.btts},odds:{A:val("oddA"),D:val("oddD"),B:val("oddB"),O25:val("oddO25"),BTTS:val("oddBTTS")},createdAt:new Date().toISOString(),completed:true};
+ [["A",p.A,actual==="A"],["D",p.D,actual==="D"],["B",p.B,actual==="B"]].forEach(([m,pr,y])=>rows.push({...base,market:m,pred:pr,actualBinary:y?1:0,correct:y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))}));
+ if(lastPrediction.over25!==undefined){const y=a+b>=3?1:0,pr=lastPrediction.cal_O25??lastPrediction.over25;rows.push({...base,market:"O25",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
+ if(lastPrediction.btts!==undefined){const y=a>0&&b>0?1:0,pr=lastPrediction.cal_BTTS??lastPrediction.btts;rows.push({...base,market:"BTTS",pred:pr,actualBinary:y,correct:(pr>=.5)===!!y,bin:Math.min(9,Math.floor(clamp(pr,0,.999999)*10))})}
+ btSave(rows);localStorage.removeItem(PENDING_KEY);lastPrediction=null;$("bt_scoreA").value="";$("bt_scoreB").value="";$("bt_status").textContent="Resultado registrado.";renderBT();
 }
-function renderBT(){
- const rows=btLoad(),g=rows.filter(r=>r.completed&&["A","D","B"].includes(r.market)),by={};g.forEach(r=>(by[r.sport]??=[]).push(r));
- let h=`<b>Registros de mercados 1X2:</b> ${g.length/3||0}`;if(!g.length){document.getElementById("bt_analysis").innerHTML=h+"<br>Sin resultados reales.";return}
- h+=`<table class="table"><tr><th>Deporte</th><th>Partidos</th><th>Accuracy</th><th>Brier 1X2</th><th>Log Loss</th></tr>`;
- for(const[s,arr]of Object.entries(by)){const ids=[...new Map(arr.map(r=>[r.id,r])).values()],acc=ids.filter(r=>{const pr=r.usedP||r.rawP;return(pr[r.actual]??0)>=Math.max(pr.A??0,pr.D??0,pr.B??0)}).length/ids.length;
-  let br=0,ll=0;ids.forEach(r=>{const p=r.rawP;br+=brier1x2(p,r.actual);ll+=logLoss(p[r.actual])});h+=`<tr><td>${s}</td><td>${ids.length}</td><td>${pct(acc)}</td><td>${(br/ids.length).toFixed(4)}</td><td>${(ll/ids.length).toFixed(4)}</td></tr>`}
- h+="</table>";
- for(const m of["O25","BTTS"]){const a=rows.filter(r=>r.completed&&r.market===m);if(a.length){h+=`<div style="margin-top:7px"><b>${m}</b> — ${a.length} casos · accuracy ${pct(a.filter(r=>r.correct).length/a.length)}</div>`}}
- document.getElementById("bt_analysis").innerHTML=h;
-}
-function exportBT(){const blob=new Blob([JSON.stringify(btLoad(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Master_Oros_v4_7_backtesting.json";a.click();URL.revokeObjectURL(a.href)}
-function importBT(){document.getElementById("bt_file").click()}
-function loadBT(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw Error("El JSON no contiene un arreglo.");btSave(x);renderBT();alert("Historial importado y validado.");}catch(err){alert("No se pudo importar: "+err.message)}};r.readAsText(f);e.target.value=""}
-function clearBT(){if(confirm("¿Borrar solo el historial de Master Oros v4.7 de este dispositivo?")){localStorage.removeItem(BT_KEY);localStorage.removeItem("master_oros_pending_v4_7");lastPrediction=null;renderBT();document.getElementById("bt_status").textContent="Historial borrado."}}
-function clearAll(){document.querySelectorAll("input").forEach(e=>{if(e.id!=="seed")e.value=""});document.getElementById("seed").value="20260923";document.getElementById("homeAdv").value="";lastPrediction=null;currentData={A:null,B:null};document.getElementById("results").innerHTML="<h2>Resultado</h2><div class='note'>Entradas limpiadas.</div>";document.getElementById("valueView").textContent="Ejecuta una simulación para calcular valor.";document.getElementById("dataView").textContent="No se ha realizado búsqueda."}
-function showSport(){document.querySelectorAll(".sport").forEach(e=>e.style.display="none");document.getElementById(document.getElementById("sport").value).style.display="block"}
-document.getElementById("loadDb").onclick=()=>loadDB().catch(e=>setStatus("No se pudo cargar la base: "+e.message,"bad"));
-document.getElementById("bot").onclick=()=>botFill().catch(e=>setStatus("Error en búsqueda: "+e.message,"bad"));
-document.getElementById("run").onclick=run;document.getElementById("clear").onclick=clearAll;
-document.getElementById("register").onclick=registerActual;document.getElementById("refreshBT").onclick=renderBT;document.getElementById("exportBT").onclick=exportBT;document.getElementById("importBT").onclick=importBT;document.getElementById("bt_file").addEventListener("change",loadBT);document.getElementById("clearBT").onclick=clearBT;
-document.getElementById("bt_date").value=new Date().toISOString().slice(0,10);showSport();renderBT();loadDB().catch(()=>{});
+function exportBT(){const blob=new Blob([JSON.stringify(btLoad(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Master_Oros_v4_8_backtesting.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importBT(){$("bt_file").click()}
+function loadBT(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw Error("El JSON debe contener un arreglo.");if(x.some(z=>!z.id||!z.sport||!z.market))throw Error("Hay registros sin estructura mínima.");btSave(x);renderBT();alert("Historial importado y validado.")}catch(err){alert("No se pudo importar: "+err.message)} };r.readAsText(f);e.target.value=""}
+function clearBT(){if(confirm("¿Borrar el historial de Master Oros v4.8 de este dispositivo?")){localStorage.removeItem(BT_KEY);localStorage.removeItem(PENDING_KEY);lastPrediction=null;renderBT();$("bt_status").textContent="Historial borrado."}}
+function clearAll(){document.querySelectorAll("input").forEach(e=>{if(e.id!=="seed")e.value=""});$("seed").value="20260923";$("homeAdv").value="";lastPrediction=null;currentData={A:null,B:null,fa:null,fb:null};$("results").innerHTML="<h2>Resultado</h2><div class='note'>Entradas limpiadas.</div>";$("valueView").textContent="Ejecuta una simulación."; $("dataView").textContent="No se ha realizado búsqueda."}
+function showSport(){document.querySelectorAll(".sport").forEach(e=>e.style.display="none");$( $("sport").value ).style.display="block"}
+
+/* ===== EVENTOS ===== */
+$("sport").onchange=showSport;
+$("loadDb").onclick=()=>loadDB().catch(e=>setStatus("No se pudo cargar la base: "+e.message,"bad"));
+$("bot").onclick=()=>botFill().catch(e=>setStatus("Error en búsqueda: "+e.message,"bad"));
+$("run").onclick=run;$("clear").onclick=clearAll;$("register").onclick=registerActual;$("refreshBT").onclick=renderBT;$("exportBT").onclick=exportBT;$("importBT").onclick=importBT;$("bt_file").addEventListener("change",loadBT);$("clearBT").onclick=clearBT;
+$("bt_date").value=dateISO();showSport();renderBT();loadDB().catch(()=>{});
 </script>
 </body>
 </html>
