@@ -2,489 +2,5019 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Master Oros v4.8 — Simulador Multideporte + Bot + Google Sheets</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Master Oros v5.0 — Simulador Multideporte + Bot + Auditoría + Backtesting</title>
+
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9dee5;--accent:#1769aa;--ok:#16803c;--warn:#b26a00;--bad:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.wrap{max-width:1280px;margin:auto;padding:14px}header,.panel,.results,.team-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px}
-h1{margin:0 0 6px;font-size:25px}h2{margin:0 0 12px;font-size:19px}.small,.note{color:var(--muted);line-height:1.45}
-.toolbar,.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:end}.control{min-width:165px;flex:1}label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
-input,select,button{width:100%;padding:9px;border:1px solid #cbd2da;border-radius:9px;font:inherit;background:#fff}button{cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
-.status{padding:10px;border-radius:9px;background:#eef2f7;margin-top:10px}.status.ok{background:#eaf7ee;color:var(--ok)}.status.warn{background:#fff6e8;color:var(--warn)}.status.bad{background:#fff0f0;color:var(--bad)}
-.teams{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team-panel.local{border-top:5px solid #176b4d}.team-panel.visitor{border-top:5px solid #8a3b12}.team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.badge{font-size:11px;font-weight:800;padding:4px 7px;border-radius:99px;background:#eef1f4}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:800;margin-top:4px}
-.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}.result{border:1px solid var(--line);border-radius:9px;padding:10px}.result b{display:block;margin-bottom:4px}
-.audit{margin-top:10px;padding:10px;border-radius:9px;background:#f7f8fa;border:1px solid var(--line);font-size:12px;line-height:1.5}
-.table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}.table th,.table td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}.error{padding:10px;border:1px solid #e0b4b4;background:#fff7f7;border-radius:9px}
-.sport{display:none}.danger{color:var(--bad)}.good{color:var(--ok)}.mono{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
-@media(max-width:760px){.teams{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.wrap{padding:9px}h1{font-size:21px}}
+:root{
+ --bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;
+ --line:#d9dee5;--accent:#1769aa;--ok:#16803c;
+ --warn:#b26a00;--bad:#b42318;--purple:#6941c6
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--text);
+ font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
+}
+.wrap{max-width:1320px;margin:auto;padding:14px}
+header,.panel,.results,.team-panel{
+ background:var(--card);border:1px solid var(--line);
+ border-radius:14px;padding:15px;margin-bottom:14px
+}
+h1{margin:0 0 5px;font-size:25px}
+h2{margin:0 0 12px;font-size:19px}
+h3{margin:0;font-size:16px}
+.small,.note{color:var(--muted);line-height:1.45}
+.toolbar,.actions{
+ display:flex;gap:9px;flex-wrap:wrap;align-items:end
+}
+.control{min-width:165px;flex:1}
+label{
+ display:block;font-size:12px;font-weight:700;margin-bottom:4px
+}
+input,select,button{
+ width:100%;padding:9px;border:1px solid #cbd2da;
+ border-radius:9px;font:inherit;background:#fff
+}
+button{cursor:pointer;font-weight:700}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.purple{background:var(--purple);color:#fff;border-color:var(--purple)}
+.status{
+ padding:10px;border-radius:9px;background:#eef2f7;margin-top:10px
+}
+.status.ok{background:#eaf7ee;color:var(--ok)}
+.status.warn{background:#fff6e8;color:var(--warn)}
+.status.bad{background:#fff0f0;color:var(--bad)}
+.status.info{background:#edf4ff;color:#1769aa}
+.teams{
+ display:grid;grid-template-columns:1fr 1fr;gap:14px
+}
+.team-panel.local{border-top:5px solid #176b4d}
+.team-panel.visitor{border-top:5px solid #8a3b12}
+.team-head{
+ display:flex;justify-content:space-between;align-items:center;
+ margin-bottom:10px
+}
+.badge{
+ font-size:11px;font-weight:800;padding:4px 7px;
+ border-radius:99px;background:#eef1f4
+}
+.metrics{
+ display:grid;grid-template-columns:1fr 1fr;gap:8px
+}
+.section{
+ grid-column:1/-1;font-size:11px;text-transform:uppercase;
+ letter-spacing:.05em;color:var(--muted);font-weight:800;margin-top:4px
+}
+.result-grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+ gap:9px
+}
+.result{
+ border:1px solid var(--line);border-radius:9px;padding:10px
+}
+.result b{display:block;margin-bottom:4px}
+.audit{
+ margin-top:10px;padding:10px;border-radius:9px;
+ background:#f7f8fa;border:1px solid var(--line);
+ font-size:12px;line-height:1.5
+}
+.table{
+ width:100%;border-collapse:collapse;font-size:12px;margin-top:8px
+}
+.table th,.table td{
+ border-bottom:1px solid var(--line);
+ padding:6px;text-align:left;vertical-align:top
+}
+.error{
+ padding:10px;border:1px solid #e0b4b4;
+ background:#fff7f7;border-radius:9px
+}
+.good{color:var(--ok)}
+.danger{color:var(--bad)}
+.warnText{color:var(--warn)}
+.mono{
+ font-family:ui-monospace,Consolas,monospace;
+ white-space:pre-wrap;word-break:break-word
+}
+.sport{display:none}
+.flex2{
+ display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
+.hr{
+ height:1px;background:var(--line);margin:12px 0
+}
+@media(max-width:760px){
+ .teams,.metrics,.flex2{grid-template-columns:1fr}
+ .wrap{padding:9px}
+ h1{font-size:21px}
+}
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
+
 <header>
-<h1>Master Oros v4.8</h1>
-<div class="note">Motor Monte Carlo + Bot Google Sheets. <b>Cero datos inventados:</b> campos sin dato = N/D.</div>
+
+<h1>Master Oros v5.0</h1>
+
+<div class="note">
+Motor reproducible Monte Carlo multideporte con Poisson, Elo, forma,
+estadísticas específicas, componentes experimentales, procedencia,
+validación, value betting y backtesting.
+<br>
+<b>Principio:</b> ningún dato faltante se inventa automáticamente.
+</div>
+
 <div class="toolbar" style="margin-top:12px">
-<div class="control"><label>Deporte</label><select id="sport">
+
+<div class="control">
+<label>Deporte</label>
+<select id="sport">
 <option value="futbol">⚽ Fútbol</option>
 <option value="mlb">⚾ MLB</option>
 <option value="nfl">🏈 NFL</option>
 <option value="tenisM">🎾 Tenis varonil</option>
 <option value="tenisF">🎾 Tenis femenil</option>
-</select></div>
-<div class="control"><label>Simulaciones</label><select id="sims">
-<option>1000</option><option>5000</option><option selected>25000</option>
-<option>50000</option><option>100000</option>
-</select></div>
-<div class="control"><label>Semilla</label><input id="seed" type="number" value="20260923"></div>
-<div class="control"><label>Ventaja local %</label><input id="homeAdv" type="number" step=".1" placeholder="N/D"></div>
+</select>
 </div>
+
+<div class="control">
+<label>Simulaciones</label>
+<select id="sims">
+<option>1000</option>
+<option>5000</option>
+<option selected>25000</option>
+<option>50000</option>
+<option>100000</option>
+</select>
+</div>
+
+<div class="control">
+<label>Semilla reproducible</label>
+<input id="seed" type="number" value="20260930">
+</div>
+
+<div class="control">
+<label>Ventaja local % — solo si está verificada</label>
+<input id="homeAdv" type="number" step=".1" placeholder="N/D">
+</div>
+
+</div>
+
+<div class="toolbar" style="margin-top:10px">
+
+<div class="control" style="flex:2">
+<label>Google Sheets — URL / vínculo</label>
+<input id="sheetUrl"
+value="https://docs.google.com/spreadsheets/d/1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq/edit">
+</div>
+
+<div class="control">
+<label>ID detectado</label>
+<input id="sheetId" readonly>
+</div>
+
+</div>
+
 <div class="actions" style="margin-top:10px">
-<div class="control"><button id="loadDb">🔗 Conectar Google Sheets</button></div>
-<div class="control"><button class="ok" id="bot">🤖 Buscar datos</button></div>
-<div class="control"><button class="primary" id="run">▶️ Simular</button></div>
-<div class="control"><button id="clear">🧹 Limpiar</button></div>
+
+<div class="control">
+<button id="loadDb">☁️ Conectar / actualizar Google Sheets</button>
 </div>
-<div id="status" class="status">Sin conexión.</div>
+
+<div class="control">
+<button class="ok" id="bot">🤖 Buscar y rellenar desde la base</button>
+</div>
+
+<div class="control">
+<button class="primary" id="run">▶ Ejecutar simulador</button>
+</div>
+
+<div class="control">
+<button id="clear">Limpiar entradas</button>
+</div>
+
+</div>
+
+<div id="status" class="status">
+Base: no cargada.
+</div>
+
 </header>
 
-<section class="panel"><h2>📊 Base de Datos</h2>
-<div id="dbSummary" class="note">Pendiente.</div>
-<div id="dataView" class="audit">Escribe un nombre y pulsa "Buscar datos".</div>
+
+<section class="panel">
+
+<h2>☁️ Base de datos y auditoría de procedencia</h2>
+
+<div id="dbSummary" class="note">
+Google Sheets: pendiente.
+</div>
+
+<div id="dataView" class="audit">
+No se ha realizado búsqueda.
+</div>
+
 </section>
+
+
+<!-- ========================= FÚTBOL ========================= -->
 
 <section id="futbol" class="sport">
-<h2>⚽ Fútbol</h2><div class="teams">
-<div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="f_nombreA"></div>
-<div><label>Elo</label><input id="f_eloA" type="number"></div>
-<div><label>GF/partido</label><input id="f_gfA" type="number" step=".01"></div>
-<div><label>GA/partido</label><input id="f_gaA" type="number" step=".01"></div>
-<div><label>xG/partido</label><input id="f_xgA" type="number" step=".01"></div>
-<div><label>xGA/partido</label><input id="f_xgaA" type="number" step=".01"></div>
-<div><label>Tiros a portería</label><input id="f_sotA" type="number" step=".01"></div>
-<div><label>Córners</label><input id="f_corA" type="number" step=".01"></div>
-<div><label>Faltas</label><input id="f_fouA" type="number" step=".01"></div>
-<div><label>Tarjetas</label><input id="f_carA" type="number" step=".01"></div>
-<div><label>Victorias últi. 10</label><input id="f_formA" type="number" min="0" max="10"></div>
-<div><label>Disponibilidad %</label><input id="f_avA" type="number" min="0" max="100"></div>
-</div></div>
-<div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="f_nombreB"></div>
-<div><label>Elo</label><input id="f_eloB" type="number"></div>
-<div><label>GF/partido</label><input id="f_gfB" type="number" step=".01"></div>
-<div><label>GA/partido</label><input id="f_gaB" type="number" step=".01"></div>
-<div><label>xG/partido</label><input id="f_xgB" type="number" step=".01"></div>
-<div><label>xGA/partido</label><input id="f_xgaB" type="number" step=".01"></div>
-<div><label>Tiros a portería</label><input id="f_sotB" type="number" step=".01"></div>
-<div><label>Córners</label><input id="f_corB" type="number" step=".01"></div>
-<div><label>Faltas</label><input id="f_fouB" type="number" step=".01"></div>
-<div><label>Tarjetas</label><input id="f_carB" type="number" step=".01"></div>
-<div><label>Victorias últi. 10</label><input id="f_formB" type="number" min="0" max="10"></div>
-<div><label>Disponibilidad %</label><input id="f_avB" type="number" min="0" max="100"></div>
-</div></div></div>
+
+<h2>⚽ Fútbol</h2>
+
+<div class="teams">
+
+<div class="team-panel local">
+
+<div class="team-head">
+<h3>Equipo local</h3>
+<span class="badge">LOCAL</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="f_nombreA">
+</div>
+
+<div>
+<label>Elo</label>
+<input id="f_eloA" type="number">
+</div>
+
+<div>
+<label>GF / partido *</label>
+<input id="f_gfA" type="number" step=".01">
+</div>
+
+<div>
+<label>GA / partido</label>
+<input id="f_gaA" type="number" step=".01">
+</div>
+
+<div>
+<label>xG / partido</label>
+<input id="f_xgA" type="number" step=".01">
+</div>
+
+<div>
+<label>xGA / partido</label>
+<input id="f_xgaA" type="number" step=".01">
+</div>
+
+<div>
+<label>Tiros a portería</label>
+<input id="f_sotA" type="number" step=".01">
+</div>
+
+<div>
+<label>Córners</label>
+<input id="f_corA" type="number" step=".01">
+</div>
+
+<div>
+<label>Faltas</label>
+<input id="f_fouA" type="number" step=".01">
+</div>
+
+<div>
+<label>Tarjetas amarillas</label>
+<input id="f_carA" type="number" step=".01">
+</div>
+
+<div>
+<label>Victorias últimos 10</label>
+<input id="f_formA" type="number" min="0" max="10">
+</div>
+
+<div>
+<label>Disponibilidad %</label>
+<input id="f_avA" type="number" min="0" max="100">
+</div>
+
+</div>
+</div>
+
+
+<div class="team-panel visitor">
+
+<div class="team-head">
+<h3>Equipo visitante</h3>
+<span class="badge">VISITANTE</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="f_nombreB">
+</div>
+
+<div>
+<label>Elo</label>
+<input id="f_eloB" type="number">
+</div>
+
+<div>
+<label>GF / partido *</label>
+<input id="f_gfB" type="number" step=".01">
+</div>
+
+<div>
+<label>GA / partido</label>
+<input id="f_gaB" type="number" step=".01">
+</div>
+
+<div>
+<label>xG / partido</label>
+<input id="f_xgB" type="number" step=".01">
+</div>
+
+<div>
+<label>xGA / partido</label>
+<input id="f_xgaB" type="number" step=".01">
+</div>
+
+<div>
+<label>Tiros a portería</label>
+<input id="f_sotB" type="number" step=".01">
+</div>
+
+<div>
+<label>Córners</label>
+<input id="f_corB" type="number" step=".01">
+</div>
+
+<div>
+<label>Faltas</label>
+<input id="f_fouB" type="number" step=".01">
+</div>
+
+<div>
+<label>Tarjetas amarillas</label>
+<input id="f_carB" type="number" step=".01">
+</div>
+
+<div>
+<label>Victorias últimos 10</label>
+<input id="f_formB" type="number" min="0" max="10">
+</div>
+
+<div>
+<label>Disponibilidad %</label>
+<input id="f_avB" type="number" min="0" max="100">
+</div>
+
+</div>
+</div>
+
+</div>
 </section>
 
-<section id="mlb" class="sport"><h2>⚾ MLB</h2><div class="teams">
-<div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="m_nombreA"></div>
-<div><label>Carreras/juego</label><input id="m_rA" type="number" step=".01"></div>
-<div><label>Carreras perm./juego</label><input id="m_raA" type="number" step=".01"></div>
-<div><label>OPS</label><input id="m_opsA" type="number" step=".001"></div>
-<div><label>HR/juego</label><input id="m_hrA" type="number" step=".01"></div>
-<div><label>K%</label><input id="m_kA" type="number" step=".1"></div>
-<div><label>BB%</label><input id="m_bbA" type="number" step=".1"></div>
-<div><label>ERA abridor</label><input id="m_eraA" type="number" step=".01"></div>
-<div><label>ERA bullpen</label><input id="m_bullA" type="number" step=".01"></div>
-<div><label>Defensa</label><input id="m_defA" type="number" step=".01"></div>
-</div></div>
-<div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="m_nombreB"></div>
-<div><label>Carreras/juego</label><input id="m_rB" type="number" step=".01"></div>
-<div><label>Carreras perm./juego</label><input id="m_raB" type="number" step=".01"></div>
-<div><label>OPS</label><input id="m_opsB" type="number" step=".001"></div>
-<div><label>HR/juego</label><input id="m_hrB" type="number" step=".01"></div>
-<div><label>K%</label><input id="m_kB" type="number" step=".1"></div>
-<div><label>BB%</label><input id="m_bbB" type="number" step=".1"></div>
-<div><label>ERA abridor</label><input id="m_eraB" type="number" step=".01"></div>
-<div><label>ERA bullpen</label><input id="m_bullB" type="number" step=".01"></div>
-<div><label>Defensa</label><input id="m_defB" type="number" step=".01"></div>
-</div></div></div></section>
 
-<section id="nfl" class="sport"><h2>🏈 NFL</h2><div class="teams">
-<div class="team-panel local"><div class="team-head"><h3>Local</h3><span class="badge">LOCAL</span></div><div class="metrics">
-<div><label>Nombre</label><input id="n_nombreA"></div>
-<div><label>Elo</label><input id="n_eloA" type="number"></div>
-<div><label>PF/juego</label><input id="n_pfA" type="number" step=".01"></div>
-<div><label>PA/juego</label><input id="n_paA" type="number" step=".01"></div>
-<div><label>Yardas ofensivas</label><input id="n_ydA" type="number" step=".1"></div>
-<div><label>Yardas def. perm.</label><input id="n_dydA" type="number" step=".1"></div>
-<div><label>TD/juego</label><input id="n_tdA" type="number" step=".01"></div>
-<div><label>Diferencial pérdidas</label><input id="n_toA" type="number" step=".01"></div>
-<div><label>3ª oportunidad %</label><input id="n_3rdA" type="number" step=".1"></div>
-<div><label>Disponibilidad %</label><input id="n_avA" type="number" min="0" max="100"></div>
-</div></div>
-<div class="team-panel visitor"><div class="team-head"><h3>Visitante</h3><span class="badge">VISITANTE</span></div><div class="metrics">
-<div><label>Nombre</label><input id="n_nombreB"></div>
-<div><label>Elo</label><input id="n_eloB" type="number"></div>
-<div><label>PF/juego</label><input id="n_pfB" type="number" step=".01"></div>
-<div><label>PA/juego</label><input id="n_paB" type="number" step=".01"></div>
-<div><label>Yardas ofensivas</label><input id="n_ydB" type="number" step=".1"></div>
-<div><label>Yardas def. perm.</label><input id="n_dydB" type="number" step=".1"></div>
-<div><label>TD/juego</label><input id="n_tdB" type="number" step=".01"></div>
-<div><label>Diferencial pérdidas</label><input id="n_toB" type="number" step=".01"></div>
-<div><label>3ª oportunidad %</label><input id="n_3rdB" type="number" step=".1"></div>
-<div><label>Disponibilidad %</label><input id="n_avB" type="number" min="0" max="100"></div>
-</div></div></div></section>
+<!-- ========================= MLB ========================= -->
 
-<section id="tenisM" class="sport"><h2>🎾 Tenis Varonil</h2><div class="teams">
-<div class="team-panel local"><div class="team-head"><h3>Jugador A</h3><span class="badge">A</span></div><div class="metrics">
+<section id="mlb" class="sport">
+
+<h2>⚾ MLB</h2>
+
+<div class="teams">
+
+<div class="team-panel local">
+
+<div class="team-head">
+<h3>Equipo local</h3>
+<span class="badge">LOCAL</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="m_nombreA">
+</div>
+
+<div>
+<label>Carreras / juego *</label>
+<input id="m_rA" type="number" step=".01">
+</div>
+
+<div>
+<label>Carreras permitidas / juego</label>
+<input id="m_raA" type="number" step=".01">
+</div>
+
+<div>
+<label>OPS</label>
+<input id="m_opsA" type="number" step=".001">
+</div>
+
+<div>
+<label>HR / juego</label>
+<input id="m_hrA" type="number" step=".01">
+</div>
+
+<div>
+<label>K%</label>
+<input id="m_kA" type="number" step=".1">
+</div>
+
+<div>
+<label>BB%</label>
+<input id="m_bbA" type="number" step=".1">
+</div>
+
+<div>
+<label>ERA abridor</label>
+<input id="m_eraA" type="number" step=".01">
+</div>
+
+<div>
+<label>ERA bullpen</label>
+<input id="m_bullA" type="number" step=".01">
+</div>
+
+<div>
+<label>Defensa</label>
+<input id="m_defA" type="number" step=".01">
+</div>
+
+</div>
+</div>
+
+
+<div class="team-panel visitor">
+
+<div class="team-head">
+<h3>Equipo visitante</h3>
+<span class="badge">VISITANTE</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="m_nombreB">
+</div>
+
+<div>
+<label>Carreras / juego *</label>
+<input id="m_rB" type="number" step=".01">
+</div>
+
+<div>
+<label>Carreras permitidas / juego</label>
+<input id="m_raB" type="number" step=".01">
+</div>
+
+<div>
+<label>OPS</label>
+<input id="m_opsB" type="number" step=".001">
+</div>
+
+<div>
+<label>HR / juego</label>
+<input id="m_hrB" type="number" step=".01">
+</div>
+
+<div>
+<label>K%</label>
+<input id="m_kB" type="number" step=".1">
+</div>
+
+<div>
+<label>BB%</label>
+<input id="m_bbB" type="number" step=".1">
+</div>
+
+<div>
+<label>ERA abridor</label>
+<input id="m_eraB" type="number" step=".01">
+</div>
+
+<div>
+<label>ERA bullpen</label>
+<input id="m_bullB" type="number" step=".01">
+</div>
+
+<div>
+<label>Defensa</label>
+<input id="m_defB" type="number" step=".01">
+</div>
+
+</div>
+</div>
+
+</div>
+</section>
+
+
+<!-- ========================= NFL ========================= -->
+
+<section id="nfl" class="sport">
+
+<h2>🏈 NFL</h2>
+
+<div class="teams">
+
+<div class="team-panel local">
+
+<div class="team-head">
+<h3>Equipo local</h3>
+<span class="badge">LOCAL</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="n_nombreA">
+</div>
+
+<div>
+<label>Elo</label>
+<input id="n_eloA" type="number">
+</div>
+
+<div>
+<label>PF / juego *</label>
+<input id="n_pfA" type="number" step=".01">
+</div>
+
+<div>
+<label>PA / juego</label>
+<input id="n_paA" type="number" step=".01">
+</div>
+
+<div>
+<label>Yardas ofensivas</label>
+<input id="n_ydA" type="number" step=".1">
+</div>
+
+<div>
+<label>Yardas defensivas permitidas</label>
+<input id="n_dydA" type="number" step=".1">
+</div>
+
+<div>
+<label>TD / juego</label>
+<input id="n_tdA" type="number" step=".01">
+</div>
+
+<div>
+<label>Diferencial pérdidas</label>
+<input id="n_toA" type="number" step=".01">
+</div>
+
+<div>
+<label>3ª oportunidad %</label>
+<input id="n_3rdA" type="number" step=".1">
+</div>
+
+<div>
+<label>Disponibilidad %</label>
+<input id="n_avA" type="number" min="0" max="100">
+</div>
+
+</div>
+</div>
+
+
+<div class="team-panel visitor">
+
+<div class="team-head">
+<h3>Equipo visitante</h3>
+<span class="badge">VISITANTE</span>
+</div>
+
+<div class="metrics">
+
+<div>
+<label>Nombre</label>
+<input id="n_nombreB">
+</div>
+
+<div>
+<label>Elo</label>
+<input id="n_eloB" type="number">
+</div>
+
+<div>
+<label>PF / juego *</label>
+<input id="n_pfB" type="number" step=".01">
+</div>
+
+<div>
+<label>PA / juego</label>
+<input id="n_paB" type="number" step=".01">
+</div>
+
+<div>
+<label>Yardas ofensivas</label>
+<input id="n_ydB" type="number" step=".1">
+</div>
+
+<div>
+<label>Yardas defensivas permitidas</label>
+<input id="n_dydB" type="number" step=".1">
+</div>
+
+<div>
+<label>TD / juego</label>
+<input id="n_tdB" type="number" step=".01">
+</div>
+
+<div>
+<label>Diferencial pérdidas</label>
+<input id="n_toB" type="number" step=".01">
+</div>
+
+<div>
+<label>3ª oportunidad %</label>
+<input id="n_3rdB" type="number" step=".1">
+</div>
+
+<div>
+<label>Disponibilidad %</label>
+<input id="n_avB" type="number" min="0" max="100">
+</div>
+
+</div>
+</div>
+
+</div>
+</section>
+
+
+<!-- ========================= TENIS M ========================= -->
+
+<section id="tenisM" class="sport">
+
+<h2>🎾 Tenis varonil</h2>
+
+<div class="teams">
+
+<div class="team-panel local">
+
+<div class="team-head">
+<h3>Jugador A</h3>
+<span class="badge">A</span>
+</div>
+
+<div class="metrics">
+
 <div><label>Nombre</label><input id="tm_nombreA"></div>
-<div><label>Elo General</label><input id="tm_eloA" type="number"></div>
-<div><label>Elo Superficie</label><input id="tm_seloA" type="number"></div>
+<div><label>Elo general *</label><input id="tm_eloA" type="number"></div>
+<div><label>Elo superficie</label><input id="tm_seloA" type="number"></div>
 <div><label>Forma 0-100</label><input id="tm_formA" type="number"></div>
 <div><label>Hold %</label><input id="tm_holdA" type="number"></div>
 <div><label>Break %</label><input id="tm_breakA" type="number"></div>
-<div><label>1er Servicio %</label><input id="tm_fsA" type="number"></div>
-<div><label>Devolución %</label><input id="tm_retA" type="number"></div>
+<div><label>1er servicio ganado %</label><input id="tm_fsA" type="number"></div>
+<div><label>Restos ganados %</label><input id="tm_retA" type="number"></div>
 <div><label>Tie-break %</label><input id="tm_tbA" type="number"></div>
 <div><label>Fatiga 0-100</label><input id="tm_fatA" type="number"></div>
 <div><label>Disponibilidad %</label><input id="tm_avA" type="number"></div>
-</div></div>
-<div class="team-panel visitor"><div class="team-head"><h3>Jugador B</h3><span class="badge">B</span></div><div class="metrics">
+
+</div>
+</div>
+
+
+<div class="team-panel visitor">
+
+<div class="team-head">
+<h3>Jugador B</h3>
+<span class="badge">B</span>
+</div>
+
+<div class="metrics">
+
 <div><label>Nombre</label><input id="tm_nombreB"></div>
-<div><label>Elo General</label><input id="tm_eloB" type="number"></div>
-<div><label>Elo Superficie</label><input id="tm_seloB" type="number"></div>
+<div><label>Elo general *</label><input id="tm_eloB" type="number"></div>
+<div><label>Elo superficie</label><input id="tm_seloB" type="number"></div>
 <div><label>Forma 0-100</label><input id="tm_formB" type="number"></div>
 <div><label>Hold %</label><input id="tm_holdB" type="number"></div>
 <div><label>Break %</label><input id="tm_breakB" type="number"></div>
-<div><label>1er Servicio %</label><input id="tm_fsB" type="number"></div>
-<div><label>Devolución %</label><input id="tm_retB" type="number"></div>
+<div><label>1er servicio ganado %</label><input id="tm_fsB" type="number"></div>
+<div><label>Restos ganados %</label><input id="tm_retB" type="number"></div>
 <div><label>Tie-break %</label><input id="tm_tbB" type="number"></div>
 <div><label>Fatiga 0-100</label><input id="tm_fatB" type="number"></div>
 <div><label>Disponibilidad %</label><input id="tm_avB" type="number"></div>
-</div></div></div></section>
 
-<section id="tenisF" class="sport"><h2>🎾 Tenis Femenil</h2><div class="teams">
-<div class="team-panel local"><div class="team-head"><h3>Jugadora A</h3><span class="badge">A</span></div><div class="metrics">
+</div>
+</div>
+
+</div>
+</section>
+
+
+<!-- ========================= TENIS F ========================= -->
+
+<section id="tenisF" class="sport">
+
+<h2>🎾 Tenis femenil</h2>
+
+<div class="teams">
+
+<div class="team-panel local">
+
+<div class="team-head">
+<h3>Jugadora A</h3>
+<span class="badge">A</span>
+</div>
+
+<div class="metrics">
+
 <div><label>Nombre</label><input id="tf_nombreA"></div>
-<div><label>Elo General</label><input id="tf_eloA" type="number"></div>
-<div><label>Elo Superficie</label><input id="tf_seloA" type="number"></div>
+<div><label>Elo general *</label><input id="tf_eloA" type="number"></div>
+<div><label>Elo superficie</label><input id="tf_seloA" type="number"></div>
 <div><label>Forma 0-100</label><input id="tf_formA" type="number"></div>
 <div><label>Hold %</label><input id="tf_holdA" type="number"></div>
 <div><label>Break %</label><input id="tf_breakA" type="number"></div>
-<div><label>1er Servicio %</label><input id="tf_fsA" type="number"></div>
-<div><label>Devolución %</label><input id="tf_retA" type="number"></div>
+<div><label>1er servicio ganado %</label><input id="tf_fsA" type="number"></div>
+<div><label>Restos ganados %</label><input id="tf_retA" type="number"></div>
 <div><label>Tie-break %</label><input id="tf_tbA" type="number"></div>
 <div><label>Fatiga 0-100</label><input id="tf_fatA" type="number"></div>
 <div><label>Disponibilidad %</label><input id="tf_avA" type="number"></div>
-</div></div>
-<div class="team-panel visitor"><div class="team-head"><h3>Jugadora B</h3><span class="badge">B</span></div><div class="metrics">
+
+</div>
+</div>
+
+
+<div class="team-panel visitor">
+
+<div class="team-head">
+<h3>Jugadora B</h3>
+<span class="badge">B</span>
+</div>
+
+<div class="metrics">
+
 <div><label>Nombre</label><input id="tf_nombreB"></div>
-<div><label>Elo General</label><input id="tf_eloB" type="number"></div>
-<div><label>Elo Superficie</label><input id="tf_seloB" type="number"></div>
+<div><label>Elo general *</label><input id="tf_eloB" type="number"></div>
+<div><label>Elo superficie</label><input id="tf_seloB" type="number"></div>
 <div><label>Forma 0-100</label><input id="tf_formB" type="number"></div>
 <div><label>Hold %</label><input id="tf_holdB" type="number"></div>
 <div><label>Break %</label><input id="tf_breakB" type="number"></div>
-<div><label>1er Servicio %</label><input id="tf_fsB" type="number"></div>
-<div><label>Devolución %</label><input id="tf_retB" type="number"></div>
+<div><label>1er servicio ganado %</label><input id="tf_fsB" type="number"></div>
+<div><label>Restos ganados %</label><input id="tf_retB" type="number"></div>
 <div><label>Tie-break %</label><input id="tf_tbB" type="number"></div>
 <div><label>Fatiga 0-100</label><input id="tf_fatB" type="number"></div>
 <div><label>Disponibilidad %</label><input id="tf_avB" type="number"></div>
-</div></div></div></section>
 
-<section class="panel"><h2>🎯 Value Betting</h2>
-<div class="toolbar">
-<div class="control"><label>Cuota Local</label><input id="oddA" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota Empate</label><input id="oddD" type="number" step=".01" min="1"></div>
-<div class="control"><label>Cuota Visitante</label><input id="oddB" type="number" step=".01" min="1"></div>
-<div class="control"><label>Over 2.5</label><input id="oddO25" type="number" step=".01" min="1"></div>
-<div class="control"><label>Ambos marcan</label><input id="oddBTTS" type="number" step=".01" min="1"></div>
 </div>
-<div id="valueView" class="audit">Ejecuta una simulación.</div>
+</div>
+
+</div>
 </section>
 
-<section id="results" class="results"><h2>Resultado</h2>
-<div class="note">Aún no simulado.</div>
+
+<!-- ========================= VALUE ========================= -->
+
+<section class="panel">
+
+<h2>🎯 Value Betting</h2>
+
+<div class="note">
+El sistema calcula valor esperado únicamente cuando existe una cuota válida.
+Un EV positivo se muestra como dato matemático y no se transforma automáticamente
+en recomendación.
+</div>
+
+<div class="toolbar">
+
+<div class="control">
+<label>Cuota A / local</label>
+<input id="oddA" type="number" step=".01" min="1">
+</div>
+
+<div class="control">
+<label>Cuota empate</label>
+<input id="oddD" type="number" step=".01" min="1">
+</div>
+
+<div class="control">
+<label>Cuota B / visitante</label>
+<input id="oddB" type="number" step=".01" min="1">
+</div>
+
+<div class="control">
+<label>Cuota Over 2.5</label>
+<input id="oddO25" type="number" step=".01" min="1">
+</div>
+
+<div class="control">
+<label>Cuota BTTS</label>
+<input id="oddBTTS" type="number" step=".01" min="1">
+</div>
+
+</div>
+
+<div id="valueView" class="audit">
+Ejecuta una simulación.
+</div>
+
 </section>
 
-<section class="panel"><h2>🧠 Backtesting</h2>
-<div class="toolbar">
-<div class="control"><label>Resultado Local</label><input id="bt_scoreA" type="number" min="0"></div>
-<div class="control"><label>Resultado Visitante</label><input id="bt_scoreB" type="number" min="0"></div>
-<div class="control"><label>Fecha</label><input id="bt_date" type="date"></div>
+
+<!-- ========================= RESULTADOS ========================= -->
+
+<section id="results" class="results">
+
+<h2>Resultado</h2>
+
+<div class="note">
+Aún no se ha ejecutado una simulación.
 </div>
+
+</section>
+
+
+<!-- ========================= BACKTEST ========================= -->
+
+<section class="panel">
+
+<h2>🧠 Backtesting, calibración y aprendizaje</h2>
+
+<div class="note">
+La calibración no altera los registros históricos. Solo entra cuando existe
+una cantidad mínima de casos comparables. El historial permanece local en el
+dispositivo y puede exportarse/importarse.
+</div>
+
+<div class="toolbar">
+
+<div class="control">
+<label>Resultado real A / local</label>
+<input id="bt_scoreA" type="number" min="0">
+</div>
+
+<div class="control">
+<label>Resultado real B / visitante</label>
+<input id="bt_scoreB" type="number" min="0">
+</div>
+
+<div class="control">
+<label>Fecha real</label>
+<input id="bt_date" type="date">
+</div>
+
+</div>
+
 <div class="actions" style="margin-top:9px">
-<div class="control"><button class="primary" id="register">✅ Registrar Real</button></div>
-<div class="control"><button id="refreshBT">📊 Historial</button></div>
-<div class="control"><button id="exportBT">📤 Exportar</button></div>
-<div class="control"><button class="warn" id="clearBT">🗑️ Borrar</button></div>
+
+<div class="control">
+<button class="primary" id="register">
+Registrar resultado real
+</button>
 </div>
-<input id="bt_file" type="file" accept="application/json" style="display:none">
-<div id="bt_status" class="audit">Sin pronóstico pendiente.</div>
-<div id="bt_analysis" class="audit">Sin historial.</div>
+
+<div class="control">
+<button id="refreshBT">
+Actualizar análisis
+</button>
+</div>
+
+<div class="control">
+<button id="exportBT">
+Exportar historial
+</button>
+</div>
+
+<div class="control">
+<button id="importBT">
+Importar historial
+</button>
+</div>
+
+<div class="control">
+<button class="warn" id="clearBT">
+Borrar historial
+</button>
+</div>
+
+</div>
+
+<input id="bt_file"
+type="file"
+accept="application/json"
+style="display:none">
+
+<div id="bt_status" class="audit">
+Sin pronóstico pendiente.
+</div>
+
+<div id="bt_analysis" class="audit">
+Sin historial.
+</div>
+
+</section>
+
+
+<section class="panel">
+
+<h2>📋 Parámetros y auditoría</h2>
+
+<div id="params" class="audit">
+N/D
+</div>
+
+<div id="audit" class="audit">
+N/D
+</div>
+
 </section>
 
 </div>
+
 
 <script>
 "use strict";
 
-// ========== TU ENLACE INTEGRADO AQUÍ ==========
-const SHEET_ID = "1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
+/* =========================================================
+   MASTER OROS v5.0
+   ========================================================= */
+
+/* ---------------- CONFIGURACIÓN ---------------- */
+
+const DEFAULT_SHEET_URL =
+"https://docs.google.com/spreadsheets/d/1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq/edit";
+
+const DEFAULT_SHEET_ID =
+"1VV172sEMau7NCCVNelIqJA3HfhH1Ulaq";
+
 const SHEETS = {
-  futbol: "00futbol",
-  mlb: "00MLB",
-  nfl: "00NFL",
-  tenisM: "00Tenis varonil",
-  tenisF: "0Tenis femenil"
-};
-// ==============================================
-
-const BT_KEY = "master_oros_backtesting_v4_8";
-const PENDING_KEY = "master_oros_pending_v4_8";
-const BD = { futbol:[], mlb:[], nfl:[], tenisM:[], tenisF:[] };
-const DB_META = { loaded:false, loadedAt:null, errors:[], rows:{} };
-let rngState = 20260923, lastPrediction = null, currentData = {A:null,B:null,fa:null,fb:null};
-
-const $ = id => document.getElementById(id);
-function norm(v) { return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
-function num(v) { const n = Number(String(v??"").replace(/%/g,"").replace(/,/g,"").trim()); return Number.isFinite(n)?n:null; }
-function val(id) { const n = parseFloat($(id)?.value); return Number.isFinite(n)?n:null; }
-function nm(id) { return $(id)?.value?.trim()||""; }
-function clamp(x,a,b) { return Math.max(a, Math.min(b,x)); }
-function pct(x) { return (100*x).toFixed(2)+"%"; }
-function rec(m,k) { m[k] = (m[k]||0)+1; }
-function top10(m,N) { return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10).map(x=>({key:x[0],n:x[1],p:x[1]/N})); }
-function normalize3(a,d,b) { const s=a+d+b; return s?{A:a/s,D:d/s,B:b/s}:{A:1/3,D:1/3,B:1/3}; }
-function eloProb(a,b) { return 1/(1+10**((b-a)/400)); }
-function logistic(x) { return 1/(1+Math.exp(-x)); }
-function setStatus(t,c="") { $("status").textContent = t; $("status").className = "status"+(c?" "+c:""); }
-function seedRandom(v) { rngState = (Number(v)>>>0)||1; }
-function rnd() { rngState = (1664525*rngState+1013904223)>>>0; return rngState/4294967296; }
-function poisson(lambda) { lambda = Math.max(0,lambda); if(lambda===0) return 0; const L=Math.exp(-lambda); let p=1,k=0; do{k++;p*=rnd()}while(p>L&&k<1000); return k-1; }
-function normal(mu,sd) { let u=Math.max(rnd(),1e-12),v=Math.max(rnd(),1e-12); return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
-function homeFactor() { const h=val("homeAdv"); return h===null?1:clamp(1+h/100,.80,1.30); }
-function dateISO() { return new Date().toISOString().slice(0,10); }
-
-const ALIASES = {
-nombre:["equipo","team","nombre","jugador","club","seleccion","selección","name"],
-elo:["elo","rating elo"],gf:["gf","goles por partido","goles a favor"],ga:["ga","goles en contra"],
-xg:["xg","expected goals"],xga:["xga","expected goals against"],
-sot:["shots on target","tiros a puerta","tiros a portería","sot"],
-corners:["corners","esquina","córner"],fouls:["fouls","faltas"],cards:["cards","tarjetas","amarillas"],
-form10:["victorias ultimos 10","forma 10","last 10"],availability:["disponibilidad","availability"],
-runs:["runs","carreras"],ops:["ops"],hr:["hr","jonrones"],k:["k%","strikeout"],bb:["bb%","walk"],
-era:["era"],defense:["defensa","defense"],pf:["pf","puntos a favor"],pa:["pa","puntos en contra"],
-yd:["yardas","yards"],td:["td","touchdown"],to:["turnover","pérdidas"],third:["3rd","tercera"],
-hold:["hold"],breakPct:["break"],fs:["primer saque","first serve"],ret:["devolución","return"],
-tb:["tiebreak"],fatigue:["fatiga","cansancio"]
+ futbol:["00futbol","00Futbol","Futbol","Fútbol"],
+ mlb:["00MLB","MLB"],
+ nfl:["00NFL","NFL"],
+ tenisM:["00Tenis varonil","Tenis varonil","00TenisM"],
+ tenisF:["0Tenis femenil","Tenis femenil","00TenisF"]
 };
 
-function parseCSV(t) {
-  const rows=[]; let row=[],cell="",q=false;
-  for(let i=0;i<t.length;i++){
-    const c=t[i];
-    if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}
-    else if(c==='"')q=true;
-    else if(c===','){row.push(cell);cell=""}
-    else if(c==='\n'){row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[]}
-    else if(c!=='\r')cell+=c;
-  }
-  if(cell!==""||row.length){row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row)}
-  if(!rows.length)return[];
-  const h=rows[0].map(x=>x.trim());
-  return rows.slice(1).map(r=>{const o={};h.forEach((x,i)=>o[x]=(r[i]??"").trim());return o});
+const BT_KEY="master_oros_backtesting_v5_0";
+
+const BD={
+ futbol:[],
+ mlb:[],
+ nfl:[],
+ tenisM:[],
+ tenisF:[]
+};
+
+const DB_META={
+ loaded:false,
+ loadedAt:null,
+ errors:[],
+ rows:{},
+ sheets:{}
+};
+
+let rngState=20260930;
+let lastPrediction=null;
+
+const $=id=>document.getElementById(id);
+
+
+/* ---------------- UTILIDADES ---------------- */
+
+function norm(v){
+ return String(v??"")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"")
+  .toLowerCase()
+  .replace(/[’'`´]/g,"")
+  .replace(/&/g," y ")
+  .replace(/[^a-z0-9]+/g," ")
+  .trim()
+  .replace(/\s+/g," ");
 }
 
-function findCol(row,als) {
-  const keys=Object.keys(row),nk=keys.map(k=>[k,norm(k)]);
-  for(const a of als){const z=nk.find(([k,n])=>n===norm(a));if(z)return z[0]}
-  for(const a of als){const na=norm(a),z=nk.find(([k,n])=>n.includes(na)||na.includes(n));if(z)return z[0]}
-  return null;
+function num(v){
+ if(v===null||v===undefined||String(v).trim()==="")return null;
+
+ let s=String(v)
+  .trim()
+  .replace(/%/g,"")
+  .replace(/\s/g,"");
+
+ /*
+   Permite:
+   1.25
+   1,25
+   1,234.56
+   1.234,56
+ */
+ if(s.includes(",")&&s.includes(".")){
+   if(s.lastIndexOf(",")>s.lastIndexOf(".")){
+     s=s.replace(/\./g,"").replace(",",".");
+   }else{
+     s=s.replace(/,/g,"");
+   }
+ }else if(s.includes(",")){
+   const parts=s.split(",");
+   if(parts.length===2&&parts[1].length<=3){
+     s=s.replace(",",".");
+   }else{
+     s=s.replace(/,/g,"");
+   }
+ }
+
+ const n=Number(s);
+ return Number.isFinite(n)?n:null;
 }
 
-async function loadSheet(name,key) {
-  const u=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
-  const r=await fetch(u,{cache:"no-store"});
-  if(!r.ok)throw Error(`${name}: HTTP ${r.status}`);
-  BD[key]=parseCSV(await r.text());
-  DB_META.rows[key]=BD[key].length;
-  return BD[key].length;
+function val(id){
+ const e=$(id);
+ if(!e)return null;
+ return num(e.value);
 }
 
-async function loadDB() {
-  DB_META.errors=[];
-  setStatus("Conectando con Google Sheets…");
-  for(const [k,n] of Object.entries(SHEETS)){
-    try{await loadSheet(n,k)}
-    catch(e){BD[k]=[];DB_META.rows[k]=0;DB_META.errors.push(`${n}: ${e.message}`)}
-  }
-  DB_META.loaded=true;DB_META.loadedAt=new Date().toLocaleString("es-MX");
-  renderDB();
-  setStatus(DB_META.errors.length?"Cargado con alertas: "+DB_META.errors.join(" | "):"✅ Conectado a Google Sheets correctamente","ok");
+function nm(id){
+ return $(id)?.value?.trim()||"";
 }
 
-function findRecord(sport,name) {
-  const rows=BD[sport]||[],q=norm(name);let best=null;
-  if(!q)return null;
-  for(const r of rows){
-    const c=findCol(r,ALIASES.nombre);if(!c)continue;
-    const n=norm(r[c]);if(!n)continue;
-    let s=n===q?100:n.includes(q)||q.includes(n)?80:0;
-    if(!s){const qa=new Set(q.split(" ")),na=new Set(n.split(" "));let inter=0;qa.forEach(x=>{if(na.has(x))inter++});s=inter/Math.max(qa.size,na.size)*70}
-    if(!best||s>best.score)best={row:r,score:s,name:r[c]};
-  }
-  return best&&best.score>=55?best:null;
+function clamp(x,a,b){
+ return Math.max(a,Math.min(b,x));
 }
 
-function mapRecord(found) {
-  if(!found)return null;
-  const o={nombre:found.name,_match:found.score+"%"};
-  const mapKeys={
-    nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",
-    sot:"sot",corners:"corners",fouls:"fouls",cards:"cards",form10:"form10",availability:"availability",
-    runs:"runs",ops:"ops",hr:"hr",k:"k",bb:"bb",era:"era",defense:"defense",
-    pf:"pf",pa:"pa",yd:"yd",td:"td",to:"to",third:"third",
-    eloSuperficie:"eloSuperficie",hold:"hold",breakPct:"breakPct",fs:"firstServe",ret:"returnWon",tb:"tiebreak",fatigue:"fatigue"
-  };
-  for(const[k,field]of Object.entries(mapKeys)){const c=findCol(found.row,ALIASES[k])||findCol(found.row,[k]);o[k]=c?num(found.row[c]):null}
-  return o;
+function pct(x){
+ return (100*x).toFixed(2)+"%";
 }
 
-function idsFor(s) {
-  return {futbol:["f_nombreA","f_nombreB"],mlb:["m_nombreA","m_nombreB"],nfl:["n_nombreA","n_nombreB"],tenisM:["tm_nombreA","tm_nombreB"],tenisF:["tf_nombreA","tf_nombreB"]}[s];
+function rec(m,k){
+ m[k]=(m[k]||0)+1;
 }
 
-function fieldId(s,k,side) {
-  const p={futbol:"f_",mlb:"m_",nfl:"n_",tenisM:"tm_",tenisF:"tf_"}[s];
-  const x={nombre:"nombre",elo:"elo",gf:"gf",ga:"ga",xg:"xg",xga:"xga",sot:"sot",corners:"cor",fouls:"fou",cards:"car",form10:"form",availability:"av",
-    runs:"r",ops:"ops",hr:"hr",k:"k",bb:"bb",era:"era",defense:"def",pf:"pf",pa:"pa",yd:"yd",td:"td",to:"to",third:"3rd",
-    eloSuperficie:"selo",hold:"hold",breakPct:"break",fs:"fs",ret:"ret",tb:"tb",fatigue:"fat"}[k];
-  return p&&x?`${p}${x}${side}`:null;
+function topN(m,N,n=10){
+ return Object.entries(m)
+  .sort((a,b)=>b[1]-a[1])
+  .slice(0,n)
+  .map(x=>({
+   key:x[0],
+   n:x[1],
+   p:x[1]/N
+  }));
 }
 
-function applyRecordToInputs(s,d,side) {
-  if(!d)return;
-  for(const k of Object.keys(d)){if(d[k]===null||d[k]===undefined)continue;const id=fieldId(s,k,side);if(id&&$(id))$(id).value=d[k]}
+function normalize3(a,d,b){
+ const s=a+d+b;
+ if(!Number.isFinite(s)||s<=0){
+  return {A:1/3,D:1/3,B:1/3};
+ }
+ return {
+  A:a/s,
+  D:d/s,
+  B:b/s
+ };
 }
 
-function renderDB() {
-  $("dbSummary").innerHTML=`<b>Fuente:</b> Google Sheets · Última carga: ${DB_META.loadedAt||"N/D"}<br>Filas: ${Object.entries(DB_META.rows).map(([k,v])=>k+": "+v).join(" · ")||"N/D"}`;
+function eloProb(a,b){
+ return 1/(1+10**((b-a)/400));
 }
 
-function renderData() {
-  $("dataView").innerHTML=`<b>Local:</b> ${currentData.A?.nombre||"N/D"} · Coincidencia: ${currentData.fa?.score||0}%<br><b>Visitante:</b> ${currentData.B?.nombre||"N/D"} · Coincidencia: ${currentData.fb?.score||0}%`;
+function logistic(x){
+ return 1/(1+Math.exp(-x));
 }
 
-async function botFill() {
-  if(!DB_META.loaded)await loadDB();
-  const s=$("sport").value,ids=idsFor(s),a=nm(ids[0]),b=nm(ids[1]);
-  if(!a||!b){setStatus("Escribe ambos nombres primero","warn");return}
-  const fa=findRecord(s,a),fb=findRecord(s,b);
-  currentData={A:mapRecord(fa),B:mapRecord(fb),fa,fb};
-  if(fa)applyRecordToInputs(s,currentData.A,"A");
-  if(fb)applyRecordToInputs(s,currentData.B,"B");
-  renderData();
-  setStatus(fa&&fb?"✅ Datos cargados desde Google Sheets. Campos vacíos = sin dato.":
-    "⚠️ No se encontraron ambos participantes. Verifica el nombre.","warn");
+function setStatus(t,c=""){
+ $("status").textContent=t;
+ $("status").className="status"+(c?" "+c:"");
 }
 
-function btLoad() {try{return JSON.parse(localStorage.getItem(BT_KEY)||"[]")}catch{return[]}}
-function btSave(x) {localStorage.setItem(BT_KEY,JSON.stringify(x))}
-function brier(p,a) {return (p.A-(a==="A"?1:0))**2+(p.D-(a==="D"?1:0))**2+(p.B-(a==="B"?1:0))**2}
-
-function renderBT() {
-  const rows=btLoad(),ids=[...new Map(rows.filter(r=>r.completed).map(r=>[r.id,r])).values()];
-  let h=`<b>Partidos registrados:</b> ${ids.length}`;
-  if(!ids.length){$("bt_analysis").innerHTML=h+"<br>Sin resultados.";return}
-  h+=`<table class='table'><tr><th>Deporte</th><th>Casos</th><th>Acierto</th><th>Error Brier</th></tr>`;
-  const by={};ids.forEach(r=>(by[r.sport]??=[]).push(r));
-  for(const[s,a]of Object.entries(by)){let acc=0,br=0;a.forEach(r=>{const p=r.rawP;const max=Math.max(p.A,p.D,p.B);if(p[r.actual]===max)acc++;br+=brier(p,r.actual)});
-    h+=`<tr><td>${s}</td><td>${a.length}</td><td>${pct(acc/a.length)}</td><td>${(br/a.length).toFixed(4)}</td></tr>`}
-  $("bt_analysis").innerHTML=h+"</table>";
+function seedRandom(v){
+ rngState=(Number(v)>>>0)||1;
 }
 
-function footballN(N) {
-  const gfA=val("f_gfA"),gfB=val("f_gfB");
-  if(gfA===null||gfB===null)throw Error("Faltan GF/partido");
-  const gaA=val("f_gaA"),gaB=val("f_gaB"),xgA=val("f_xgA"),xgB=val("f_xgB"),xgaA=val("f_xgaA"),xgaB=val("f_xgaB");
-  let la=(gfA+(gaB??gfB))/2,lb=(gfB+(gaA??gfA))/2,used=["GF/partido"],missing=[];
-  if(gaA!==null&&gaB!==null)used.push("GA/partido");else missing.push("GA/partido");
-  if(xgA!==null&&xgB!==null&&xgaA!==null&&xgaB!==null){la=.5*la+.5*((xgA+xgaB)/2);lb=.5*lb+.5*((xgB+xgaA)/2);used.push("xG")}else missing.push("xG");
-  la*=homeFactor();
-  const eloA=val("f_eloA"),eloB=val("f_eloB"),formA=val("f_formA"),formB=val("f_formB"),avA=val("f_avA"),avB=val("f_avB");
-  let pElo=null,pForm=null;
-  if(eloA!==null&&eloB!==null){pElo=eloProb(eloA+(val("homeAdv")??0)*2,eloB);used.push("Elo")}else missing.push("Elo");
-  if(formA!==null&&formB!==null){pForm=clamp(.5+(formA-formB)/20,.05,.95);used.push("Forma")}else missing.push("Forma");
-  if(avA!==null&&avB!==null){const d=clamp((avA-avB)/100,-.2,.2);la*=1+d;lb*=1-d;used.push("Disponibilidad")}else missing.push("Disponibilidad");
-  let wA=0,wD=0,wB=0,o=0,t=0,score={},corn={},foul={},card={},sot={};
-  const ca=val("f_corA"),cb=val("f_corB"),fa=val("f_fouA"),fb=val("f_fouB"),ya=val("f_carA"),yb=val("f_carB"),sa=val("f_sotA"),sb=val("f_sotB");
-  for(let i=0;i<N;i++){
-    const a=poisson(la),b=poisson(lb);
-    if(a>b)wA++;else if(a===b)wD++;else wB++;
-    if(a+b>=3)o++;if(a>0&&b>0)t++;rec(score,a+"-"+b);
-    if(ca!==null&&cb!==null)rec(corn,poisson(ca)+"-"+poisson(cb));
-    if(fa!==null&&fb!==null)rec(foul,poisson(fa)+"-"+poisson(fb));
-    if(ya!==null&&yb!==null)rec(card,poisson(ya)+"-"+poisson(yb));
-    if(sa!==null&&sb!==null)rec(sot,poisson(sa)+"-"+poisson(sb));
-  }
-  const pMC=normalize3(wA/N,wD/N,wB/N);
-  let pH=pMC;
-  if(pElo!==null||pForm!==null){
-    const elo3=pElo===null?null:normalize3(pElo,.18,1-pElo);
-    const form3=pForm===null?null:normalize3(pForm,.18,1-pForm);
-    const parts=[pMC,elo3,form3].filter(Boolean);
-    if(parts.length>1){
-      const w=parts.length===3?[.55,.25,.20]:[.7,.3];
-      pH=normalize3(parts.reduce((s,p,i)=>s+w[i]*p.A,0),parts.reduce((s,p,i)=>s+w[i]*p.D,0),parts.reduce((s,p,i)=>s+w[i]*p.B,0));
+function rnd(){
+ rngState=(1664525*rngState+1013904223)>>>0;
+ return rngState/4294967296;
+}
+
+function normal(mu,sd){
+ let u=Math.max(rnd(),1e-12);
+ let v=Math.max(rnd(),1e-12);
+ return mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function poisson(lambda){
+
+ lambda=Math.max(0,Number(lambda)||0);
+
+ if(lambda===0)return 0;
+
+ /*
+   Para λ alto, la aproximación normal evita un número excesivo
+   de iteraciones.
+ */
+ if(lambda>55){
+   return Math.max(
+    0,
+    Math.round(normal(lambda,Math.sqrt(lambda)))
+   );
+ }
+
+ const L=Math.exp(-lambda);
+
+ let p=1;
+ let k=0;
+
+ do{
+   k++;
+   p*=rnd();
+ }while(p>L&&k<1000);
+
+ return k-1;
+}
+
+function homeFactor(){
+
+ const h=val("homeAdv");
+
+ if(h===null)return 1;
+
+ return clamp(1+h/100,.85,1.20);
+}
+
+function dateISO(){
+ return new Date().toISOString().slice(0,10);
+}
+
+function safeJSON(x){
+ try{
+  return JSON.stringify(x,null,2);
+ }catch{
+  return "{}";
+ }
+}
+
+
+/* =========================================================
+   GOOGLE SHEETS
+   ========================================================= */
+
+function extractSheetId(url){
+
+ const m=String(url||"").match(
+  /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/
+ );
+
+ return m?m[1]:null;
+}
+
+function updateSheetId(){
+
+ const url=$("sheetUrl").value.trim();
+
+ const id=extractSheetId(url);
+
+ $("sheetId").value=id||"ID no detectado";
+
+ return id;
+}
+
+
+/*
+  Parser CSV compatible con comillas, comas y saltos de línea.
+*/
+function parseCSV(text){
+
+ const rows=[];
+ let row=[];
+ let cell="";
+ let quoted=false;
+
+ for(let i=0;i<text.length;i++){
+
+  const c=text[i];
+
+  if(quoted){
+
+   if(c==='"'&&text[i+1]==='"'){
+    cell+='"';
+    i++;
+   }else if(c==='"'){
+    quoted=false;
+   }else{
+    cell+=c;
+   }
+
+  }else{
+
+   if(c==='"'){
+    quoted=true;
+   }else if(c===','){
+    row.push(cell);
+    cell="";
+   }else if(c==='\n'){
+    row.push(cell);
+    cell="";
+
+    if(row.some(x=>String(x).trim()!=="")){
+     rows.push(row);
     }
+
+    row=[];
+   }else if(c!=='\r'){
+    cell+=c;
+   }
   }
-  return {sport:"Fútbol",a:nm("f_nombreA")||"Local",b:nm("f_nombreB")||"Visitante",N,seed:val("seed"),pMC,pH,over25:o/N,btts:t/N,
-    scoreTop:top10(score,N),cornersTop:top10(corn,N),foulsTop:top10(foul,N),cardsTop:top10(card,N),sotTop:top10(sot,N),
-    lambdaA:la,lambdaB:lb,used,missing};
+ }
+
+ if(cell!==""||row.length){
+  row.push(cell);
+
+  if(row.some(x=>String(x).trim()!=="")){
+   rows.push(row);
+  }
+ }
+
+ if(!rows.length)return[];
+
+ const headers=rows[0].map(
+  x=>String(x).trim()
+ );
+
+ return rows.slice(1).map(r=>{
+
+  const obj={};
+
+  headers.forEach((h,i)=>{
+   obj[h]=r[i]??"";
+  });
+
+  return obj;
+ });
 }
 
-function twoWayBase(N,sport) {
-  const mlb=sport==="MLB",p=mlb?"m_":"n_",a=mlb?val(p+"rA"):val(p+"pfA"),b=mlb?val(p+"rB"):val(p+"pfB");
-  if(a===null||b===null)throw Error(`Faltan ${mlb?"carreras":"puntos"} por partido`);
-  const da=mlb?val(p+"raA"):val(p+"paA"),db=mlb?val(p+"raB"):val(p+"paB");
-  let la=(a+(db??b))/2,lb=(b+(da??a))/2,used=[mlb?"Carreras":"Puntos"],missing=[];
-  if(da!==null&&db!==null)used.push(mlb?"Permitidas":"Permitidos");else missing.push(mlb?"Permitidas":"Permitidos");
-  la*=homeFactor();
-  const pairs=mlb?[["ops",.08,1],["hr",.04,1],["k",.025,-1],["bb",.025,1],["era",.07,-1],["def",.03,1]]:
-    [["elo",.1,1],["yd",.04,1],["td",.04,1],["to",.035,1],["av",.025,1]];
-  for(const[q,s,sg]of pairs){const x=val(p+q+"A"),y=val(p+q+"B");if(x!==null&&y!==null){const d=(x-y)/Math.max(1,Math.abs(x)+Math.abs(y));la*=1+s*sg*d;lb*=1-s*sg*d;used.push(q)}else missing.push(q)}
-  la=Math.max(.2,la);lb=Math.max(.2,lb);
-  let A=0,D=0,B=0,score={};
-  for(let i=0;i<N;i++){let x,y;if(mlb){x=poisson(la);y=poisson(lb)}else{x=Math.max(0,Math.round(normal(la,Math.max(3.5,Math.sqrt(Math.max(la,1))*2))));y=Math.max(0,Math.round(normal(lb,Math.max(3.5,Math.sqrt(Math.max(lb,1))*2))))}
-    if(x>y)A++;else if(x===y)D++;else B++;rec(score,x+"-"+y)}
-  const pMC=normalize3(A/N,D/N,B/N);
-  return {sport,a:nm(p+"nombreA")||"Local",b:nm(p+"nombreB")||"Visitante",N,seed:val("seed"),pMC,pH:pMC,scoreTop:top10(score,N),used,missing};
+
+/*
+  Se intenta:
+  1. nombre exacto de pestaña
+  2. variantes configuradas
+  3. sin cache
+*/
+async function loadSheetByName(id,sheetName){
+
+ const base=
+  `https://docs.google.com/spreadsheets/d/${encodeURIComponent(id)}/gviz/tq`;
+
+ const url=
+  base+
+  `?tqx=out%3Acsv&headers=1&sheet=${encodeURIComponent(sheetName)}`;
+
+ const response=await fetch(
+  url,
+  {
+   method:"GET",
+   cache:"no-store"
+  }
+ );
+
+ if(!response.ok){
+  throw new Error(
+   `${sheetName}: HTTP ${response.status}`
+  );
+ }
+
+ const text=await response.text();
+
+ /*
+   Google puede devolver una página HTML de error
+   en vez de CSV.
+ */
+ if(
+  /<html|<!doctype|Google Sheets/i.test(
+   text.slice(0,500)
+  )
+ ){
+  throw new Error(
+   `${sheetName}: Google no devolvió CSV; revisar permisos o nombre de pestaña`
+  );
+ }
+
+ const rows=parseCSV(text);
+
+ if(!rows.length){
+  throw new Error(
+   `${sheetName}: pestaña vacía o sin encabezados`
+  );
+ }
+
+ return rows;
 }
 
-function tennisN(N,pref,label) {
-  const ea=val(pref+"_eloA"),eb=val(pref+"_eloB");
-  if(ea===null||eb===null)throw Error("Falta Elo de ambos");
-  let p=eloProb(val(pref+"_seloA")??ea,val(pref+"_seloB")??eb),used=["Elo"],missing=[];
-  const pairs=[["form",.001,"Forma"],["hold",.001,"Hold"],["break",.001,"Break"],["fs",.0005,"Servicio"],["ret",.0005,"Devolución"],["tb",.0005,"Tie-break"],["fat",-.0005,"Fatiga"]];
-  for(const[q,k,n]of pairs){const a=val(pref+"_"+q+"A"),b=val(pref+"_"+q+"B");if(a!==null&&b!==null){p=clamp(p+k*(a-b),.02,.98);used.push(n)}else missing.push(n)}
-  let A=0,B=0,sets={};
-  for(let i=0;i<N;i++){let sa=0,sb=0;while(sa<2&&sb<2){if(rnd()<p)sa++;else sb++}if(sa>sb)A++;else B++;rec(sets,sa+"-"+sb)}
-  return {sport:label,a:nm(pref+"_nombreA")||"A",b:nm(pref+"_nombreB")||"B",N,seed:val("seed"),pMC:{A:A/N,D:0,B:B/N},pH:{A:A/N,D:0,B:B/N},scoreTop:top10(sets,N),used,missing};
+
+async function loadSportSheet(sport,id){
+
+ const names=SHEETS[sport];
+
+ let lastError=null;
+
+ for(const name of names){
+
+  try{
+
+   const rows=
+    await loadSheetByName(id,name);
+
+   BD[sport]=rows;
+
+   DB_META.rows[sport]=rows.length;
+   DB_META.sheets[sport]=name;
+
+   return {
+    rows:rows.length,
+    sheet:name
+   };
+
+  }catch(e){
+   lastError=e;
+  }
+ }
+
+ throw lastError||
+  new Error(`${sport}: no se encontró ninguna pestaña compatible`);
 }
 
-function valueHtml(pred) {
-  const markets=[["Local","oddA",pred.pH.A],["Empate","oddD",pred.pH.D],["Visitante","oddB",pred.pH.B],["Over 2.5","oddO25",pred.over25],["Ambos marcan","oddBTTS",pred.btts]].filter(x=>x[2]!==undefined);
-  let h="<table class='table'><tr><th>Mercado</th><th>Prob.</th><th>Cuota</th><th>Valor</th></tr>";
-  for(const[m,id,p]of markets){const o=val(id);if(o&&o>1){const ev=p*(o-1)-(1-p);h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>${o.toFixed(2)}</td><td>${(ev*100).toFixed(2)}%</td></tr>`}
-    else h+=`<tr><td>${m}</td><td>${pct(p)}</td><td>N/D</td><td>N/D</td></tr>`}
-  return h+"</table>";
+
+async function loadDB(){
+
+ const id=updateSheetId();
+
+ if(!id){
+  setStatus(
+   "URL de Google Sheets no válida.",
+   "bad"
+  );
+  return;
+ }
+
+ DB_META.errors=[];
+ DB_META.rows={};
+ DB_META.sheets={};
+
+ setStatus(
+  "Conectando con Google Sheets…",
+  "info"
+ );
+
+ let success=0;
+
+ for(const sport of Object.keys(SHEETS)){
+
+  try{
+
+   await loadSportSheet(sport,id);
+
+   success++;
+
+  }catch(e){
+
+   BD[sport]=[];
+
+   DB_META.rows[sport]=0;
+
+   DB_META.errors.push(
+    e?.message||String(e)
+   );
+  }
+ }
+
+ DB_META.loaded=success>0;
+ DB_META.loadedAt=new Date().toISOString();
+
+ renderDB();
+
+ if(success===Object.keys(SHEETS).length){
+
+  setStatus(
+   "Google Sheets conectado correctamente. Todas las bases están disponibles.",
+   "ok"
+  );
+
+ }else if(success>0){
+
+  setStatus(
+   `Google Sheets conectado parcialmente: ${success}/5 deportes.`,
+   "warn"
+  );
+
+ }else{
+
+  setStatus(
+   "No se pudo leer ninguna pestaña. Revisa permisos, URL y nombres de pestañas.",
+   "bad"
+  );
+ }
 }
 
-function listHtml(title,arr) {if(!arr?.length)return"";return`<div class="audit"><b>${title}</b><ol>${arr.map(x=>`<li>${x.key} — ${x.n.toLocaleString("es-MX")} (${pct(x.p)})</li>`).join("")}</ol></div>`}
 
-function renderPrediction(p) {
-  $("results").innerHTML
+/* =========================================================
+   ALIAS DE COLUMNAS
+   ========================================================= */
+
+const ALIASES={
+
+ nombre:[
+  "equipo","team","nombre","jugador","player",
+  "club","seleccion","selección","name","player name"
+ ],
+
+ elo:[
+  "elo","elo general","rating elo","rating"
+ ],
+
+ eloSuperficie:[
+  "elo superficie","surface elo","elo pista",
+  "elo clay","elo hard","elo grass"
+ ],
+
+ gf:[
+  "gf","gf/game","goles por partido",
+  "goles a favor partido","goals for"
+ ],
+
+ ga:[
+  "ga","ga/game","goles recibidos partido",
+  "goles en contra partido","goals against"
+ ],
+
+ xg:[
+  "xg","xg por partido","expected goals"
+ ],
+
+ xga:[
+  "xga","xga por partido",
+  "expected goals against"
+ ],
+
+ sot:[
+  "shots on target","tiros a puerta",
+  "tiros a porteria","tiros a portería","sot"
+ ],
+
+ corners:[
+  "corners","córners","tiros de esquina",
+  "saques de esquina"
+ ],
+
+ fouls:[
+  "fouls","faltas","faltas cometidas"
+ ],
+
+ cards:[
+  "cards","tarjetas","amarillas",
+  "yellow cards"
+ ],
+
+ form10:[
+  "wins last 10","victorias ultimos 10",
+  "victorias últimos 10","forma 10",
+  "last 10"
+ ],
+
+ availability:[
+  "availability","disponibilidad",
+  "disponibilidad %"
+ ],
+
+ runs:[
+  "runs/game","carreras por partido",
+  "runs","r/game"
+ ],
+
+ runsAllowed:[
+  "runs allowed/game",
+  "carreras permitidas",
+  "runs allowed","ra/game"
+ ],
+
+ ops:[
+  "ops"
+ ],
+
+ hr:[
+  "hr/game","jonrones por partido",
+  "home runs","hr"
+ ],
+
+ k:[
+  "k%","strikeout %","strikeouts"
+ ],
+
+ bb:[
+  "bb%","walk %","walks"
+ ],
+
+ starterEra:[
+  "starter era","era abridor",
+  "era starter","sp era"
+ ],
+
+ bullpenEra:[
+  "bullpen era","era bullpen",
+  "relief era"
+ ],
+
+ defense:[
+  "defense","defensa",
+  "defensive rating"
+ ],
+
+ pf:[
+  "pf/game","puntos por partido",
+  "puntos a favor","points for"
+ ],
+
+ pa:[
+  "pa/game","puntos permitidos por partido",
+  "puntos en contra","points against"
+ ],
+
+ offYards:[
+  "offensive yards","yardas ofensivas",
+  "off yds"
+ ],
+
+ defYards:[
+  "defensive yards","yardas defensivas permitidas",
+  "def yds","yards allowed"
+ ],
+
+ td:[
+  "td/game","touchdowns por partido",
+  "touchdowns","td"
+ ],
+
+ turnovers:[
+  "turnover differential",
+  "diferencial turnovers",
+  "turnover diff","turnovers"
+ ],
+
+ thirdDown:[
+  "3rd down %","third down %",
+  "conversion 3rd","third down"
+ ],
+
+ form:[
+  "form","forma"
+ ],
+
+ hold:[
+  "hold %","hold","service hold"
+ ],
+
+ breakPct:[
+  "break %","break","break points won"
+ ],
+
+ firstServe:[
+  "first serve won %","1st serve won %",
+  "primer saque ganado","first serve"
+ ],
+
+ returnWon:[
+  "return won %","return",
+  "restos ganados","return points"
+ ],
+
+ tiebreak:[
+  "tie-break %","tiebreak %",
+  "tiebreak"
+ ],
+
+ fatigue:[
+  "fatigue","fatiga"
+ ]
+
+};
+
+
+/* =========================================================
+   DETECCIÓN DE COLUMNAS
+   ========================================================= */
+
+function findCol(row,aliases){
+
+ const keys=Object.keys(row);
+
+ const normalized=
+  keys.map(k=>[
+   k,
+   norm(k)
+  ]);
+
+ /*
+   Primero coincidencia exacta.
+ */
+ for(const alias of aliases){
+
+  const a=norm(alias);
+
+  const found=
+   normalized.find(
+    ([,n])=>n===a
+   );
+
+  if(found)return found[0];
+ }
+
+ /*
+   Después coincidencia contenida.
+ */
+ for(const alias of aliases){
+
+  const a=norm(alias);
+
+  const found=
+   normalized.find(
+    ([,n])=>
+     n.includes(a)||
+     a.includes(n)
+   );
+
+  if(found)return found[0];
+ }
+
+ return null;
+}
+
+
+function findRecord(sport,name){
+
+ const rows=BD[sport]||[];
+
+ const q=norm(name);
+
+ if(!q)return null;
+
+ let best=null;
+
+ for(const row of rows){
+
+  const col=
+   findCol(
+    row,
+    ALIASES.nombre
+   );
+
+  if(!col)continue;
+
+  const candidate=
+   norm(row[col]);
+
+  if(!candidate)continue;
+
+  let score=0;
+
+  if(candidate===q){
+   score=100;
+  }else if(
+   candidate.includes(q)||
+   q.includes(candidate)
+  ){
+   score=85;
+  }else{
+
+   const qWords=
+    new Set(q.split(" "));
+
+   const cWords=
+    new Set(candidate.split(" "));
+
+   let inter=0;
+
+   qWords.forEach(
+    x=>{
+     if(cWords.has(x))inter++;
+    }
+   );
+
+   score=
+    70*
+    inter/
+    Math.max(
+     qWords.size,
+     cWords.size
+    );
+  }
+
+  if(
+   !best||
+   score>best.score
+  ){
+   best={
+    row,
+    score,
+    name:row[col]
+   };
+  }
+ }
+
+ /*
+   Umbral deliberadamente conservador:
+   no rellenar si la coincidencia es dudosa.
+ */
+ return best&&best.score>=60
+  ?best
+  :null;
+}
+
+
+function mapRecord(found){
+
+ if(!found)return null;
+
+ const out={
+  nombre:found.name,
+  _source:"Google Sheets",
+  _matchScore:found.score,
+  _raw:found.row
+ };
+
+ for(
+  const [key,aliases]
+  of Object.entries(ALIASES)
+ ){
+
+  if(key==="nombre")continue;
+
+  const col=
+   findCol(
+    found.row,
+    aliases
+   );
+
+  out[key]=
+   col?
+   num(found.row[col]):
+   null;
+ }
+
+ return out;
+}
+
+
+/* =========================================================
+   MAPEO INPUTS
+   ========================================================= */
+
+function fieldId(sport,key,side){
+
+ const prefix={
+  futbol:"f_",
+  mlb:"m_",
+  nfl:"n_",
+  tenisM:"tm_",
+  tenisF:"tf_"
+ }[sport];
+
+ const map={
+  nombre:"nombre",
+  elo:"elo",
+  gf:"gf",
+  ga:"ga",
+  xg:"xg",
+  xga:"xga",
+  sot:"sot",
+  corners:"cor",
+  fouls:"fou",
+  cards:"car",
+  form10:"form",
+  availability:"av",
+
+  runs:"r",
+  runsAllowed:"ra",
+  ops:"ops",
+  hr:"hr",
+  k:"k",
+  bb:"bb",
+  starterEra:"era",
+  bullpenEra:"bull",
+  defense:"def",
+
+  pf:"pf",
+  pa:"pa",
+  offYards:"yd",
+  defYards:"dyd",
+  td:"td",
+  turnovers:"to",
+  thirdDown:"3rd",
+
+  eloSuperficie:"selo",
+  form:"form",
+  hold:"hold",
+  breakPct:"break",
+  firstServe:"fs",
+  returnWon:"ret",
+  tiebreak:"tb",
+  fatigue:"fat"
+ }[key];
+
+ if(!prefix||!map)return null;
+
+ return `${prefix}${map}${side}`;
+}
+
+
+function applyRecordToInputs(
+ sport,
+ record,
+ side
+){
+
+ if(!record)return;
+
+ for(
+  const key
+  of Object.keys(ALIASES)
+ ){
+
+  const value=
+   record[key];
+
+  if(
+   value===null||
+   value===undefined
+  )continue;
+
+  const id=
+   fieldId(
+    sport,
+    key,
+    side
+   );
+
+  if(id&&$(id)){
+   $(id).value=value;
+  }
+ }
+}
+
+
+/* =========================================================
+   BOT
+   ========================================================= */
+
+function idsForSport(sport){
+
+ return {
+  futbol:["f_nombreA","f_nombreB"],
+  mlb:["m_nombreA","m_nombreB"],
+  nfl:["n_nombreA","n_nombreB"],
+  tenisM:["tm_nombreA","tm_nombreB"],
+  tenisF:["tf_nombreA","tf_nombreB"]
+ }[sport];
+}
+
+
+let currentData={
+ A:null,
+ B:null,
+ fa:null,
+ fb:null
+};
+
+
+async function botFill(){
+
+ const sport=
+  $("sport").value;
+
+ if(!DB_META.loaded){
+  await loadDB();
+ }
+
+ if(!DB_META.loaded){
+
+  setStatus(
+   "El bot no puede buscar porque Google Sheets no está disponible.",
+   "bad"
+  );
+
+  return;
+ }
+
+ const ids=
+  idsForSport(sport);
+
+ const nameA=
+  nm(ids[0]);
+
+ const nameB=
+  nm(ids[1]);
+
+ if(!nameA||!nameB){
+
+  setStatus(
+   "Introduce ambos participantes antes de ejecutar el bot.",
+   "warn"
+  );
+
+  return;
+ }
+
+ const fa=
+  findRecord(
+   sport,
+   nameA
+  );
+
+ const fb=
+  findRecord(
+   sport,
+   nameB
+  );
+
+ const A=
+  mapRecord(fa);
+
+ const B=
+  mapRecord(fb);
+
+ currentData={
+  A,
+  B,
+  fa,
+  fb
+ };
+
+ if(fa){
+  applyRecordToInputs(
+   sport,
+   A,
+   "A"
+  );
+ }
+
+ if(fb){
+  applyRecordToInputs(
+   sport,
+   B,
+   "B"
+  );
+ }
+
+ renderData();
+
+ if(fa&&fb){
+
+  setStatus(
+   "Bot: ambos participantes encontrados y datos aplicados.",
+   "ok"
+  );
+
+ }else if(fa||fb){
+
+  setStatus(
+   "Bot: solo se encontró uno de los participantes. No se inventó el otro.",
+   "warn"
+  );
+
+ }else{
+
+  setStatus(
+   "Bot: no se encontraron coincidencias suficientemente seguras.",
+   "warn"
+  );
+ }
+}
+
+
+/* =========================================================
+   RENDER BASE
+   ========================================================= */
+
+function renderDB(){
+
+ const rows=
+  Object.entries(DB_META.rows)
+   .map(
+    ([sport,n])=>
+     `${sport}: ${n}`
+   )
+   .join(" · ");
+
+ const sheets=
+  Object.entries(DB_META.sheets)
+   .map(
+    ([sport,name])=>
+     `${sport} → ${name}`
+   )
+   .join("<br>");
+
+ let html=
+  `<b>Fuente:</b> Google Sheets<br>
+   <b>ID:</b> ${$("sheetId").value||DEFAULT_SHEET_ID}<br>
+   <b>Última carga:</b>
+   ${
+    DB_META.loadedAt
+    ?new Date(DB_META.loadedAt)
+      .toLocaleString("es-MX")
+    :"N/D"
+   }<br>
+   <b>Filas:</b> ${rows||"N/D"}`;
+
+ if(sheets){
+  html+=
+   `<br><b>Pestañas encontradas:</b><br>${sheets}`;
+ }
+
+ if(DB_META.errors.length){
+
+  html+=
+   `<br><span class="danger">
+    <b>Incidencias:</b>
+    ${DB_META.errors.join(" | ")}
+    </span>`;
+ }
+
+ $("dbSummary").innerHTML=html;
+}
+
+
+function renderData(){
+
+ const a=
+  currentData.A;
+
+ const b=
+  currentData.B;
+
+ $("dataView").innerHTML=
+ `
+ <b>A:</b>
+ ${a?.nombre||"N/D"}
+ · coincidencia:
+ ${currentData.fa?.score?.toFixed(1)||"0"}%
+ · campos:
+ ${a?countKnown(a):0}
+
+ <br>
+
+ <b>B:</b>
+ ${b?.nombre||"N/D"}
+ · coincidencia:
+ ${currentData.fb?.score?.toFixed(1)||"0"}%
+ · campos:
+ ${b?countKnown(b):0}
+
+ <br><br>
+
+ <b>Procedencia:</b>
+ ${
+  a||b
+  ?"Google Sheets"
+  :"N/D"
+ }
+ `;
+}
+
+
+function countKnown(obj){
+
+ if(!obj)return 0;
+
+ return Object.entries(obj)
+  .filter(
+   ([k,v])=>
+    !k.startsWith("_")&&
+    v!==null&&
+    v!==undefined&&
+    v!==""
+  )
+  .length;
+}
+
+
+/* =========================================================
+   BACKTEST
+   ========================================================= */
+
+function btLoad(){
+
+ try{
+
+  const raw=
+   localStorage.getItem(BT_KEY);
+
+  const data=
+   JSON.parse(raw||"[]");
+
+  return Array.isArray(data)
+   ?data
+   :[];
+
+ }catch{
+  return[];
+ }
+}
+
+
+function btSave(rows){
+
+ localStorage.setItem(
+  BT_KEY,
+  JSON.stringify(rows)
+ );
+}
+
+
+/*
+  Calibración conservadora:
+  mínimo 20 observaciones en el mismo deporte,
+  mercado y bin de probabilidad.
+ */
+function calibrate(
+ p,
+ sport,
+ market
+){
+
+ const rows=
+  btLoad().filter(
+   r=>
+    r.completed&&
+    r.sport===sport&&
+    r.market===market&&
+    Number.isFinite(r.actualBinary)&&
+    Number.isFinite(r.pred)
+  );
+
+ const bin=
+  Math.min(
+   9,
+   Math.floor(
+    clamp(p,0,.999999)*10
+   )
+  );
+
+ const same=
+  rows.filter(
+   r=>r.bin===bin
+  );
+
+ if(same.length<20){
+
+  return{
+   p,
+   used:false,
+   n:same.length,
+   bin
+  };
+ }
+
+ const empirical=
+  same.reduce(
+   (sum,r)=>
+    sum+r.actualBinary,
+   0
+  )/same.length;
+
+ /*
+   Shrinkage:
+   75% modelo / 25% evidencia.
+ */
+ const calibrated=
+  clamp(
+   .75*p+.25*empirical,
+   .01,
+   .99
+  );
+
+ return{
+  p:calibrated,
+  used:true,
+  n:same.length,
+  bin,
+  empirical
+ };
+}
+
+
+function brier1x2(p,actual){
+
+ return (
+  (p.A-(actual==="A"?1:0))**2+
+  (p.D-(actual==="D"?1:0))**2+
+  (p.B-(actual==="B"?1:0))**2
+ );
+}
+
+
+function renderBT(){
+
+ const rows=
+  btLoad();
+
+ const matches=
+  [
+   ...new Map(
+    rows
+     .filter(
+      r=>
+       r.completed&&
+       ["A","D","B"].includes(r.market)
+     )
+     .map(
+      r=>[r.id,r]
+     )
+   ).values()
+  ];
+
+ if(!matches.length){
+
+  $("bt_analysis").innerHTML=
+   "Sin resultados reales registrados.";
+
+  return;
+ }
+
+ let html=
+ `
+ <b>Partidos registrados:</b>
+ ${matches.length}
+
+ <table class="table">
+
+ <tr>
+ <th>Deporte</th>
+ <th>Partidos</th>
+ <th>Accuracy</th>
+ <th>Brier</th>
+ <th>Log Loss</th>
+ </tr>
+ `;
+
+ const groups={};
+
+ for(const r of matches){
+
+  if(!groups[r.sport])
+   groups[r.sport]=[];
+
+  groups[r.sport].push(r);
+ }
+
+ for(
+  const [sport,list]
+  of Object.entries(groups)
+ ){
+
+  let correct=0;
+  let brier=0;
+  let logloss=0;
+
+  for(const r of list){
+
+   const p=
+    r.usedP||
+    r.rawP;
+
+   const max=
+    Math.max(
+     p.A,p.D,p.B
+    );
+
+   if(p[r.actual]===max)
+    correct++;
+
+   brier+=
+    brier1x2(
+     p,
+     r.actual
+    );
+
+   logloss+=
+    -Math.log(
+     clamp(
+      p[r.actual],
+      1e-9,
+      1
+     )
+    );
+  }
+
+  html+=
+   `
+   <tr>
+   <td>${sport}</td>
+   <td>${list.length}</td>
+   <td>${pct(correct/list.length)}</td>
+   <td>${(brier/list.length).toFixed(4)}</td>
+   <td>${(logloss/list.length).toFixed(4)}</td>
+   </tr>
+   `;
+ }
+
+ html+="</table>";
+
+ $("bt_analysis").innerHTML=html;
+}
+
+
+/* =========================================================
+   FÚTBOL
+   ========================================================= */
+
+/*
+  El modelo conserva Poisson pero mejora la construcción
+  de λ:
+
+  1. ataque propio
+  2. defensa rival
+  3. xG/xGA cuando existen
+  4. Elo como ajuste moderado
+  5. forma
+  6. disponibilidad
+  7. ventaja local solo si fue proporcionada
+ */
+
+function footballExpectedGoals(){
+
+ const gfA=val("f_gfA");
+ const gfB=val("f_gfB");
+
+ if(gfA===null||gfB===null){
+
+  throw new Error(
+   "Faltan GF/partido de ambos equipos."
+  );
+ }
+
+ const gaA=val("f_gaA");
+ const gaB=val("f_gaB");
+
+ const xgA=val("f_xgA");
+ const xgB=val("f_xgB");
+
+ const xgaA=val("f_xgaA");
+ const xgaB=val("f_xgaB");
+
+ let lambdaA;
+ let lambdaB;
+
+ const used=[];
+ const missing=[];
+
+
+ /*
+   Base GF:
+   si tenemos defensa rival, la combinamos.
+ */
+ if(
+  gaA!==null&&
+  gaB!==null
+ ){
+
+  lambdaA=
+   .55*gfA+
+   .45*gaB;
+
+  lambdaB=
+   .55*gfB+
+   .45*gaA;
+
+  used.push(
+   "GF + GA rival"
+  );
+
+ }else{
+
+  lambdaA=gfA;
+  lambdaB=gfB;
+
+  missing.push(
+   "GA"
+  );
+
+  used.push(
+   "GF"
+  );
+ }
+
+
+ /*
+   xG/xGA tiene prioridad sobre GF/GA,
+   pero no reemplaza completamente el dato.
+ */
+ if(
+  xgA!==null&&
+  xgB!==null&&
+  xgaA!==null&&
+  xgaB!==null
+ ){
+
+  const xLambdaA=
+   .55*xgA+
+   .45*xgaB;
+
+  const xLambdaB=
+   .55*xgB+
+   .45*xgaA;
+
+  lambdaA=
+   .60*lambdaA+
+   .40*xLambdaA;
+
+  lambdaB=
+   .60*lambdaB+
+   .40*xLambdaB;
+
+  used.push(
+   "xG + xGA rival"
+  );
+
+ }else{
+
+  missing.push(
+   "xG/xGA"
+  );
+ }
+
+
+ /*
+   Elo: no se utiliza como predictor independiente
+   dominante; modifica λ de manera moderada.
+ */
+ const eloA=val("f_eloA");
+ const eloB=val("f_eloB");
+
+ if(
+  eloA!==null&&
+  eloB!==null
+ ){
+
+  const pe=
+   eloProb(
+    eloA,
+    eloB
+   );
+
+  const delta=
+   clamp(
+    (pe-.5)*.18,
+    -.09,
+    .09
+   );
+
+  lambdaA*=(1+delta);
+  lambdaB*=(1-delta);
+
+  used.push("Elo");
+ }else{
+
+  missing.push("Elo");
+ }
+
+
+ /*
+   Forma.
+ */
+ const formA=val("f_formA");
+ const formB=val("f_formB");
+
+ if(
+  formA!==null&&
+  formB!==null
+ ){
+
+  const delta=
+   clamp(
+    (formA-formB)/10,
+    -1,
+    1
+   )*.06;
+
+  lambdaA*=(1+delta);
+  lambdaB*=(1-delta);
+
+  used.push(
+   "Forma últimos 10"
+  );
+
+ }else{
+
+  missing.push(
+   "Forma últimos 10"
+  );
+ }
+
+
+ /*
+   Disponibilidad.
+ */
+ const avA=val("f_avA");
+ const avB=val("f_avB");
+
+ if(
+  avA!==null&&
+  avB!==null
+ ){
+
+  const delta=
+   clamp(
+    (avA-avB)/100,
+    -.15,
+    .15
+   );
+
+  lambdaA*=(1+delta*.35);
+  lambdaB*=(1-delta*.35);
+
+  used.push(
+   "Disponibilidad"
+  );
+
+ }else{
+
+  missing.push(
+   "Disponibilidad"
+  );
+ }
+
+
+ /*
+   Ventaja local.
+ */
+ lambdaA*=homeFactor();
+
+ lambdaA=
+  clamp(
+   lambdaA,
+   .08,
+   5.5
+  );
+
+ lambdaB=
+  clamp(
+   lambdaB,
+   .08,
+   5.5
+  );
+
+ return{
+  lambdaA,
+  lambdaB,
+  used,
+  missing
+ };
+}
+
+
+/*
+  Poisson con factor de ritmo compartido.
+  Conserva la filosofía Poisson pero permite que ambos
+  equipos tengan cierta correlación de partido.
+ */
+function correlatedFootballScore(
+ lambdaA,
+ lambdaB
+){
+
+ const common=
+  poisson(
+   Math.max(
+    .01,
+    .08*(lambdaA+lambdaB)
+   )
+  );
+
+ const independentA=
+  poisson(
+   Math.max(
+    .01,
+    .92*lambdaA
+   )
+  );
+
+ const independentB=
+  poisson(
+   Math.max(
+    .01,
+    .92*lambdaB
+   )
+  );
+
+ /*
+   El factor común se reparte entre los dos lados
+   con baja probabilidad para no inflar demasiado
+   el total.
+ */
+ const addA=
+  rnd()<.5?common:0;
+
+ const addB=
+  addA===common?0:common;
+
+ return{
+  A:independentA+addA,
+  B:independentB+addB
+ };
+}
+
+
+function footballN(N){
+
+ const x=
+  footballExpectedGoals();
+
+ let A=0;
+ let D=0;
+ let B=0;
+
+ let O25=0;
+ let BTTS=0;
+
+ const score={};
+ const corners={};
+ const fouls={};
+ const cards={};
+ const sot={};
+
+ const corA=val("f_corA");
+ const corB=val("f_corB");
+
+ const fouA=val("f_fouA");
+ const fouB=val("f_fouB");
+
+ const cardA=val("f_carA");
+ const cardB=val("f_carB");
+
+ const sotA=val("f_sotA");
+ const sotB=val("f_sotB");
+
+
+ for(let i=0;i<N;i++){
+
+  const s=
+   correlatedFootballScore(
+    x.lambdaA,
+    x.lambdaB
+   );
+
+  const a=s.A;
+  const b=s.B;
+
+  if(a>b)A++;
+  else if(a===b)D++;
+  else B++;
+
+  if(a+b>=3)
+   O25++;
+
+  if(a>0&&b>0)
+   BTTS++;
+
+  rec(
+   score,
+   `${a}-${b}`
+  );
+
+
+  if(
+   corA!==null&&
+   corB!==null
+  ){
+
+   rec(
+    corners,
+    `${poisson(corA)}-${poisson(corB)}`
+   );
+  }
+
+
+  if(
+   fouA!==null&&
+   fouB!==null
+  ){
+
+   rec(
+    fouls,
+    `${poisson(fouA)}-${poisson(fouB)}`
+   );
+  }
+
+
+  if(
+   cardA!==null&&
+   cardB!==null
+  ){
+
+   rec(
+    cards,
+    `${poisson(cardA)}-${poisson(cardB)}`
+   );
+  }
+
+
+  if(
+   sotA!==null&&
+   sotB!==null
+  ){
+
+   rec(
+    sot,
+    `${poisson(sotA)}-${poisson(sotB)}`
+   );
+  }
+ }
+
+
+ const pMC=
+  normalize3(
+   A/N,
+   D/N,
+   B/N
+  );
+
+
+ /*
+   Priors Elo + forma se calculan independientemente
+   del Monte Carlo para evitar que toda la información
+   termine dentro de una única capa.
+ */
+ let pPrior=null;
+
+ const eloA=val("f_eloA");
+ const eloB=val("f_eloB");
+
+ const formA=val("f_formA");
+ const formB=val("f_formB");
+
+ const priors=[];
+
+ if(
+  eloA!==null&&
+  eloB!==null
+ ){
+
+  const e=
+   eloProb(
+    eloA,
+    eloB
+   );
+
+  priors.push({
+   A:e,
+   D:.22,
+   B:1-e
+  });
+ }
+
+ if(
+  formA!==null&&
+  formB!==null
+ ){
+
+  const f=
+   clamp(
+    .5+
+    (formA-formB)/20,
+    .05,
+    .95
+   );
+
+  priors.push({
+   A:f,
+   D:.22,
+   B:1-f
+  });
+ }
+
+ if(priors.length){
+
+  const raw=
+   priors.reduce(
+    (s,p)=>({
+     A:s.A+p.A,
+     D:s.D+p.D,
+     B:s.B+p.B
+    }),
+    {A:0,D:0,B:0}
+   );
+
+  pPrior=
+   normalize3(
+    raw.A/priors.length,
+    raw.D/priors.length,
+    raw.B/priors.length
+   );
+ }
+
+
+ let pH=pMC;
+
+ if(pPrior){
+
+  /*
+    Monte Carlo mantiene peso principal.
+  */
+  pH=
+   normalize3(
+    .78*pMC.A+
+    .22*pPrior.A,
+
+    .78*pMC.D+
+    .22*pPrior.D,
+
+    .78*pMC.B+
+    .22*pPrior.B
+   );
+ }
+
+
+ return{
+
+  sport:"Fútbol",
+
+  a:nm("f_nombreA")||"Local",
+  b:nm("f_nombreB")||"Visitante",
+
+  N,
+
+  seed:val("seed"),
+
+  pMC,
+  pH,
+  pPrior,
+
+  over25:O25/N,
+  btts:BTTS/N,
+
+  scoreTop:topN(score,N),
+  cornersTop:topN(corners,N),
+  foulsTop:topN(fouls,N),
+  cardsTop:topN(cards,N),
+  sotTop:topN(sot,N),
+
+  lambdaA:x.lambdaA,
+  lambdaB:x.lambdaB,
+
+  used:x.used,
+  missing:x.missing,
+
+  components:{
+   MonteCarlo:pMC,
+   Prior:ELOForma(pPrior)
+  }
+ };
+}
+
+
+function ELOForma(p){
+
+ if(!p)return null;
+
+ return p;
+}
+
+
+/* =========================================================
+   MLB
+   ========================================================= */
+
+function mlbN(N){
+
+ const rA=val("m_rA");
+ const rB=val("m_rB");
+
+ if(rA===null||rB===null){
+
+  throw new Error(
+   "Faltan carreras por juego de ambos equipos."
+  );
+ }
+
+ const raA=val("m_raA");
+ const raB=val("m_raB");
+
+ let lambdaA;
+ let lambdaB;
+
+ const used=[];
+ const missing=[];
+
+
+ if(
+  raA!==null&&
+  raB!==null
+ ){
+
+  lambdaA=
+   .58*rA+
+   .42*raB;
+
+  lambdaB=
+   .58*rB+
+   .42*raA;
+
+  used.push(
+   "Carreras + carreras permitidas"
+  );
+
+ }else{
+
+  lambdaA=rA;
+  lambdaB=rB;
+
+  missing.push(
+   "Carreras permitidas"
+  );
+
+  used.push(
+   "Carreras por juego"
+  );
+ }
+
+
+ /*
+   OPS:
+   usamos diferencia relativa y la limitamos
+   para impedir que una sola columna domine.
+ */
+ const opsA=val("m_opsA");
+ const opsB=val("m_opsB");
+
+ if(
+  opsA!==null&&
+  opsB!==null
+ ){
+
+  const d=
+   clamp(
+    (opsA-opsB)/.8,
+    -.15,
+    .15
+   );
+
+  lambdaA*=(1+d*.35);
+  lambdaB*=(1-d*.35);
+
+  used.push("OPS");
+
+ }else{
+
+  missing.push("OPS");
+ }
+
+
+ const hrA=val("m_hrA");
+ const hrB=val("m_hrB");
+
+ if(
+  hrA!==null&&
+  hrB!==null
+ ){
+
+  const d=
+   clamp(
+    (hrA-hrB)/.5,
+    -.12,
+    .12
+   );
+
+  lambdaA*=(1+d*.18);
+  lambdaB*=(1-d*.18);
+
+  used.push("HR");
+
+ }else{
+
+  missing.push("HR");
+ }
+
+
+ const kA=val("m_kA");
+ const kB=val("m_kB");
+
+ if(
+  kA!==null&&
+  kB!==null
+ ){
+
+  const d=
+   clamp(
+    (kB-kA)/20,
+    -.10,
+    .10
+   );
+
+  lambdaA*=(1+d*.15);
+  lambdaB*=(1-d*.15);
+
+  used.push("K%");
+
+ }else{
+
+  missing.push("K%");
+ }
+
+
+ const bbA=val("m_bbA");
+ const bbB=val("m_bbB");
+
+ if(
+  bbA!==null&&
+  bbB!==null
+ ){
+
+  const d=
+   clamp(
+    (bbA-bbB)/15,
+    -.10,
+    .10
+   );
+
+  lambdaA*=(1+d*.15);
+  lambdaB*=(1-d*.15);
+
+  used.push("BB%");
+
+ }else{
+
+  missing.push("BB%");
+ }
+
+
+ const eraA=val("m_eraA");
+ const eraB=val("m_eraB");
+
+ if(
+  eraA!==null&&
+  eraB!==null
+ ){
+
+  const d=
+   clamp(
+    (eraB-eraA)/5,
+    -.12,
+    .12
+   );
+
+  lambdaA*=(1+d*.35);
+  lambdaB*=(1-d*.35);
+
+  used.push("ERA abridor");
+
+ }else{
+
+  missing.push("ERA abridor");
+ }
+
+
+ const bullA=val("m_bullA");
+ const bullB=val("m_bullB");
+
+ if(
+  bullA!==null&&
+  bullB!==null
+ ){
+
+  const d=
+   clamp(
+    (bullB-bullA)/5,
+    -.10,
+    .10
+   );
+
+  lambdaA*=(1+d*.20);
+  lambdaB*=(1-d*.20);
+
+  used.push("ERA bullpen");
+
+ }else{
+
+  missing.push("ERA bullpen");
+ }
+
+
+ const defA=val("m_defA");
+ const defB=val("m_defB");
+
+ if(
+  defA!==null&&
+  defB!==null
+ ){
+
+  const d=
+   clamp(
+    (defA-defB)/
+    Math.max(
+     1,
+     Math.abs(defA)+Math.abs(defB)
+    ),
+    -.15,
+    .15
+   );
+
+  lambdaA*=(1+d*.10);
+  lambdaB*=(1-d*.10);
+
+  used.push("Defensa");
+
+ }else{
+
+  missing.push("Defensa");
+ }
+
+
+ lambdaA*=homeFactor();
+
+ lambdaA=
+  clamp(
+   lambdaA,
+   .2,
+   12
+  );
+
+ lambdaB=
+  clamp(
+   lambdaB,
+   .2,
+   12
+  );
+
+
+ let A=0;
+ let D=0;
+ let B=0;
+
+ const score={};
+ const totals={};
+
+
+ for(let i=0;i<N;i++){
+
+  const a=
+   poisson(lambdaA);
+
+  const b=
+   poisson(lambdaB);
+
+  if(a>b)A++;
+  else if(a===b)D++;
+  else B++;
+
+  rec(
+   score,
+   `${a}-${b}`
+  );
+
+  rec(
+   totals,
+   String(a+b)
+  );
+ }
+
+
+ const pMC=
+  normalize3(
+   A/N,
+   D/N,
+   B/N
+  );
+
+
+ return{
+
+  sport:"MLB",
+
+  a:nm("m_nombreA")||"Local",
+  b:nm("m_nombreB")||"Visitante",
+
+  N,
+  seed:val("seed"),
+
+  pMC,
+  pH:pMC,
+
+  scoreTop:topN(score,N),
+  totalsTop:topN(totals,N),
+
+  lambdaA,
+  lambdaB,
+
+  used,
+  missing,
+
+  components:{
+   MonteCarlo:pMC
+  }
+ };
+}
+
+
+/* =========================================================
+   NFL
+   ========================================================= */
+
+/*
+  NFL no se modela como Poisson puro.
+
+  Se mantiene Monte Carlo, pero la distribución de puntos
+  usa una distribución normal truncada, más adecuada para
+  marcadores discretos de fútbol americano.
+
+  La probabilidad 1X2 deriva de la distribución simulada.
+ */
+
+function nflN(N){
+
+ const pfA=val("n_pfA");
+ const pfB=val("n_pfB");
+
+ if(pfA===null||pfB===null){
+
+  throw new Error(
+   "Faltan PF/juego de ambos equipos."
+  );
+ }
+
+ const paA=val("n_paA");
+ const paB=val("n_paB");
+
+ let meanA;
+ let meanB;
+
+ const used=[];
+ const missing=[];
+
+
+ if(
+  paA!==null&&
+  paB!==null
+ ){
+
+  meanA=
+   .60*pfA+
+   .40*paB;
+
+  meanB=
+   .60*pfB+
+   .40*paA;
+
+  used.push(
+   "PF + PA rival"
+  );
+
+ }else{
+
+  meanA=pfA;
+  meanB=pfB;
+
+  missing.push("PA");
+
+  used.push("PF");
+ }
+
+
+ const eloA=val("n_eloA");
+ const eloB=val("n_eloB");
+
+ if(
+  eloA!==null&&
+  eloB!==null
+ ){
+
+  const p=
+   eloProb(
+    eloA,
+    eloB
+   );
+
+  const d=
+   clamp(
+    (p-.5)*.18,
+    -.09,
+    .09
+   );
+
+  meanA*=1+d;
+  meanB*=1-d;
+
+  used.push("Elo");
+
+ }else{
+
+  missing.push("Elo");
+ }
+
+
+ const ydA=val("n_ydA");
+ const ydB=val("n_ydB");
+
+ if(
+  ydA!==null&&
+  ydB!==null
+ ){
+
+  const d=
+   clamp(
+    (ydA-ydB)/900,
+    -.10,
+    .10
+   );
+
+  meanA*=1+d*.20;
+  meanB*=1-d*.20;
+
+  used.push("Yardas ofensivas");
+
+ }else{
+
+  missing.push("Yardas ofensivas");
+ }
+
+
+ const dydA=val("n_dydA");
+ const dydB=val("n_dydB");
+
+ if(
+  dydA!==null&&
+  dydB!==null
+ ){
+
+  const d=
+   clamp(
+    (dydB-dydA)/900,
+    -.10,
+    .10
+   );
+
+  meanA*=1+d*.20;
+  meanB*=1-d*.20;
+
+  used.push("Yardas defensivas");
+
+ }else{
+
+  missing.push("Yardas defensivas");
+ }
+
+
+ const tdA=val("n_tdA");
+ const tdB=val("n_tdB");
+
+ if(
+  tdA!==null&&
+  tdB!==null
+ ){
+
+  const d=
+   clamp(
+    (tdA-tdB)/3,
+    -.10,
+    .10
+   );
+
+  meanA*=1+d*.20;
+  meanB*=1-d*.20;
+
+  used.push("TD");
+
+ }else{
+
+  missing.push("TD");
+ }
+
+
+ const toA=val("n_toA");
+ const toB=val("n_toB");
+
+ if(
+  toA!==null&&
+  toB!==null
+ ){
+
+  const d=
+   clamp(
+    (toA-toB)/5,
+    -.08,
+    .08
+   );
+
+  meanA*=1+d*.12;
+  meanB*=1-d*.12;
+
+  used.push("Diferencial pérdidas");
+
+ }else{
+
+  missing.push("Diferencial pérdidas");
+ }
+
+
+ const thirdA=val("n_3rdA");
+ const thirdB=val("n_3rdB");
+
+ if(
+  thirdA!==null&&
+  thirdB!==null
+ ){
+
+  const d=
+   clamp(
+    (thirdA-thirdB)/20,
+    -.08,
+    .08
+   );
+
+  meanA*=1+d*.10;
+  meanB*=1-d*.10;
+
+  used.push("3ª oportunidad");
+
+ }else{
+
+  missing.push("3ª oportunidad");
+ }
+
+
+ const avA=val("n_avA");
+ const avB=val("n_avB");
+
+ if(
+  avA!==null&&
+  avB!==null
+ ){
+
+  const d=
+   clamp(
+    (avA-avB)/100,
+    -.10,
+    .10
+   );
+
+  meanA*=1+d*.25;
+  meanB*=1-d*.25;
+
+  used.push("Disponibilidad");
+
+ }else{
+
+  missing.push("Disponibilidad");
+ }
+
+
+ meanA*=homeFactor();
+
+
+ meanA=
+  clamp(
+   meanA,
+   5,
+   50
+  );
+
+ meanB=
+  clamp(
+   meanB,
+   5,
+   50
+  );
+
+
+ let A=0;
+ let D=0;
+ let B=0;
+
+ const score={};
+
+
+ /*
+   Desviación:
+   combina variabilidad de anotación y piso mínimo.
+ */
+ const sdA=
+  Math.max(
+   4.5,
+   Math.sqrt(meanA)*1.35
+  );
+
+ const sdB=
+  Math.max(
+   4.5,
+   Math.sqrt(meanB)*1.35
+  );
+
+
+ for(let i=0;i<N;i++){
+
+  let a=
+   Math.max(
+    0,
+    Math.round(
+     normal(
+      meanA,
+      sdA
+     )
+    )
+   );
+
+  let b=
+   Math.max(
+    0,
+    Math.round(
+     normal(
+      meanB,
+      sdB
+     )
+    )
+   );
+
+  /*
+    Los partidos NFL rara vez terminan en ciertos marcadores;
+    mantenemos la simulación simple pero reducimos empates
+    artificiales.
+  */
+  if(a===b&&rnd()<.65){
+
+   if(rnd()<.5)
+    a++;
+   else
+    b++;
+  }
+
+
+  if(a>b)A++;
+  else if(a===b)D++;
+  else B++;
+
+  rec(
+   score,
+   `${a}-${b}`
+  );
+ }
+
+
+ const pMC=
+  normalize3(
+   A/N,
+   D/N,
+   B/N
+  );
+
+
+ return{
+
+  sport:"NFL",
+
+  a:nm("n_nombreA")||"Local",
+  b:nm("n_nombreB")||"Visitante",
+
+  N,
+  seed:val("seed"),
+
+  pMC,
+  pH:pMC,
+
+  scoreTop:topN(score,N),
+
+  lambdaA:meanA,
+  lambdaB:meanB,
+
+  used,
+  missing,
+
+  components:{
+   MonteCarlo:pMC
+  }
+ };
+}
+
+
+/* =========================================================
+   TENIS
+   ========================================================= */
+
+/*
+  En tenis se simula partido desde probabilidad de ganar.
+
+  La probabilidad base se construye con:
+    - Elo superficie si existe
+    - Elo general
+    - forma
+    - hold
+    - break
+    - primer servicio
+    - devolución
+    - tie-break
+    - fatiga
+    - disponibilidad
+
+  Se mantienen A/B sin empate.
+ */
+
+function tennisN(
+ N,
+ prefix,
+ label
+){
+
+ const eloA=
+  val(prefix+"_eloA");
+
+ const eloB=
+  val(prefix+"_eloB");
+
+ if(
+  eloA===null||
+  eloB===null
+ ){
+
+  throw new Error(
+   "Falta Elo general de ambos jugadores."
+  );
+ }
+
+
+ const surfaceA=
+  val(prefix+"_seloA");
+
+ const surfaceB=
+  val(prefix+"_seloB");
+
+
+ const baseElo=
+  eloProb(
+   surfaceA??eloA,
+   surfaceB??eloB
+  );
+
+
+ let logitScore=
+  Math.log(
+   baseElo/
+   (1-baseElo)
+  );
+
+ const used=["Elo"];
+ const missing=[];
+
+
+ function addDifference(
+  key,
+  scale,
+  weight,
+  labelName
+ ){
+
+  const a=
+   val(prefix+"_"+key+"A");
+
+  const b=
+   val(prefix+"_"+key+"B");
+
+  if(
+   a!==null&&
+   b!==null
+  ){
+
+   logitScore+=
+    weight*
+    clamp(
+     (a-b)/scale,
+     -2,
+     2
+    );
+
+   used.push(labelName);
+
+  }else{
+
+   missing.push(labelName);
+  }
+ }
+
+
+ addDifference(
+  "form",
+  50,
+  .28,
+  "Forma"
+ );
+
+ addDifference(
+  "hold",
+  10,
+  .55,
+  "Hold"
+ );
+
+ addDifference(
+  "break",
+  10,
+  .45,
+  "Break"
+ );
+
+ addDifference(
+  "fs",
+  10,
+  .25,
+  "Primer servicio"
+ );
+
+ addDifference(
+  "ret",
+  10,
+  .35,
+  "Devolución"
+ );
+
+ addDifference(
+  "tb",
+  20,
+  .15,
+  "Tie-break"
+ );
+
+
+ /*
+   Fatiga:
+   mayor fatiga reduce el logit.
+ */
+ const fatA=
+  val(prefix+"_fatA");
+
+ const fatB=
+  val(prefix+"_fatB");
+
+ if(
+  fatA!==null&&
+  fatB!==null
+ ){
+
+  logitScore+=
+   -.20*
+   clamp(
+    (fatA-fatB)/25,
+    -2,
+    2
+   );
+
+  used.push("Fatiga");
+
+ }else{
+
+  missing.push("Fatiga");
+ }
+
+
+ const avA=
+  val(prefix+"_avA");
+
+ const avB=
+  val(prefix+"_avB");
+
+ if(
+  avA!==null&&
+  avB!==null
+ ){
+
+  logitScore+=
+   .15*
+   clamp(
+    (avA-avB)/10,
+    -2,
+    2
+   );
+
+  used.push("Disponibilidad");
+
+ }else{
+
+  missing.push("Disponibilidad");
+ }
+
+
+ const p=
+  clamp(
+   logistic(logitScore),
+   .02,
+   .98
+  );
+
+
+ let A=0;
+ let B=0;
+
+ const sets={};
+
+
+ for(let i=0;i<N;i++){
+
+  let sa=0;
+  let sb=0;
+
+  /*
+    Aproximación al partido al mejor de 3.
+  */
+  while(
+   sa<2&&
+   sb<2
+  ){
+
+   /*
+     Variación pequeña de partido:
+     no todos los sets son idénticos.
+   */
+   const setP=
+    clamp(
+     p+
+     normal(
+      0,
+      .018
+     ),
+     .01,
+     .99
+    );
+
+   if(rnd()<setP)
+    sa++;
+   else
+    sb++;
+  }
+
+
+  if(sa>sb)
+   A++;
+  else
+   B++;
+
+  rec(
+   sets,
+   `${sa}-${sb}`
+  );
+ }
+
+
+ const pMC={
+  A:A/N,
+  D:0,
+  B:B/N
+ };
+
+
+ return{
+
+  sport:label,
+
+  a:nm(prefix+"_nombreA")||
+   "Jugador A",
+
+  b:nm(prefix+"_nombreB")||
+   "Jugador B",
+
+  N,
+  seed:val("seed"),
+
+  pMC,
+  pH:pMC,
+
+  scoreTop:topN(sets,N),
+
+  used,
+  missing,
+
+  components:{
+   MonteCarlo:pMC
+  }
+ };
+}
+
+
+/* =========================================================
+   VALUE BETTING
+   ========================================================= */
+
+function valueHtml(pred){
+
+ const markets=[
+  ["A / Local","oddA",pred.pH.A],
+  ["Empate","oddD",pred.pH.D],
+  ["B / Visitante","oddB",pred.pH.B],
+  ["Over 2.5","oddO25",pred.over25],
+  ["BTTS","oddBTTS",pred.btts]
+ ].filter(
+  x=>x[2]!==undefined
+ );
+
+
+ let html=
+ `
+ <table class="table">
+
+ <tr>
+ <th>Mercado</th>
+ <th>Probabilidad modelo</th>
+ <th>Cuota</th>
+ <th>Prob. implícita</th>
+ <th>EV</th>
+ </tr>
+ `;
+
+
+ for(
+  const [market,id,p]
+  of markets
+ ){
+
+  const odd=
+   val(id);
+
+  if(
+   odd===null||
+   odd<=1
+  ){
+
+   html+=
+    `
+    <tr>
+    <td>${market}</td>
+    <td>${pct(p)}</td>
+    <td>N/D</td>
+    <td>N/D</td>
+    <td>N/D</td>
+    </tr>
+    `;
+
+  }else{
+
+   const implied=
+    1/odd;
+
+   const ev=
+    p*(odd-1)-
+    (1-p);
+
+   html+=
+    `
+    <tr>
+    <td>${market}</td>
+    <td>${pct(p)}</td>
+    <td>${odd.toFixed(2)}</td>
+    <td>${pct(implied)}</td>
+    <td class="${
+     ev>0?"good":"danger"
+    }">
+    ${(ev*100).toFixed(2)}%
+    </td>
+    </tr>
+    `;
+  }
+ }
+
+ return html+
+  "</table>";
+}
+
+
+/* =========================================================
+   RENDER RESULTADOS
+   ========================================================= */
+
+function listHtml(
+ title,
+ arr
+){
+
+ if(!arr?.length)
+  return"";
+
+ return`
+ <div class="audit">
+ <b>${title}</b>
+
+ <ol>
+
+ ${arr.map(
+  x=>
+   `<li>
+    ${x.key}
+    —
+    ${x.n.toLocaleString("es-MX")}
+    —
+    ${pct(x.p)}
+   </li>`
+ ).join("")}
+
+ </ol>
+
+ </div>
+ `;
+}
+
+
+function renderPrediction(p){
+
+ const ph=
+  p.pH||
+  p.pMC;
+
+
+ let html=
+ `
+ <div class="result-grid">
+
+ <div class="result">
+ <b>A / Local — Monte Carlo</b>
+ ${pct(p.pMC.A)}
+ </div>
+
+ <div class="result">
+ <b>Empate — Monte Carlo</b>
+ ${pct(p.pMC.D)}
+ </div>
+
+ <div class="result">
+ <b>B / Visitante — Monte Carlo</b>
+ ${pct(p.pMC.B)}
+ </div>
+
+ <div class="result">
+ <b>A / Local — Modelo final</b>
+ ${pct(ph.A)}
+ </div>
+
+ <div class="result">
+ <b>Empate — Modelo final</b>
+ ${pct(ph.D)}
+ </div>
+
+ <div class="result">
+ <b>B / Visitante — Modelo final</b>
+ ${pct(ph.B)}
+ </div>
+
+ ${
+  p.over25!==undefined
+  ?`
+  <div class="result">
+  <b>Over 2.5</b>
+  ${pct(p.over25)}
+  </div>
+
+  <div class="result">
+  <b>BTTS</b>
+  ${pct(p.btts)}
+  </div>
+  `
+  :""
+ }
+
+ </div>
+ `;
+
+
+ if(p.components){
+
+  html+=
+  `
+  <div class="audit">
+
+  <b>Componentes del modelo</b>
+
+  <br>
+
+  ${
+   Object.entries(
+    p.components
+   ).map(
+    ([key,v])=>
+     v
+     ?
+     `${key}: A ${pct(v.A)}
+      · D ${pct(v.D)}
+      · B ${pct(v.B)}`
+     :
+     `${key}: N/D`
+   ).join("<br>")
+  }
+
+  </div>
+  `;
+ }
+
+
+ html+=
+  listHtml(
+   "10 resultados más repetidos",
+   p.scoreTop
+  );
+
+
+ html+=
+  listHtml(
+   "10 córners más repetidos",
+   p.cornersTop
+  );
+
+
+ html+=
+  listHtml(
+   "10 faltas más repetidas",
+   p.foulsTop
+  );
+
+
+ html+=
+  listHtml(
+   "10 tarjetas más repetidas",
+   p.cardsTop
+  );
+
+
+ html+=
+  listHtml(
+   "10 tiros a portería más repetidos",
+   p.sotTop
+  );
+
+
+ html+=
+  listHtml(
+   "10 totales más repetidos",
+   p.totalsTop
+  );
+
+
+ html+=
+ `
+ <div class="audit">
+
+ <b>Parámetros usados:</b>
+ ${p.used?.join(", ")||"ninguno"}
+
+ <br>
+
+ <b>N/D:</b>
+ ${p.missing?.join(", ")||"ninguno"}
+
+ ${
+  p.lambdaA!==undefined
+  ?
+  `<br>
+   <b>λ / media A:</b>
+   ${Number(p.lambdaA).toFixed(3)}
+
+   ·
+
+   <b>λ / media B:</b>
+   ${Number(p.lambdaB).toFixed(3)}`
+  :""
+ }
+
+ <br>
+
+ <b>Semilla:</b>
+ ${p.seed}
+
+ ·
+
+ <b>Simulaciones:</b>
+ ${p.N.toLocaleString("es-MX")}
+
+ </div>
+ `;
+
+
+ $("results").innerHTML=
+ `
+ <h2>
+ Resultado — ${p.sport}
+ </h2>
+
+ <div class="small">
+ ${p.a}
+ vs
+ ${p.b}
+ ·
+ ${p.N.toLocaleString("es-MX")}
+ simulaciones
+ · seed ${p.seed}
+ </div>
+
+ ${html}
+ `;
+
+
+ $("valueView").innerHTML=
+  valueHtml(p);
+
+
+ $("params").textContent=
+  safeJSON(p);
+
+
+ $("audit").innerHTML=
+ `
+ <b>Auditoría:</b>
+
+ <br>
+ Versión Master Oros v5.0
+
+ <br>
+ Seed:
+ ${p.seed}
+
+ <br>
+ Simulaciones:
+ ${p.N}
+
+ <br>
+ Fuente declarada:
+ Google Sheets / entrada manual
+
+ <br>
+ Carga DB:
+ ${DB_META.loadedAt||"N/D"}
+
+ <br>
+ Datos del bot:
+ ${
+  currentData.A||
+  currentData.B
+  ?"sí"
+  :"no"
+ }
+
+ <br>
+ Regla de integridad:
+ datos faltantes = N/D; no se sustituyen
+ automáticamente.
+ `;
+}
+
+
+/* =========================================================
+   EJECUCIÓN
+   ========================================================= */
+
+function run(){
+
+ try{
+
+  const N=
+   Number(
+    $("sims").value
+   );
+
+  seedRandom(
+   val("seed")||
+   20260930
+  );
+
+  const sport=
+   $("sport").value;
+
+  let prediction;
+
+
+  if(sport==="futbol"){
+
+   prediction=
+    footballN(N);
+
+  }else if(sport==="mlb"){
+
+   prediction=
+    mlbN(N);
+
+  }else if(sport==="nfl"){
+
+   prediction=
+    nflN(N);
+
+  }else if(sport==="tenisM"){
+
+   prediction=
+    tennisN(
+     N,
+     "tm",
+     "Tenis varonil"
+    );
+
+  }else if(sport==="tenisF"){
+
+   prediction=
+    tennisN(
+     N,
+     "tf",
+     "Tenis femenil"
+    );
+
+  }else{
+
+   throw new Error(
+    "Deporte no reconocido."
+   );
+  }
+
+
+ /*
+   Calibración únicamente cuando existe
+   historial suficiente.
+ */
+ const markets={
+  A:prediction.pH.A,
+  D:prediction.pH.D,
+  B:prediction.pH.B,
+  O25:prediction.over25,
+  BTTS:prediction.btts
+ };
+
+
+ for(
+  const [market,prob]
+  of Object.entries(markets)
+ ){
+
+  if(prob===undefined)
+   continue;
+
+  const c=
+   calibrate(
+    prob,
+    prediction.sport,
+    market
+   );
+
+  prediction[
+   "cal_"+market
+  ]=c.p;
+
+  prediction[
+   "calUsed_"+market
+  ]=c.used;
+
+  prediction[
+   "calN_"+market
+  ]=c.n;
+ }
+
+
+ lastPrediction=
+  prediction;
+
+ /*
+   No se usa automáticamente la calibración para
+   cambiar el resultado principal; queda registrada
+   y se usa en el backtesting.
+ */
+ localStorage.setItem(
+  "master_oros_pending_v5_0",
+  JSON.stringify(prediction)
+ );
+
+
+ renderPrediction(
+  prediction
+ );
+
+ renderBT();
+
+ $("bt_status").innerHTML=
+ `
+ <b>Pronóstico listo para backtesting.</b>
+
+ ${prediction.a}
+ vs
+ ${prediction.b}.
+
+ <br>
+ El resultado real puede registrarse después.
+ `;
+
+
+ }catch(e){
+
+  $("results").innerHTML=
+  `
+  <h2>Resultado</h2>
+
+  <div class="error">
+
+  <b>NO SE EJECUTÓ:</b>
+
+  ${e.message}
+
+  </div>
+  `;
+
+  setStatus(
+   "La simulación fue detenida por validación.",
+   "bad"
+  );
+ }
+}
+
+
+/* =========================================================
+   REGISTRO BACKTEST
+   ========================================================= */
+
+function registerActual(){
+
+ if(!lastPrediction){
+
+  alert(
+   "Primero ejecuta una simulación."
+  );
+
+  return;
+ }
+
+
+ const scoreA=
+  Number(
+   $("bt_scoreA").value
+  );
+
+ const scoreB=
+  Number(
+   $("bt_scoreB").value
+  );
+
+
+ if(
+  !Number.isFinite(scoreA)||
+  !Number.isFinite(scoreB)||
+  scoreA<0||
+  scoreB<0
+ ){
+
+  alert(
+   "Introduce ambos resultados reales."
+  );
+
+  return;
+ }
+
+
+ const actual=
+  scoreA>scoreB
+  ?"A"
+  :
+  scoreA<scoreB
+  ?"B"
+  :"D";
+
+
+ const id=
+  crypto.randomUUID?
+  crypto.randomUUID():
+  String(Date.now());
+
+
+ const date=
+  $("bt_date").value||
+  dateISO();
+
+
+ const p=
+  lastPrediction.pH||
+  lastPrediction.pMC;
+
+
+ const rows=
+  btLoad();
+
+
+ const base={
+  id,
+  sport:lastPrediction.sport,
+  a:lastPrediction.a,
+  b:lastPrediction.b,
+  N:lastPrediction.N,
+  seed:lastPrediction.seed,
+  date,
+  actualScoreA:scoreA,
+  actualScoreB:scoreB,
+  actual,
+
+  rawP:{
+   A:p.A,
+   D:p.D,
+   B:p.B
+  },
+
+  usedP:{
+   A:lastPrediction.cal_A??p.A,
+   D:lastPrediction.cal_D??p.D,
+   B:lastPrediction.cal_B??p.B,
+   O25:lastPrediction.cal_O25??lastPrediction.over25,
+   BTTS:lastPrediction.cal_BTTS??lastPrediction.btts
+  },
+
+  odds:{
+   A:val("oddA"),
+   D:val("oddD"),
+   B:val("oddB"),
+   O25:val("oddO25"),
+   BTTS:val("oddBTTS")
+  },
+
+  createdAt:new Date().toISOString(),
+
+  completed:true
+ };
+
+
+ /*
+   Guardamos una observación por mercado 1X2.
+ */
+ [
+  ["A",p.A,actual==="A"],
+  ["D",p.D,actual==="D"],
+  ["B",p.B,actual==="B"]
+ ].forEach(
+  ([market,prob,correct])=>{
+
+   rows.push({
+    ...base,
+
+    market,
+
+    pred:prob,
+
+    actualBinary:
+     correct?1:0,
+
+    correct,
+
+    bin:
+     Math.min(
+      9,
+      Math.floor(
+       clamp(
+        prob,
+        0,
+        .999999
+       )*10
+      )
+     )
+   });
+
+  }
+ );
+
+
+ /*
+   Over 2.5.
+ */
+ if(
+  lastPrediction.over25!==undefined
+ ){
+
+  const actualO=
+   scoreA+scoreB>=3
+   ?1
+   :0;
+
+  const predO=
+   lastPrediction.cal_O25??
+   lastPrediction.over25;
+
+  rows.push({
+
+   ...base,
+
+   market:"O25",
+
+   pred:predO,
+
+   actualBinary:actualO,
+
+   correct:
+    (predO>=.5)===Boolean(actualO),
+
+   bin:
+    Math.min(
+     9,
+     Math.floor(
+      clamp(
+       predO,
+       0,
+       .999999
+      )*10
+     )
+    )
+  });
+ }
+
+
+ /*
+   BTTS.
+ */
+ if(
+  lastPrediction.btts!==undefined
+ ){
+
+  const actualB=
+   scoreA>0&&scoreB>0
+   ?1
+   :0;
+
+  const predB=
+   lastPrediction.cal_BTTS??
+   lastPrediction.btts;
+
+  rows.push({
+
+   ...base,
+
+   market:"BTTS",
+
+   pred:predB,
+
+   actualBinary:actualB,
+
+   correct:
+    (predB>=.5)===Boolean(actualB),
+
+   bin:
+    Math.min(
+     9,
+     Math.floor(
+      clamp(
+       predB,
+       0,
+       .999999
+      )*10
+     )
+    )
+  });
+ }
+
+
+ btSave(rows);
+
+ localStorage.removeItem(
+  "master_oros_pending_v5_0"
+ );
+
+ lastPrediction=null;
+
+ $("bt_scoreA").value="";
+ $("bt_scoreB").value="";
+
+ $("bt_status").textContent=
+  "Resultado registrado correctamente.";
+
+ renderBT();
+}
+
+
+/* =========================================================
+   EXPORT / IMPORT
+   ========================================================= */
+
+function exportBT(){
+
+ const blob=
+  new Blob(
+   [
+    JSON.stringify(
+     btLoad(),
+     null,
+     2
+    )
+   ],
+   {
+    type:"application/json"
+   }
+  );
+
+ const a=
+  document.createElement("a");
+
+ a.href=
+  URL.createObjectURL(blob);
+
+ a.download=
+  "Master_Oros_v5_0_backtesting.json";
+
+ a.click();
+
+ setTimeout(
+  ()=>{
+   URL.revokeObjectURL(
+    a.href
+   );
+  },
+  1000
+ );
+}
+
+
+function importBT(){
+
+ $("bt_file").click();
+}
+
+
+function loadBT(e){
+
+ const file=
+  e.target.files?.[0];
+
+ if(!file)return;
+
+ const reader=
+  new FileReader();
+
+ reader.onload=()=>{
+
+  try{
+
+   const data=
+    JSON.parse(
+     reader.result
+    );
+
+   if(!Array.isArray(data)){
+
+    throw new Error(
+     "El JSON debe contener un arreglo."
+    );
+   }
+
+
+   const valid=
+    data.every(
+     r=>
+      r.id&&
+      r.sport&&
+      r.market
+    );
+
+
+   if(!valid){
+
+    throw new Error(
+     "Existen registros sin estructura mínima."
+    );
+   }
+
+
+   btSave(data);
+
+   renderBT();
+
+   alert(
+    "Historial importado correctamente."
+   );
+
+  }catch(err){
+
+   alert(
+    "No se pudo importar: "+
+    err.message
+   );
+  }
+ };
+
+ reader.readAsText(file);
+
+ e.target.value="";
+}
+
+
+function clearBT(){
+
+ if(
+  !confirm(
+   "¿Borrar todo el historial de Master Oros de este dispositivo?"
+  )
+ ){
+  return;
+ }
+
+ localStorage.removeItem(
+  BT_KEY
+ );
+
+ localStorage.removeItem(
+  "master_oros_pending_v5_0"
+ );
+
+ lastPrediction=null;
+
+ renderBT();
+
+ $("bt_status").textContent=
+  "Historial borrado.";
+}
+
+
+/* =========================================================
+   LIMPIAR
+   ========================================================= */
+
+function clearAll(){
+
+ document
+  .querySelectorAll("input")
+  .forEach(
+   e=>{
+    if(
+     e.id!=="seed"&&
+     e.id!=="sheetUrl"&&
+     e.id!=="sheetId"
+    ){
+     e.value="";
+    }
+   }
+  );
+
+
+ $("seed").value=
+  "20260930";
+
+
+ $("sheetUrl").value=
+  DEFAULT_SHEET_URL;
+
+
+ updateSheetId();
+
+
+ lastPrediction=null;
+
+
+ currentData={
+  A:null,
+  B:null,
+  fa:null,
+  fb:null
+ };
+
+
+ $("results").innerHTML=
+ `
+ <h2>Resultado</h2>
+ <div class="note">
+ Entradas limpiadas.
+ </div>
+ `;
+
+
+ $("valueView").textContent=
+  "Ejecuta una simulación.";
+
+
+ $("dataView").textContent=
+  "No se ha realizado búsqueda.";
+}
+
+
+/* =========================================================
+   DEPORTE
+   ========================================================= */
+
+function showSport(){
+
+ document
+  .querySelectorAll(".sport")
+  .forEach(
+   e=>{
+    e.style.display="none";
+   }
+  );
+
+
+ const selected=
+  $("sport").value;
+
+ const el=
+  $(selected);
+
+ if(el)
+  el.style.display="block";
+}
+
+
+/* =========================================================
+   EVENTOS
+   ========================================================= */
+
+$("sport").onchange=
+ showSport;
+
+
+$("sheetUrl").addEventListener(
+ "input",
+ updateSheetId
+);
+
+
+$("loadDb").onclick=
+ ()=>{
+  loadDB()
+   .catch(
+    e=>{
+     setStatus(
+      "Error de conexión: "+
+      e.message,
+      "bad"
+     );
+    }
+   );
+ };
+
+
+$("bot").onclick=
+ ()=>{
+  botFill()
+   .catch(
+    e=>{
+     setStatus(
+      "Error del bot: "+
+      e.message,
+      "bad"
+     );
+    }
+   );
+ };
+
+
+$("run").onclick=
+ run;
+
+
+$("clear").onclick=
+ clearAll;
+
+
+$("register").onclick=
+ registerActual;
+
+
+$("refreshBT").onclick=
+ renderBT;
+
+
+$("exportBT").onclick=
+ exportBT;
+
+
+$("importBT").onclick=
+ importBT;
+
+
+$("bt_file").addEventListener(
+ "change",
+ loadBT
+);
+
+
+$("clearBT").onclick=
+ clearBT;
+
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+$("bt_date").value=
+ dateISO();
+
+$("sheetUrl").value=
+ DEFAULT_SHEET_URL;
+
+updateSheetId();
+
+showSport();
+
+renderBT();
+
+
+/*
+  Intento inicial de conexión.
+  Si falla, no se inventan datos y el usuario puede
+  volver a pulsar "Conectar / actualizar".
+ */
+loadDB()
+ .catch(
+  ()=>{
+   setStatus(
+    "Base no conectada todavía. Puedes reintentar manualmente.",
+    "warn"
+   );
+  }
+);
+
+</script>
+
+</body>
+</html>
